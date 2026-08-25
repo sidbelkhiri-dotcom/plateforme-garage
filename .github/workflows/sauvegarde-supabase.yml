@@ -1,0 +1,60 @@
+name: Sauvegarde hebdomadaire Supabase
+
+# Le plan gratuit de Supabase n'inclut aucune sauvegarde automatique —
+# ce robot exporte la base une fois par semaine et la publie sur la
+# branche "backups" du dépôt. Voir README.md de cette branche.
+on:
+  schedule:
+    - cron: "0 8 * * 0" # dimanche 8h UTC
+  workflow_dispatch: {} # bouton "Run workflow" pour tester manuellement
+
+permissions:
+  contents: write
+
+jobs:
+  sauvegarde:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Récupérer la branche backups
+        uses: actions/checkout@v4
+        with:
+          ref: backups
+
+      - name: Installer les outils PostgreSQL
+        # Le paquet Ubuntu par défaut installe pg_dump 16, mais Supabase
+        # tourne en PostgreSQL 17 — pg_dump refuse de sauvegarder un
+        # serveur plus récent que lui-même. Dépôt officiel PGDG pour avoir
+        # une version de pg_dump toujours à jour avec le serveur.
+        run: |
+          sudo apt-get install -y postgresql-common
+          sudo /usr/share/postgresql-common/pgdg/apt.postgresql.org.sh -y
+          sudo apt-get update -y
+          sudo apt-get install -y postgresql-client-17
+
+      - name: Exporter la base de données
+        # La "Direct connection" Supabase (db.<ref>.supabase.co) est
+        # IPv6 uniquement depuis 2024 — les runners GitHub Actions ne la
+        # résolvent pas ("Name or service not known", vérifié en confirmant
+        # que le host n'a qu'une adresse AAAA, aucune A). Le pooler
+        # Supavisor, lui, est routable en IPv4 : on y revient, mais avec le
+        # bon utilisateur cette fois (postgres.<ref>, pas postgres tout
+        # court — l'erreur du tout premier essai). Host et utilisateur ne
+        # sont pas sensibles (visibles publiquement dans tout connection
+        # string Supabase) : seul le mot de passe reste un secret.
+        env:
+          PGHOST: aws-0-ca-central-1.pooler.supabase.com
+          PGPORT: 5432
+          PGUSER: postgres.giabayiwjxrghitzmrfl
+          RAW_PASSWORD: ${{ secrets.SUPABASE_DB_PASSWORD }}
+          PGDATABASE: postgres
+        run: |
+          export PGPASSWORD=$(printf '%s' "$RAW_PASSWORD" | tr -d '\n\r')
+          pg_dump --no-owner --no-privileges > "backup-$(date +%Y-%m-%d).sql"
+
+      - name: Publier la sauvegarde
+        run: |
+          git config user.name "backup-bot"
+          git config user.email "backup-bot@users.noreply.github.com"
+          git add "backup-$(date +%Y-%m-%d).sql"
+          git commit -m "Sauvegarde du $(date +%Y-%m-%d)"
+          git push origin backups

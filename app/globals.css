@@ -1,0 +1,124 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* ============================================================
+   Tokens de marque MECAFORCE — voir BRAND.md pour la doc complète.
+   Sombre = mode principal, posé directement sur :root. Le mode clair
+   (secondaire) s'active en posant data-theme="light" sur <html> — voir
+   le script bloquant dans app/layout.tsx, et le futur interrupteur de
+   la Phase 3. Aucune classe ne doit lire une couleur en dur : tout
+   passe par ces variables (branchées dans tailwind.config.js sous le
+   préfixe mf-*).
+   ============================================================ */
+:root {
+  /* Surfaces — du plus profond au plus élevé */
+  --mf-bg: #060b16;
+  --mf-surface: #0b1220;
+  --mf-surface-2: #111a2c;
+  --mf-surface-3: #18243a;
+
+  /* Bordures */
+  --mf-border: #1e2a44;
+  --mf-border-strong: #2c3b5c;
+
+  /* Texte */
+  --mf-text: #f5f7fa;
+  --mf-text-2: #a8b3c7;
+  --mf-text-3: #8892a6; /* ajusté depuis #6B7890 (3.49:1 sur surface-3, sous AA) — voir BRAND.md */
+
+  /* Marque — mf-blue pour les remplissages (boutons, 5.71:1 en texte
+     blanc), mf-blue-hover aussi comme couleur de TEXTE bleu sur fond
+     sombre (mf-blue en texte ne fait que 3.44:1, sous AA) — voir BRAND.md */
+  --mf-blue: #0b5be8;
+  --mf-blue-hover: #2a74ff;
+  --mf-blue-soft: rgba(11, 91, 232, 0.14);
+  --mf-navy: #1b2a5c;
+  --mf-red: #e01b24;
+  --mf-red-hover: #f03a42;
+  --mf-red-soft: rgba(224, 27, 36, 0.14);
+
+  /* Sémantique */
+  --mf-success: #22c55e;
+  --mf-success-soft: rgba(34, 197, 94, 0.14);
+  --mf-warning: #f59e0b;
+  --mf-warning-soft: rgba(245, 158, 11, 0.14);
+  --mf-danger: var(--mf-red);
+  --mf-info: var(--mf-blue);
+
+  /* Superposition de modale — mf-bg à 72 % (BRAND.md §6). Token dédié
+     pour que le seul rgba() du projet reste dans ce fichier, jamais
+     recopié en dur dans un composant (Modale.tsx référence var(--mf-overlay)). */
+  --mf-overlay: rgba(6, 11, 22, 0.72);
+
+  /* Rayons et élévation */
+  --mf-radius-sm: 6px;
+  --mf-radius-md: 10px;
+  --mf-radius-lg: 14px;
+  --mf-radius-pill: 999px;
+  --mf-shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.4);
+  --mf-shadow-md: 0 8px 24px rgba(0, 0, 0, 0.45);
+  --mf-shadow-lg: 0 20px 48px rgba(0, 0, 0, 0.55);
+}
+
+/* Mode clair — secondaire, activé explicitement (voir en-tête ci-dessus).
+   Couleurs de marque (bleu/navy/rouge) inchangées, seules les surfaces
+   et le texte sont remplacés. */
+:root[data-theme="light"] {
+  --mf-bg: #f4f6fa;
+  --mf-surface: #ffffff;
+  --mf-surface-2: #eff2f7;
+  --mf-surface-3: #e7ebf2;
+  --mf-border: #dde3ed;
+  --mf-border-strong: #c3ccda;
+  --mf-text: #0b1220;
+  --mf-text-2: #4a566b;
+  --mf-text-3: #5b6b85; /* ajusté depuis #6B7890 (3.97:1 sur surface-2, sous AA) — voir BRAND.md */
+  --mf-shadow-sm: 0 1px 2px rgba(15, 23, 42, 0.06);
+  --mf-shadow-md: 0 8px 24px rgba(15, 23, 42, 0.1);
+  --mf-shadow-lg: 0 20px 48px rgba(15, 23, 42, 0.16);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.001ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+/* Logo MECAFORCE SERVICE — deux fichiers (texte blanc / texte marine),
+   un seul affiché à la fois selon le thème actif. Voir components/Logo.tsx. */
+.mf-logo-sombre { display: block; }
+.mf-logo-clair { display: none; }
+:root[data-theme="light"] .mf-logo-sombre { display: none; }
+:root[data-theme="light"] .mf-logo-clair { display: block; }
+
+html,
+body {
+  height: 100%;
+}
+
+/* Skeleton (components/ui/Skeleton.tsx) — neutralisé par la règle
+   prefers-reduced-motion ci-dessus, comme toute animation du projet. */
+@keyframes shimmer {
+  100% {
+    transform: translateX(100%);
+  }
+}
+
+/* Documents imprimables (évaluation écrite, Lot 6) : la barre latérale et
+   tout ce qui est marqué .sans-impression disparaissent au moment
+   d'imprimer ou d'exporter en PDF depuis le navigateur (6.2). */
+@media print {
+  .sans-impression {
+    display: none !important;
+  }
+  main {
+    width: 100% !important;
+  }
+  body {
+    background: white !important;
+  }
+}
