@@ -11,6 +11,15 @@
 -- ============================================================
 
 -- ------------------------------------------------------------
+-- NETTOYAGE (rejouable sans intervention — supprime les restes d'un
+-- essai précédent avant de recréer des données fraîches)
+-- ------------------------------------------------------------
+delete from bons_travail where plainte_client like 'Test isolation%';
+delete from vehicules where plaque = 'COLLISION-1';
+delete from clients where nom like 'Client Test %';
+delete from garages where nom = 'Atelier de test B (isolation)';
+
+-- ------------------------------------------------------------
 -- SETUP
 -- ------------------------------------------------------------
 begin;
