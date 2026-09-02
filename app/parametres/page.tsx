@@ -19,7 +19,7 @@ export default async function ParametresPage() {
   if (profil?.role !== "admin") redirect("/");
 
   const [{ data: parametres }, { data: profils }] = await Promise.all([
-    supabase.from("parametres").select("*").eq("id", 1).single(),
+    supabase.from("parametres").select("*").single(),
     supabase.from("profiles").select("*").order("nom"),
   ]);
 

@@ -44,7 +44,7 @@ export async function POST(request: NextRequest) {
     rdv.vehicule_id
       ? supabase.from("vehicules").select("marque, modele, annee").eq("id", rdv.vehicule_id).single()
       : Promise.resolve({ data: null }),
-    supabase.from("parametres").select("*").eq("id", 1).single(),
+    supabase.from("parametres").select("*").single(),
   ]);
 
   if (!client?.email) {

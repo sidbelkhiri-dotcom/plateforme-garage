@@ -78,7 +78,7 @@ export default function VehiculeDetailPage() {
           .select("id, numero, statut, kilometrage, plainte_client, diagnostic, ouvert_le, ferme_le")
           .eq("vehicule_id", id)
           .order("ouvert_le", { ascending: false }),
-        supabase.from("parametres").select("garantie_mois, garantie_km").eq("id", 1).single(),
+        supabase.from("parametres").select("garantie_mois, garantie_km").single(),
       ]);
       setClient(c);
       setBons(b ?? []);

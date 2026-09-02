@@ -68,7 +68,7 @@ export default async function RapportAnnuelPage({ searchParams }: { searchParams
   const [factures, { data: clients }, { data: garage }] = await Promise.all([
     chargerToutesLesFactures(supabase, annee),
     supabase.from("clients").select("id, nom"),
-    supabase.from("parametres").select("*").eq("id", 1).single(),
+    supabase.from("parametres").select("*").single(),
   ]);
 
   const nomsClients = Object.fromEntries((clients ?? []).map((c) => [c.id, c.nom]));

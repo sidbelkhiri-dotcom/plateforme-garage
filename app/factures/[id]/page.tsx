@@ -49,7 +49,7 @@ export default async function FacturePage({ params }: { params: { id: string } }
       ? supabase.from("vehicules").select("*").eq("id", facture.vehicule_id).single()
       : Promise.resolve({ data: null }),
     supabase.from("facture_lignes").select("*").eq("facture_id", params.id).order("ordre"),
-    supabase.from("parametres").select("*").eq("id", 1).single(),
+    supabase.from("parametres").select("*").single(),
   ]);
 
   const piecesLignes = (lignes ?? []).filter((l) => l.type === "piece");

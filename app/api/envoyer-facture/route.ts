@@ -63,7 +63,7 @@ export async function POST(request: NextRequest) {
       ? supabase.from("vehicules").select("*").eq("id", facture.vehicule_id).single()
       : Promise.resolve({ data: null }),
     supabase.from("facture_lignes").select("*").eq("facture_id", factureId).order("ordre"),
-    supabase.from("parametres").select("*").eq("id", 1).single(),
+    supabase.from("parametres").select("*").single(),
   ]);
 
   if (!client?.email) {

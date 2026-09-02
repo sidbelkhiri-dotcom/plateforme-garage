@@ -120,7 +120,7 @@ function NouveauBonTravailContenu() {
     setCreation(true);
     setErreur(null);
 
-    const { data: parametres } = await supabase.from("parametres").select("taux_horaire").eq("id", 1).single();
+    const { data: parametres } = await supabase.from("parametres").select("taux_horaire").single();
 
     const { data, error } = await supabase
       .from("bons_travail")

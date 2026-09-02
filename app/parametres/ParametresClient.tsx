@@ -99,8 +99,7 @@ export default function ParametresClient({
         validite_evaluation_jours: Number(valeurs.validite_evaluation_jours) || 30,
         garantie_mois: Number(valeurs.garantie_mois) || 3,
         garantie_km: Number(valeurs.garantie_km) || 5000,
-      })
-      .eq("id", 1);
+      });
     setEnregistrement(false);
     if (error) {
       setErreur(error.message);

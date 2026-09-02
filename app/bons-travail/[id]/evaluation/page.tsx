@@ -35,7 +35,7 @@ export default async function EvaluationEcritePage({ params }: { params: { id: s
         : Promise.resolve({ data: null }),
       supabase.from("bon_travail_lignes").select("*").eq("bon_travail_id", params.id).order("ordre"),
       supabase.from("bons_travail_totaux").select("*").eq("id", params.id).single(),
-      supabase.from("parametres").select("*").eq("id", 1).single(),
+      supabase.from("parametres").select("*").single(),
       supabase
         .from("bon_travail_evaluations")
         .select("id, montant, type, accepte_le, accepte_par:profiles(nom)")
