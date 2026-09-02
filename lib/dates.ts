@@ -41,6 +41,23 @@ export function formatTimeShort(time: string): string {
   return `${Number(h)} h ${m}`;
 }
 
+/** Affichage humain d'un timestamptz complet, ex. « 30 août 2026, 14 h 32 ». */
+export function formatDateHeure(isoTimestamp: string): string {
+  const date = new Intl.DateTimeFormat("fr-CA", {
+    timeZone: TIME_ZONE,
+    year: "numeric",
+    month: "long",
+    day: "numeric",
+  }).format(new Date(isoTimestamp));
+  const heure = new Intl.DateTimeFormat("fr-CA", {
+    timeZone: TIME_ZONE,
+    hour: "2-digit",
+    minute: "2-digit",
+    hour12: false,
+  }).format(new Date(isoTimestamp));
+  return `${date}, ${heure}`;
+}
+
 // Arithmétique de calendrier pure (année/mois/jour, ancrée à midi UTC) —
 // jamais de nouvelle lecture de « maintenant » ici, donc pas de risque de
 // rejouer le bug D18. Seule todayLocal() lit l'heure réelle.
