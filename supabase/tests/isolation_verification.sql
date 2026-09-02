@@ -3,8 +3,10 @@
 --
 -- Script complet, à coller et exécuter EN UN SEUL BLOC (setup +
 -- vérification), pour que la table temporaire _test_ids reste visible
--- tout du long dans la même session. Rien n'est laissé en place à la
--- fin : chaque bloc de test se termine par un rollback.
+-- tout du long dans la même session. Chaque bloc de test committe (pas
+-- de rollback : ça effacerait aussi les lignes de _test_resultats
+-- insérées dans la même transaction) — le nettoyage en tête de script
+-- reprend tout au prochain lancement.
 --
 -- Compte A (garage pilote) : a142251e-9258-41fa-aac5-477c46019b59
 -- Compte B (garage de test): aa7ae84d-dd67-489c-ba60-6b6fe7cd89a5
@@ -162,7 +164,7 @@ begin
   end;
 end $$;
 
-rollback;
+commit;
 
 -- ------------------------------------------------------------
 -- TESTS — connecté comme le compte du garage B (sens inverse)
@@ -195,7 +197,7 @@ begin
   end;
 end $$;
 
-rollback;
+commit;
 
 -- ------------------------------------------------------------
 -- RÉSULTATS
