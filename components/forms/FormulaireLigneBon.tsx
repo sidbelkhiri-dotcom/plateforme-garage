@@ -5,6 +5,7 @@ import { Camera, X } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
 import { useFormulaire } from "@/lib/useFormulaire";
 import { useCategoriesPieces, usePieces } from "@/lib/usePieces";
+import { useProfil } from "@/lib/useProfil";
 import { todayLocal } from "@/lib/dates";
 import { BUCKET_FACTURES_PIECES, urlSigneePhotoFacturePiece } from "@/lib/facturesPiecesPhotos";
 import Champ from "@/components/ui/Champ";
@@ -59,6 +60,7 @@ export default function FormulaireLigneBon({
   onAnnuler: () => void;
 }) {
   const supabase = createClient();
+  const { profil } = useProfil();
   const { valeurs, definir, soumettre, erreur, enEnvoi } = useFormulaire<LigneValeurs>({
     description: "",
     quantite: type === "piece" ? "1" : "1",
@@ -116,7 +118,9 @@ export default function FormulaireLigneBon({
     setErreurPhoto(null);
     const nouveauxChemins: string[] = [];
     for (const fichier of Array.from(fichiers)) {
-      const chemin = `${crypto.randomUUID()}-${fichier.name}`;
+      // Préfixe garage_id — voir FormulaireVehiculeStock.tsx pour la
+      // même logique côté RLS Storage.
+      const chemin = `${profil?.garage_id}/${crypto.randomUUID()}-${fichier.name}`;
       const { error } = await supabase.storage.from(BUCKET_FACTURES_PIECES).upload(chemin, fichier);
       if (error) {
         setErreurPhoto(error.message);

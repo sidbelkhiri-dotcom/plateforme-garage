@@ -10,6 +10,7 @@ export type Profil = {
   nom: string;
   role: Role;
   actif: boolean;
+  garage_id: string | null;
 };
 
 // Le rôle du compte connecté, côté client — sert seulement à adapter
@@ -31,7 +32,7 @@ export function useProfil() {
       try {
         const { data, error } = await supabase
           .from("profiles")
-          .select("id, nom, role, actif")
+          .select("id, nom, role, actif, garage_id")
           .eq("id", userId)
           .single();
         if (!actif) return;

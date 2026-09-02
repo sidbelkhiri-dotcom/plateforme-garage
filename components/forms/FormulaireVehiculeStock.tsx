@@ -5,6 +5,7 @@ import { X, ImagePlus } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
 import { useFormulaire } from "@/lib/useFormulaire";
 import { useMarques, useModeles, useAnnees } from "@/lib/useMarquesModeles";
+import { useProfil } from "@/lib/useProfil";
 import { BUCKET_VEHICULES_STOCK, urlPhotoVehiculeStock } from "@/lib/vehiculesStockPhotos";
 import Champ from "@/components/ui/Champ";
 import Selecteur from "@/components/ui/Selecteur";
@@ -55,6 +56,7 @@ export default function FormulaireVehiculeStock({
   onAnnuler: () => void;
 }) {
   const supabase = createClient();
+  const { profil } = useProfil();
   const { valeurs, definir, soumettre, erreur, enEnvoi } = useFormulaire<VehiculeStockValeurs>({
     ...VALEURS_VIDES,
     ...valeursInitiales,
@@ -80,7 +82,10 @@ export default function FormulaireVehiculeStock({
     setErreurPhoto(null);
     const nouveauxChemins: string[] = [];
     for (const fichier of Array.from(fichiers)) {
-      const chemin = `${crypto.randomUUID()}-${fichier.name}`;
+      // Préfixe garage_id : la RLS sur storage.objects vérifie ce premier
+      // segment du chemin (storage.foldername(name)[1]) — sans lui, tous
+      // les garages partageraient le même espace de noms plat.
+      const chemin = `${profil?.garage_id}/${crypto.randomUUID()}-${fichier.name}`;
       const { error } = await supabase.storage.from(BUCKET_VEHICULES_STOCK).upload(chemin, fichier);
       if (error) {
         setErreurPhoto(error.message);
