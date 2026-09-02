@@ -18,6 +18,10 @@ begin;
 create temp table _test_ids (cle text primary key, valeur uuid);
 create temp table _test_resultats (verification text, attendu text, obtenu text, statut text);
 
+-- Les tables temporaires appartiennent à postgres ; une fois basculé sur
+-- authenticated pour l'impersonation, ce rôle a besoin d'un droit explicite.
+grant select, insert, update, delete on _test_ids, _test_resultats to authenticated;
+
 do $$
 declare
   v_garage_a uuid;
