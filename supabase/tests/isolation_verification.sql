@@ -74,8 +74,6 @@ end $$;
 
 commit;
 
-select 'setup termine' as etape, * from _test_ids order by cle;
-
 -- ------------------------------------------------------------
 -- TESTS — connecté comme le compte du garage A
 -- ------------------------------------------------------------
