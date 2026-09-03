@@ -21,38 +21,44 @@ export async function POST(request: Request) {
     return NextResponse.json({ erreur: `Signature invalide : ${(err as Error).message}` }, { status: 400 });
   }
 
-  const supabase = createServiceRoleClient();
+  try {
+    const supabase = createServiceRoleClient();
 
-  switch (event.type) {
-    case "checkout.session.completed": {
-      const session = event.data.object as Stripe.Checkout.Session;
-      const garageId = session.client_reference_id;
-      if (garageId && session.customer && session.subscription) {
-        const subscription = await stripe.subscriptions.retrieve(session.subscription as string);
-        await supabase
-          .from("garages")
-          .update({
-            stripe_customer_id: session.customer as string,
-            stripe_subscription_id: subscription.id,
-            abonnement_statut: subscription.status,
-          })
-          .eq("id", garageId);
+    switch (event.type) {
+      case "checkout.session.completed": {
+        const session = event.data.object as Stripe.Checkout.Session;
+        const garageId = session.client_reference_id;
+        if (garageId && session.customer && session.subscription) {
+          const subscription = await stripe.subscriptions.retrieve(session.subscription as string);
+          const { error } = await supabase
+            .from("garages")
+            .update({
+              stripe_customer_id: session.customer as string,
+              stripe_subscription_id: subscription.id,
+              abonnement_statut: subscription.status,
+            })
+            .eq("id", garageId);
+          if (error) throw new Error(`Écriture garages (checkout.session.completed) : ${error.message}`);
+        }
+        break;
       }
-      break;
-    }
-    case "customer.subscription.updated":
-    case "customer.subscription.deleted": {
-      const subscription = event.data.object as Stripe.Subscription;
-      const garageId = subscription.metadata?.garage_id;
-      if (garageId) {
-        await supabase
-          .from("garages")
-          .update({ abonnement_statut: subscription.status })
-          .eq("id", garageId);
+      case "customer.subscription.updated":
+      case "customer.subscription.deleted": {
+        const subscription = event.data.object as Stripe.Subscription;
+        const garageId = subscription.metadata?.garage_id;
+        if (garageId) {
+          const { error } = await supabase
+            .from("garages")
+            .update({ abonnement_statut: subscription.status })
+            .eq("id", garageId);
+          if (error) throw new Error(`Écriture garages (${event.type}) : ${error.message}`);
+        }
+        break;
       }
-      break;
     }
+
+    return NextResponse.json({ recu: true });
+  } catch (err) {
+    return NextResponse.json({ erreur: (err as Error).message }, { status: 500 });
   }
-
-  return NextResponse.json({ recu: true });
 }
