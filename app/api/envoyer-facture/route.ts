@@ -70,7 +70,7 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: "Ce client n'a pas d'adresse courriel enregistrée." }, { status: 400 });
   }
 
-  const nomGarage = garage?.nom ?? "MECAFORCE";
+  const nomGarage = garage?.nom ?? "Votre garage";
   const html = construireHtml({ facture, client, vehicule, lignes: lignes ?? [], garage, nomGarage });
 
   const envoi = await envoyerCourriel({
@@ -132,7 +132,7 @@ function construireHtml({
   return `
   <div style="font-family:Arial,Helvetica,sans-serif;max-width:600px;margin:0 auto;color:#111;">
     <div style="border-bottom:2px solid #0B5BE8;padding-bottom:12px;margin-bottom:20px;">
-      <img src="https://mecaforce-site.vercel.app/logo-fond-clair.png" alt="${echapperHtml(nomGarage)}" width="220" height="32" style="display:block;margin-bottom:16px;" />
+      <div style="font-size:18px;font-weight:900;text-transform:uppercase;letter-spacing:0.02em;margin-bottom:12px;">${echapperHtml(nomGarage)}</div>
       ${garage?.adresse ? `<div style="color:#555;font-size:13px;">${echapperHtml(garage.adresse)}</div>` : ""}
       ${garage?.telephone ? `<div style="color:#555;font-size:13px;">${echapperHtml(garage.telephone)}</div>` : ""}
       ${

@@ -95,7 +95,9 @@ export default async function EvaluationEcritePage({ params }: { params: { id: s
       <div className="bg-white border border-stone-200 rounded-lg p-8 print:border-none print:p-0 text-stone-900">
         <div className="flex items-start justify-between border-b border-stone-200 pb-4 mb-6">
           <div>
-            <img src="/logo-fond-clair.png" alt={garage?.nom ?? "MECAFORCE"} className="h-9 w-auto mb-4" />
+            <div className="text-lg font-black uppercase tracking-wide text-stone-900 mb-2">
+              {garage?.nom ?? "Votre garage"}
+            </div>
             {garage?.adresse && <div className="text-sm text-stone-600">{garage.adresse}</div>}
             {garage?.telephone && <div className="text-sm text-stone-600">{garage.telephone}</div>}
             {garage?.courriel && <div className="text-sm text-stone-600">{garage.courriel}</div>}

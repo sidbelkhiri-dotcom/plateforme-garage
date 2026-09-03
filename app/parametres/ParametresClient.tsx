@@ -11,7 +11,6 @@ import MessageErreur from "@/components/ui/MessageErreur";
 import Badge, { type ToneBadge } from "@/components/ui/Badge";
 
 type Parametres = {
-  id: number;
   nom: string;
   adresse: string | null;
   telephone: string | null;
@@ -57,8 +56,7 @@ export default function ParametresClient({
 
   const [valeurs, setValeurs] = useState<Parametres>(
     parametresInitial ?? {
-      id: 1,
-      nom: "MECAFORCE",
+      nom: "",
       adresse: "",
       telephone: "",
       courriel: "",

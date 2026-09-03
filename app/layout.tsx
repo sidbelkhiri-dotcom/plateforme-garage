@@ -15,8 +15,8 @@ const saira = Saira({
 });
 
 export const metadata: Metadata = {
-  title: "MECAFORCE SERVICE",
-  description: "Plateforme interne de gestion pour garage mécanique",
+  title: "Plateforme Garage",
+  description: "Plateforme de gestion pour garages mécaniques",
 };
 
 // mf-bg (sombre, mode principal) — la barre d'adresse mobile suit la

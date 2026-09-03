@@ -88,13 +88,6 @@
   }
 }
 
-/* Logo MECAFORCE SERVICE — deux fichiers (texte blanc / texte marine),
-   un seul affiché à la fois selon le thème actif. Voir components/Logo.tsx. */
-.mf-logo-sombre { display: block; }
-.mf-logo-clair { display: none; }
-:root[data-theme="light"] .mf-logo-sombre { display: none; }
-:root[data-theme="light"] .mf-logo-clair { display: block; }
-
 html,
 body {
   height: 100%;
