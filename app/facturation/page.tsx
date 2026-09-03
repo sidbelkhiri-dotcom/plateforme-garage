@@ -4,8 +4,11 @@ import FacturationClient from "./FacturationClient";
 
 export const dynamic = "force-dynamic";
 
-// Garde côté serveur, même patron que /parametres — réservé à l'admin du
-// garage.
+// Contrairement à /parametres, cette page reste accessible à tous les
+// rôles du garage (pas seulement admin) : si le garage est bloqué (voir
+// middleware.ts), n'importe quel employé peut y être redirigé et doit
+// pouvoir comprendre pourquoi — seules les actions (s'abonner, gérer)
+// restent réservées à l'admin, filtrées côté client.
 export default async function FacturationPage() {
   const supabase = createClient();
   const {
@@ -15,13 +18,13 @@ export default async function FacturationPage() {
   if (!user) redirect("/login");
 
   const { data: profil } = await supabase.from("profiles").select("role, garage_id").eq("id", user.id).single();
-  if (profil?.role !== "admin") redirect("/");
+  if (!profil?.garage_id) redirect("/");
 
   const { data: garage } = await supabase
     .from("garages")
-    .select("nom, abonnement_statut, stripe_customer_id")
+    .select("nom, statut, abonnement_statut, stripe_customer_id")
     .eq("id", profil.garage_id)
     .single();
 
-  return <FacturationClient garageInitial={garage ?? null} />;
+  return <FacturationClient garageInitial={garage ?? null} estAdmin={profil.role === "admin"} />;
 }

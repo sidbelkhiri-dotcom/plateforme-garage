@@ -48,14 +48,40 @@ export async function middleware(request: NextRequest) {
   // plus aucune policy RLS) — ce contrôle n'est qu'un confort d'affichage,
   // pour éviter à un employé congédié de voir un tableau de bord vide et
   // confus plutôt qu'un message clair (audit du 18 août, point 15).
+  const isPageFacturation = request.nextUrl.pathname.startsWith("/facturation");
   if (user && !isLoginPage && !isPageAccueil && !isPageInscription) {
-    const { data: profil } = await supabase.from("profiles").select("actif").eq("id", user.id).single();
+    const { data: profil } = await supabase
+      .from("profiles")
+      .select("actif, garages(statut, abonnement_statut)")
+      .eq("id", user.id)
+      .single();
     if (profil && !profil.actif) {
       await supabase.auth.signOut();
       const url = request.nextUrl.clone();
       url.pathname = "/login";
       url.searchParams.set("desactive", "1");
       return NextResponse.redirect(url);
+    }
+
+    // Même logique de confort d'affichage : le garage lui-même peut être
+    // bloqué (suspendu par le super-admin, ou abonnement Stripe en échec).
+    // /facturation reste toujours accessible pour permettre de régler le
+    // problème (ou de contacter l'admin du garage, voir FacturationClient).
+    const garage = profil?.garages as unknown as { statut: string; abonnement_statut: string | null } | null;
+    const STATUTS_ABONNEMENT_BLOQUANTS = ["past_due", "canceled", "unpaid", "incomplete_expired"];
+    const garageBloque =
+      garage &&
+      (garage.statut !== "actif" ||
+        (garage.abonnement_statut !== null && STATUTS_ABONNEMENT_BLOQUANTS.includes(garage.abonnement_statut)));
+
+    if (garageBloque && !isPageFacturation) {
+      const { data: estAdmin } = await supabase.rpc("est_admin_plateforme");
+      if (!estAdmin) {
+        const url = request.nextUrl.clone();
+        url.pathname = "/facturation";
+        url.searchParams.set("bloque", "1");
+        return NextResponse.redirect(url);
+      }
     }
   }
 

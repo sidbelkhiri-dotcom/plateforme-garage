@@ -1,20 +1,31 @@
 "use client";
 
-import { useState } from "react";
-import { CreditCard } from "lucide-react";
+import { Suspense, useState } from "react";
+import { useSearchParams } from "next/navigation";
+import { CreditCard, AlertTriangle } from "lucide-react";
 import { useToast } from "@/components/ui/ToastProvider";
 import Bouton from "@/components/ui/Bouton";
 import Badge, { type ToneBadge } from "@/components/ui/Badge";
 
-type AbonnementStatut = "trialing" | "active" | "past_due" | "canceled" | "unpaid" | "incomplete" | "incomplete_expired" | null;
+type AbonnementStatut =
+  | "trialing"
+  | "active"
+  | "past_due"
+  | "canceled"
+  | "unpaid"
+  | "incomplete"
+  | "incomplete_expired"
+  | null;
+type StatutGarage = "actif" | "suspendu" | "resilie";
 
 type Garage = {
   nom: string;
+  statut: StatutGarage;
   abonnement_statut: AbonnementStatut;
   stripe_customer_id: string | null;
 };
 
-const TON_STATUT: Record<string, ToneBadge> = {
+const TON_STATUT_ABONNEMENT: Record<string, ToneBadge> = {
   trialing: "ambre",
   active: "emeraude",
   past_due: "rouge",
@@ -24,7 +35,7 @@ const TON_STATUT: Record<string, ToneBadge> = {
   incomplete_expired: "ardoise",
 };
 
-const LABEL_STATUT: Record<string, string> = {
+const LABEL_STATUT_ABONNEMENT: Record<string, string> = {
   trialing: "Essai gratuit",
   active: "Actif",
   past_due: "Paiement en retard",
@@ -34,11 +45,26 @@ const LABEL_STATUT: Record<string, string> = {
   incomplete_expired: "Expiré",
 };
 
-// L'abonnement_statut n'est encore qu'informatif (voir la migration
-// 2026-09-19) : rien ne bloque automatiquement l'accès à l'application
-// si le paiement échoue — cette page sert seulement à s'abonner et à
-// gérer l'abonnement existant.
-export default function FacturationClient({ garageInitial }: { garageInitial: Garage | null }) {
+const LABEL_STATUT_GARAGE: Record<StatutGarage, string> = {
+  actif: "Actif",
+  suspendu: "Suspendu",
+  resilie: "Résilié",
+};
+
+export default function FacturationClient(props: { garageInitial: Garage | null; estAdmin: boolean }) {
+  return (
+    <Suspense fallback={null}>
+      <FacturationContenu {...props} />
+    </Suspense>
+  );
+}
+
+// Accessible à tout employé du garage, pas seulement l'admin (voir
+// page.tsx) : quelqu'un redirigé ici par le blocage du middleware doit
+// comprendre pourquoi, même s'il ne peut rien faire lui-même.
+function FacturationContenu({ garageInitial, estAdmin }: { garageInitial: Garage | null; estAdmin: boolean }) {
+  const searchParams = useSearchParams();
+  const bloque = searchParams.get("bloque") === "1";
   const { afficher } = useToast();
   const [enCours, setEnCours] = useState(false);
 
@@ -68,7 +94,8 @@ export default function FacturationClient({ garageInitial }: { garageInitial: Ga
     }
   }
 
-  const statut = garageInitial?.abonnement_statut ?? null;
+  const abonnementStatut = garageInitial?.abonnement_statut ?? null;
+  const garageSuspendu = garageInitial != null && garageInitial.statut !== "actif";
 
   return (
     <div className="p-6 max-w-lg">
@@ -79,15 +106,38 @@ export default function FacturationClient({ garageInitial }: { garageInitial: Ga
         <p className="text-sm text-mf-text-2">Abonnement de {garageInitial?.nom ?? "votre garage"}</p>
       </div>
 
+      {bloque && (
+        <div className="mb-4 flex items-start gap-3 bg-mf-red-soft text-mf-red border border-mf-red/30 rounded-mf-md p-4 text-sm">
+          <AlertTriangle className="w-4 h-4 shrink-0 mt-0.5" />
+          <span>
+            {garageSuspendu
+              ? "Ce garage a été suspendu — l'accès à l'application est bloqué."
+              : "L'accès à l'application a été suspendu suite à un problème avec l'abonnement."}
+          </span>
+        </div>
+      )}
+
       <div className="bg-mf-surface border border-mf-border rounded-mf-lg p-6">
         <div className="flex items-center justify-between mb-4">
           <span className="text-sm font-medium text-mf-text-3 uppercase tracking-wide">Statut</span>
-          <Badge tone={statut ? TON_STATUT[statut] : "ardoise"}>
-            {statut ? LABEL_STATUT[statut] : "Aucun abonnement"}
-          </Badge>
+          {garageSuspendu ? (
+            <Badge tone="rouge">{LABEL_STATUT_GARAGE[garageInitial!.statut]}</Badge>
+          ) : (
+            <Badge tone={abonnementStatut ? TON_STATUT_ABONNEMENT[abonnementStatut] : "ardoise"}>
+              {abonnementStatut ? LABEL_STATUT_ABONNEMENT[abonnementStatut] : "Aucun abonnement"}
+            </Badge>
+          )}
         </div>
 
-        {garageInitial?.stripe_customer_id ? (
+        {garageSuspendu ? (
+          <p className="text-sm text-mf-text-2">
+            Ce garage a été suspendu par la plateforme — contacte le support pour le réactiver.
+          </p>
+        ) : !estAdmin ? (
+          <p className="text-sm text-mf-text-2">
+            Seul l'administrateur du garage peut gérer l'abonnement — contacte-le.
+          </p>
+        ) : garageInitial?.stripe_customer_id ? (
           <Bouton onClick={ouvrirPortail} enEnvoi={enCours} className="w-full">
             Gérer mon abonnement
           </Bouton>
