@@ -20,15 +20,18 @@ export async function POST(request: Request) {
 
   const origin = new URL(request.url).origin;
 
-  const session = await getStripe().checkout.sessions.create({
-    mode: "subscription",
-    line_items: [{ price: process.env.STRIPE_PRICE_ID!, quantity: 1 }],
-    client_reference_id: profil.garage_id,
-    customer_email: user.email,
-    subscription_data: { trial_period_days: 14, metadata: { garage_id: profil.garage_id } },
-    success_url: `${origin}/facturation?succes=1`,
-    cancel_url: `${origin}/facturation`,
-  });
-
-  return NextResponse.json({ url: session.url });
+  try {
+    const session = await getStripe().checkout.sessions.create({
+      mode: "subscription",
+      line_items: [{ price: process.env.STRIPE_PRICE_ID!, quantity: 1 }],
+      client_reference_id: profil.garage_id,
+      customer_email: user.email,
+      subscription_data: { trial_period_days: 14, metadata: { garage_id: profil.garage_id } },
+      success_url: `${origin}/facturation?succes=1`,
+      cancel_url: `${origin}/facturation`,
+    });
+    return NextResponse.json({ url: session.url });
+  } catch (err) {
+    return NextResponse.json({ erreur: (err as Error).message }, { status: 500 });
+  }
 }

@@ -27,10 +27,13 @@ export async function POST(request: Request) {
   }
 
   const origin = new URL(request.url).origin;
-  const session = await getStripe().billingPortal.sessions.create({
-    customer: garage.stripe_customer_id,
-    return_url: `${origin}/facturation`,
-  });
-
-  return NextResponse.json({ url: session.url });
+  try {
+    const session = await getStripe().billingPortal.sessions.create({
+      customer: garage.stripe_customer_id,
+      return_url: `${origin}/facturation`,
+    });
+    return NextResponse.json({ url: session.url });
+  } catch (err) {
+    return NextResponse.json({ erreur: (err as Error).message }, { status: 500 });
+  }
 }
