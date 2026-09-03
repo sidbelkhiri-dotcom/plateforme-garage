@@ -98,6 +98,12 @@ function FormulaireConnexion() {
         >
           {loading ? "Connexion..." : "Se connecter"}
         </button>
+        <p className="text-center text-xs text-mf-text-3 mt-4">
+          Nouveau garage ?{" "}
+          <a href="/inscription" className="text-mf-blue hover:underline">
+            Créer un compte
+          </a>
+        </p>
       </form>
     </div>
   );

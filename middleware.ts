@@ -30,8 +30,11 @@ export async function middleware(request: NextRequest) {
   // /accueil : borne d'enregistrement client, accessible sans connexion
   // (QR code au comptoir ou tablette dans l'atelier).
   const isPageAccueil = request.nextUrl.pathname.startsWith("/accueil");
+  // /inscription : création de compte + garage self-service, accessible
+  // sans connexion (c'est tout son but).
+  const isPageInscription = request.nextUrl.pathname.startsWith("/inscription");
 
-  if (!user && !isLoginPage && !isPageAccueil) {
+  if (!user && !isLoginPage && !isPageAccueil && !isPageInscription) {
     const url = request.nextUrl.clone();
     url.pathname = "/login";
     return NextResponse.redirect(url);
@@ -41,7 +44,7 @@ export async function middleware(request: NextRequest) {
   // plus aucune policy RLS) — ce contrôle n'est qu'un confort d'affichage,
   // pour éviter à un employé congédié de voir un tableau de bord vide et
   // confus plutôt qu'un message clair (audit du 18 août, point 15).
-  if (user && !isLoginPage && !isPageAccueil) {
+  if (user && !isLoginPage && !isPageAccueil && !isPageInscription) {
     const { data: profil } = await supabase.from("profiles").select("actif").eq("id", user.id).single();
     if (profil && !profil.actif) {
       await supabase.auth.signOut();
@@ -52,7 +55,7 @@ export async function middleware(request: NextRequest) {
     }
   }
 
-  if (user && isLoginPage) {
+  if (user && (isLoginPage || isPageInscription)) {
     const url = request.nextUrl.clone();
     url.pathname = "/";
     return NextResponse.redirect(url);
