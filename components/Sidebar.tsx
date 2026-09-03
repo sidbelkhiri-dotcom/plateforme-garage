@@ -34,7 +34,13 @@ export default function Sidebar() {
   const { estAdmin, peutGererClients } = useProfil();
   const nouvellesArrivees = useNouvellesArrivees(peutGererClients);
   const demandesRdv = useDemandesRendezVous(peutGererClients);
-  if (pathname === "/login" || pathname === "/inscription" || pathname.startsWith("/accueil")) return null;
+  if (
+    pathname === "/login" ||
+    pathname === "/inscription" ||
+    pathname.startsWith("/accueil") ||
+    pathname.startsWith("/inspection/")
+  )
+    return null;
 
   const liensNav = (
     <nav className="flex-1 py-3">

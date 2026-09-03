@@ -380,6 +380,12 @@ export default function BonTravailDetailPage() {
             >
               <FileSignature className="w-3.5 h-3.5" /> Évaluation imprimable
             </Link>
+            <Link
+              href={`/bons-travail/${bon.id}/inspection`}
+              className="flex items-center gap-1.5 text-xs font-semibold text-mf-blue-hover hover:text-mf-blue min-h-[44px]"
+            >
+              <Camera className="w-3.5 h-3.5" /> Inspection
+            </Link>
             <Badge tone={TON_STATUT[bon.statut]}>{LABEL_STATUT[bon.statut]}</Badge>
           </div>
         </div>

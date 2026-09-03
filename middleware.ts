@@ -37,8 +37,12 @@ export async function middleware(request: NextRequest) {
   // navigateur avec une session — la signature Stripe est le seul verrou
   // (voir app/api/webhooks/stripe/route.ts).
   const isWebhookStripe = request.nextUrl.pathname.startsWith("/api/webhooks/stripe");
+  // /inspection/[jeton] : page publique client, sans compte — le jeton
+  // dans l'URL est le seul verrou (fonctions security definer, voir
+  // migration 2026-08-25_inspection_numerique.sql).
+  const isPageInspectionPublique = request.nextUrl.pathname.startsWith("/inspection/");
 
-  if (!user && !isLoginPage && !isPageAccueil && !isPageInscription && !isWebhookStripe) {
+  if (!user && !isLoginPage && !isPageAccueil && !isPageInscription && !isWebhookStripe && !isPageInspectionPublique) {
     const url = request.nextUrl.clone();
     url.pathname = "/login";
     return NextResponse.redirect(url);
@@ -49,7 +53,7 @@ export async function middleware(request: NextRequest) {
   // pour éviter à un employé congédié de voir un tableau de bord vide et
   // confus plutôt qu'un message clair (audit du 18 août, point 15).
   const isPageFacturation = request.nextUrl.pathname.startsWith("/facturation");
-  if (user && !isLoginPage && !isPageAccueil && !isPageInscription) {
+  if (user && !isLoginPage && !isPageAccueil && !isPageInscription && !isPageInspectionPublique) {
     const { data: profil } = await supabase
       .from("profiles")
       .select("actif, garages(statut, abonnement_statut)")
