@@ -3,7 +3,7 @@
 import { useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { LayoutDashboard, Menu, X, Users, Calendar, CalendarClock, ClipboardList, Package, Settings, UserPlus, Receipt, Car } from "lucide-react";
+import { LayoutDashboard, Menu, X, Users, Calendar, CalendarClock, ClipboardList, Package, Settings, UserPlus, Receipt, Car, CreditCard } from "lucide-react";
 import LogoutButton from "./LogoutButton";
 import ThemeToggle from "./ThemeToggle";
 import Logo from "./Logo";
@@ -25,6 +25,7 @@ const nav = [
   { href: "/inventaire", label: "Inventaire", icon: Package, adminSeulement: false, receptionSeulement: false },
   { href: "/vehicules-stock", label: "Véhicules en stock", icon: Car, adminSeulement: false, receptionSeulement: false },
   { href: "/parametres", label: "Paramètres", icon: Settings, adminSeulement: true, receptionSeulement: false },
+  { href: "/facturation", label: "Facturation", icon: CreditCard, adminSeulement: true, receptionSeulement: false },
 ];
 
 export default function Sidebar() {

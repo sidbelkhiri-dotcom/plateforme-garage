@@ -33,8 +33,12 @@ export async function middleware(request: NextRequest) {
   // /inscription : création de compte + garage self-service, accessible
   // sans connexion (c'est tout son but).
   const isPageInscription = request.nextUrl.pathname.startsWith("/inscription");
+  // Webhook Stripe : appelé par les serveurs de Stripe, jamais par un
+  // navigateur avec une session — la signature Stripe est le seul verrou
+  // (voir app/api/webhooks/stripe/route.ts).
+  const isWebhookStripe = request.nextUrl.pathname.startsWith("/api/webhooks/stripe");
 
-  if (!user && !isLoginPage && !isPageAccueil && !isPageInscription) {
+  if (!user && !isLoginPage && !isPageAccueil && !isPageInscription && !isWebhookStripe) {
     const url = request.nextUrl.clone();
     url.pathname = "/login";
     return NextResponse.redirect(url);
