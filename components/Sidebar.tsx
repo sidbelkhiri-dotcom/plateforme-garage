@@ -7,6 +7,7 @@ import { LayoutDashboard, Menu, X, Users, Calendar, CalendarClock, ClipboardList
 import LogoutButton from "./LogoutButton";
 import ThemeToggle from "./ThemeToggle";
 import Logo from "./Logo";
+import SelecteurGarageAdmin from "./SelecteurGarageAdmin";
 import { useProfil } from "@/lib/useProfil";
 import { useNouvellesArrivees } from "@/lib/useNouvellesArrivees";
 import { useDemandesRendezVous } from "@/lib/useDemandesRendezVous";
@@ -105,6 +106,7 @@ export default function Sidebar() {
                 <X className="w-5 h-5" />
               </button>
             </div>
+            <SelecteurGarageAdmin />
             {liensNav}
             <div className="border-t border-mf-border">
               <ThemeToggle />
@@ -125,6 +127,7 @@ export default function Sidebar() {
           <Logo height={22} />
           <div className="text-[10px] text-mf-text-3 tracking-wide mt-1.5">GESTION D'ATELIER</div>
         </div>
+        <SelecteurGarageAdmin />
         {liensNav}
         <div className="border-t border-mf-border">
           <ThemeToggle />
