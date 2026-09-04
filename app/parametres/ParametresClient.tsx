@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
-import { Building2, ShieldQuestion, Wrench as WrenchIcon, UserCog } from "lucide-react";
+import { Building2, ShieldQuestion, Wrench as WrenchIcon, UserCog, Star } from "lucide-react";
 import Champ from "@/components/ui/Champ";
 import Selecteur from "@/components/ui/Selecteur";
 import Bouton from "@/components/ui/Bouton";
@@ -21,6 +21,7 @@ type Parametres = {
   validite_evaluation_jours: number;
   garantie_mois: number;
   garantie_km: number;
+  lien_avis_google: string | null;
 };
 
 type Profil = {
@@ -66,6 +67,7 @@ export default function ParametresClient({
       validite_evaluation_jours: 30,
       garantie_mois: 3,
       garantie_km: 5000,
+      lien_avis_google: "",
     }
   );
   const [enregistrement, setEnregistrement] = useState(false);
@@ -97,6 +99,7 @@ export default function ParametresClient({
         validite_evaluation_jours: Number(valeurs.validite_evaluation_jours) || 30,
         garantie_mois: Number(valeurs.garantie_mois) || 3,
         garantie_km: Number(valeurs.garantie_km) || 5000,
+        lien_avis_google: valeurs.lien_avis_google || null,
       });
     setEnregistrement(false);
     if (error) {
@@ -192,6 +195,19 @@ export default function ParametresClient({
             onChange={(e) => definir("garantie_km", Number(e.target.value) as any)}
           />
         </div>
+
+        <h2 className="font-display font-bold text-sm uppercase tracking-wide flex items-center gap-2 mt-3 mb-1 text-mf-text">
+          <Star className="w-4 h-4" /> Avis Google
+        </h2>
+        <Champ
+          label="Lien vers la fiche Google du garage"
+          value={valeurs.lien_avis_google ?? ""}
+          onChange={(e) => definir("lien_avis_google", e.target.value)}
+        />
+        <p className="text-xs text-mf-text-3 -mt-2">
+          Utilisé par le bouton « Demander un avis » sur une facture — cherchez votre garage sur Google, cliquez «
+          Rédiger un avis », et copiez l'URL affichée.
+        </p>
 
         {erreur && <MessageErreur>{erreur}</MessageErreur>}
         <Bouton type="submit" enEnvoi={enregistrement} className="w-fit mt-1">

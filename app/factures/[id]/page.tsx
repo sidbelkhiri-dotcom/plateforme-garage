@@ -5,6 +5,7 @@ import { createClient } from "@/lib/supabase/server";
 import { formatDateLong } from "@/lib/dates";
 import BoutonImprimer from "@/components/BoutonImprimer";
 import BoutonEnvoyerCourriel from "@/components/BoutonEnvoyerCourriel";
+import BoutonDemanderAvis from "@/components/BoutonDemanderAvis";
 
 const LABEL_ETAT: Record<string, string> = {
   neuve: "Neuve",
@@ -72,6 +73,11 @@ export default async function FacturePage({ params }: { params: { id: string } }
             clientEmail={client?.email ?? null}
             envoyeeLe={facture.envoyee_le}
             sansTaxe={facture.sans_taxe}
+          />
+          <BoutonDemanderAvis
+            factureId={facture.id}
+            clientEmail={client?.email ?? null}
+            lienAvisConfigure={!!garage?.lien_avis_google}
           />
           <BoutonImprimer />
         </div>
