@@ -1,0 +1,8 @@
+{
+  "crons": [
+    {
+      "path": "/api/cron/rappels-rendez-vous",
+      "schedule": "0 13 * * *"
+    }
+  ]
+}

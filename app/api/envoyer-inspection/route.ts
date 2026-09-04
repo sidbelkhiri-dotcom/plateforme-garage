@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
 import { envoyerCourriel } from "@/lib/courriel";
+import { envoyerSms, smsConfigure } from "@/lib/sms";
 
 function echapperHtml(valeur: unknown): string {
   return String(valeur ?? "")
@@ -44,12 +45,14 @@ export async function POST(request: NextRequest) {
   }
 
   const [{ data: client }, { data: garage }] = await Promise.all([
-    bon.client_id ? supabase.from("clients").select("nom, email").eq("id", bon.client_id).single() : Promise.resolve({ data: null }),
+    bon.client_id
+      ? supabase.from("clients").select("nom, email, telephone").eq("id", bon.client_id).single()
+      : Promise.resolve({ data: null }),
     supabase.from("garages").select("nom").eq("id", inspection.garage_id).single(),
   ]);
 
-  if (!client?.email) {
-    return NextResponse.json({ error: "Ce client n'a pas d'adresse courriel enregistrée." }, { status: 400 });
+  if (!client?.email && !client?.telephone) {
+    return NextResponse.json({ error: "Ce client n'a ni courriel ni téléphone enregistré." }, { status: 400 });
   }
 
   const nomGarage = garage?.nom ?? "Votre garage";
@@ -71,14 +74,28 @@ export async function POST(request: NextRequest) {
     <p style="margin-top:24px;">Merci de votre confiance,<br>${echapperHtml(nomGarage)}</p>
   </div>`;
 
-  const envoi = await envoyerCourriel({
-    destinataire: client.email,
-    nomExpediteur: nomGarage,
-    sujet: `Inspection de votre véhicule — ${bon.numero} — ${nomGarage}`,
-    html,
-  });
-  if (!envoi.ok) {
-    return NextResponse.json({ error: envoi.erreur }, { status: envoi.statut });
+  const resultats: { canal: "courriel" | "sms"; ok: boolean; erreur?: string }[] = [];
+
+  if (client.email) {
+    const envoi = await envoyerCourriel({
+      destinataire: client.email,
+      nomExpediteur: nomGarage,
+      sujet: `Inspection de votre véhicule — ${bon.numero} — ${nomGarage}`,
+      html,
+    });
+    resultats.push({ canal: "courriel", ok: envoi.ok, erreur: envoi.ok ? undefined : envoi.erreur });
+  }
+
+  if (client.telephone && smsConfigure()) {
+    const message = `${nomGarage} : voici le lien pour consulter et approuver l'inspection de votre véhicule (${bon.numero}) : ${lien}`;
+    const envoi = await envoyerSms({ destinataire: client.telephone, message });
+    resultats.push({ canal: "sms", ok: envoi.ok, erreur: envoi.ok ? undefined : envoi.erreur });
+  }
+
+  const auMoinsUnEnvoiReussi = resultats.some((r) => r.ok);
+  if (!auMoinsUnEnvoiReussi) {
+    const erreurs = resultats.map((r) => r.erreur).filter(Boolean).join(" / ") || "Aucun canal d'envoi disponible.";
+    return NextResponse.json({ error: erreurs }, { status: 502 });
   }
 
   // Un renvoi ne doit jamais faire régresser le statut (ex: le client a
@@ -91,5 +108,12 @@ export async function POST(request: NextRequest) {
     })
     .eq("id", inspectionId);
 
-  return NextResponse.json({ ok: true, envoyeeA: client.email });
+  const envoyeeA = [
+    resultats.find((r) => r.canal === "courriel" && r.ok) ? client.email : null,
+    resultats.find((r) => r.canal === "sms" && r.ok) ? client.telephone : null,
+  ]
+    .filter(Boolean)
+    .join(" et ");
+
+  return NextResponse.json({ ok: true, envoyeeA, resultats });
 }

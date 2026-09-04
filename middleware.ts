@@ -41,8 +41,11 @@ export async function middleware(request: NextRequest) {
   // dans l'URL est le seul verrou (fonctions security definer, voir
   // migration 2026-08-25_inspection_numerique.sql).
   const isPageInspectionPublique = request.nextUrl.pathname.startsWith("/inspection/");
+  // Tâche programmée (Vercel Cron) : aucune session utilisateur possible,
+  // CRON_SECRET est le seul verrou (voir app/api/cron/.../route.ts).
+  const isCron = request.nextUrl.pathname.startsWith("/api/cron/");
 
-  if (!user && !isLoginPage && !isPageAccueil && !isPageInscription && !isWebhookStripe && !isPageInspectionPublique) {
+  if (!user && !isLoginPage && !isPageAccueil && !isPageInscription && !isWebhookStripe && !isPageInspectionPublique && !isCron) {
     const url = request.nextUrl.clone();
     url.pathname = "/login";
     return NextResponse.redirect(url);
