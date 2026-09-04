@@ -100,7 +100,13 @@ export default function ParametresClient({
         garantie_mois: Number(valeurs.garantie_mois) || 3,
         garantie_km: Number(valeurs.garantie_km) || 5000,
         lien_avis_google: valeurs.lien_avis_google || null,
-      });
+      })
+      // Supabase/PostgREST exige un filtre explicite sur un update, même
+      // quand la RLS restreint déjà à une seule ligne (garage_actuel()) —
+      // sans ça : "UPDATE requires a WHERE clause". garage_id n'est
+      // jamais null, donc ce filtre ne change rien à la ligne visée, il
+      // satisfait juste cette exigence.
+      .not("garage_id", "is", null);
     setEnregistrement(false);
     if (error) {
       setErreur(error.message);
