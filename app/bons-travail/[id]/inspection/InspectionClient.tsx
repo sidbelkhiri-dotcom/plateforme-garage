@@ -127,6 +127,12 @@ export default function InspectionClient({
         i ? { ...i, statut: i.statut === "brouillon" ? "envoyee" : i.statut, envoyee_le: new Date().toISOString() } : i
       );
       afficher({ titre: "Lien envoyé", description: `Envoyé à ${data.envoyeeA}`, severite: "success" });
+      const echecSms = (data.resultats as { canal: string; ok: boolean; erreur?: string }[] | undefined)?.find(
+        (r) => r.canal === "sms" && !r.ok
+      );
+      if (echecSms) {
+        afficher({ titre: "Texto non envoyé", description: echecSms.erreur, severite: "warning" });
+      }
     } catch (e) {
       afficher({ titre: "Impossible d'envoyer", description: (e as Error).message, severite: "danger" });
     } finally {
