@@ -199,5 +199,13 @@ function construireHtml({
     </p>
 
     <p style="margin-top:24px;">Merci de votre confiance,<br>${echapperHtml(nomGarage)}</p>
+
+    ${
+      garage?.lien_avis_google
+        ? `<p style="margin-top:20px;padding-top:16px;border-top:1px solid #e5e5e5;color:#555;font-size:12px;">
+             Si vous avez apprécié notre service, <a href="${echapperHtml(garage.lien_avis_google)}" style="color:#0B5BE8;">un avis Google</a> nous aide énormément.
+           </p>`
+        : ""
+    }
   </div>`;
 }
