@@ -119,8 +119,12 @@ export default function FormulaireLigneBon({
     const nouveauxChemins: string[] = [];
     for (const fichier of Array.from(fichiers)) {
       // Préfixe garage_id — voir FormulaireVehiculeStock.tsx pour la
-      // même logique côté RLS Storage.
-      const chemin = `${profil?.garage_id}/${crypto.randomUUID()}-${fichier.name}`;
+      // même logique côté RLS Storage. Nom d'origine jamais réutilisé
+      // (accents/apostrophes/virgules font échouer l'upload avec
+      // "Invalid key", ex. captures d'écran macOS) — seule l'extension
+      // est conservée.
+      const extension = fichier.name.includes(".") ? fichier.name.split(".").pop() : "";
+      const chemin = `${profil?.garage_id}/${crypto.randomUUID()}${extension ? `.${extension}` : ""}`;
       const { error } = await supabase.storage.from(BUCKET_FACTURES_PIECES).upload(chemin, fichier);
       if (error) {
         setErreurPhoto(error.message);

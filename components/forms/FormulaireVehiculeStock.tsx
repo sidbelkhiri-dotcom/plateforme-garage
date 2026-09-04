@@ -84,8 +84,12 @@ export default function FormulaireVehiculeStock({
     for (const fichier of Array.from(fichiers)) {
       // Préfixe garage_id : la RLS sur storage.objects vérifie ce premier
       // segment du chemin (storage.foldername(name)[1]) — sans lui, tous
-      // les garages partageraient le même espace de noms plat.
-      const chemin = `${profil?.garage_id}/${crypto.randomUUID()}-${fichier.name}`;
+      // les garages partageraient le même espace de noms plat. Nom
+      // d'origine jamais réutilisé (accents/apostrophes/virgules font
+      // échouer l'upload avec "Invalid key") — seule l'extension est
+      // conservée.
+      const extension = fichier.name.includes(".") ? fichier.name.split(".").pop() : "";
+      const chemin = `${profil?.garage_id}/${crypto.randomUUID()}${extension ? `.${extension}` : ""}`;
       const { error } = await supabase.storage.from(BUCKET_VEHICULES_STOCK).upload(chemin, fichier);
       if (error) {
         setErreurPhoto(error.message);

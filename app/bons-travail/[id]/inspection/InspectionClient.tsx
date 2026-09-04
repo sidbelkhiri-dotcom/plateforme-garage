@@ -148,7 +148,12 @@ export default function InspectionClient({
   async function ajouterPhotos(pointId: string, fichiers: FileList | null) {
     if (!fichiers || fichiers.length === 0) return;
     for (const fichier of Array.from(fichiers)) {
-      const chemin = `${profil?.garage_id}/${crypto.randomUUID()}-${fichier.name}`;
+      // Le nom d'origine peut contenir des caractères refusés par
+      // Supabase Storage (accents, apostrophes, virgules — ex. captures
+      // d'écran macOS "Capture d'écran, le ..."), d'où "Invalid key" à
+      // l'upload. On ne garde que l'extension, jamais le nom complet.
+      const extension = fichier.name.includes(".") ? fichier.name.split(".").pop() : "";
+      const chemin = `${profil?.garage_id}/${crypto.randomUUID()}${extension ? `.${extension}` : ""}`;
       const { error: erreurUpload } = await supabase.storage.from("inspection-photos").upload(chemin, fichier);
       if (erreurUpload) {
         afficher({ titre: "Téléversement échoué", description: erreurUpload.message, severite: "danger" });
