@@ -70,11 +70,11 @@ export default async function DashboardPage() {
   const nomClient = (id: string | null) => (clients ?? []).find((c) => c.id === id)?.nom ?? "—";
 
   const stat = (label: string, value: number, Icon: any, tone: string) => (
-    <div className="bg-mf-surface rounded-mf-md border border-mf-border p-4 flex items-center gap-4">
+    <div className="bg-mf-surface rounded-mf-md border border-mf-border p-4 flex flex-col items-start gap-2 sm:flex-row sm:items-center sm:gap-4">
       <div className={`w-10 h-10 rounded-mf-sm flex items-center justify-center shrink-0 ${tone}`}>
         <Icon className="w-5 h-5" />
       </div>
-      <div>
+      <div className="min-w-0">
         <div className="text-2xl font-black leading-none text-mf-text">{value}</div>
         <div className="text-xs text-mf-text-3 uppercase tracking-wide mt-1">{label}</div>
       </div>

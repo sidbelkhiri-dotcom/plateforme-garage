@@ -83,7 +83,10 @@
 /* Mode sombre — secondaire, activé explicitement. Même famille de
    couleurs (Denim/Signal), surfaces et texte inversés. */
 :root[data-theme="dark"] {
-  --mf-bg: #0e1f2b;
+  /* Volontairement plus foncé que --mf-sidebar-bg (#0e1f2b) : sans cet
+     écart la barre latérale, dont la couleur est fixe, se confond avec
+     le contenu et n'est plus séparée que par sa bordure d'un pixel. */
+  --mf-bg: #08141d;
   --mf-surface: #16303f;
   --mf-surface-2: #1c3a4b;
   --mf-surface-3: #22394a;
