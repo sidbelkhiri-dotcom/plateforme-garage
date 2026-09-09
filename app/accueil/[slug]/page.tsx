@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { CheckCircle2, AlertTriangle } from "lucide-react";
+import { CheckCircle2, AlertTriangle, ScanSearch } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
 import { useFormulaire } from "@/lib/useFormulaire";
 import { useMarques, useModeles, useAnnees } from "@/lib/useMarquesModeles";
@@ -23,6 +23,7 @@ type Valeurs = {
   marque: string;
   modele: string;
   annee: string;
+  vin: string;
   plainte: string;
 };
 
@@ -35,6 +36,7 @@ const VALEURS_VIDES: Valeurs = {
   marque: "",
   modele: "",
   annee: "",
+  vin: "",
   plainte: "",
 };
 
@@ -56,9 +58,40 @@ export default function PageAccueil({ params }: { params: { slug: string } }) {
   const [anneeLibre, setAnneeLibre] = useState(false);
   const [envoye, setEnvoye] = useState(false);
   const [garage, setGarage] = useState<GaragePublic | null | undefined>(undefined);
+  const [decodage, setDecodage] = useState<{ enCours: boolean; erreur: string | null }>({
+    enCours: false,
+    erreur: null,
+  });
   const marques = useMarques();
   const modeles = useModeles(marqueLibre ? "" : valeurs.marque);
   const annees = useAnnees(marqueLibre ? "" : valeurs.marque, modeleLibre ? "" : valeurs.modele);
+
+  // Passe en saisie libre pour marque/modèle/année : le NIV peut décoder
+  // une valeur absente du catalogue de référence (voir FormulaireVehicule).
+  async function decoderVin() {
+    setDecodage({ enCours: true, erreur: null });
+    try {
+      const reponse = await fetch("/api/decoder-vin", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ vin: valeurs.vin }),
+      });
+      const resultat = await reponse.json();
+      if (!reponse.ok) {
+        setDecodage({ enCours: false, erreur: resultat.error ?? "Décodage impossible." });
+        return;
+      }
+      setMarqueLibre(true);
+      setModeleLibre(true);
+      setAnneeLibre(true);
+      definir("marque", resultat.marque ?? "");
+      definir("modele", resultat.modele ?? "");
+      definir("annee", resultat.annee ?? "");
+      setDecodage({ enCours: false, erreur: null });
+    } catch {
+      setDecodage({ enCours: false, erreur: "Le service de décodage ne répond pas. Réessayez." });
+    }
+  }
 
   useEffect(() => {
     supabase
@@ -81,6 +114,7 @@ export default function PageAccueil({ params }: { params: { slug: string } }) {
       modele: valeurs.modele || null,
       annee: valeurs.annee ? Number(valeurs.annee) : null,
       plaque: null,
+      vin: valeurs.vin.trim() || null,
       plainte: valeurs.plainte || null,
     };
     const reussi = await soumettre(async () => {
@@ -257,6 +291,26 @@ export default function PageAccueil({ params }: { params: { slug: string } }) {
             <option value={AUTRE}>Autre (préciser)…</option>
           </Selecteur>
         )}
+
+        <div>
+          <Champ
+            label="NIV (VIN) — facultatif"
+            value={valeurs.vin}
+            onChange={(e) => definir("vin", e.target.value.toUpperCase())}
+            placeholder="17 caractères, inscrit sur votre carte d'immatriculation"
+            maxLength={17}
+          />
+          <button
+            type="button"
+            onClick={decoderVin}
+            disabled={valeurs.vin.trim().length !== 17 || decodage.enCours}
+            className="mt-1.5 inline-flex items-center gap-1.5 text-xs font-semibold text-mf-blue-hover hover:text-mf-blue disabled:opacity-40 disabled:cursor-not-allowed"
+          >
+            <ScanSearch className="w-3.5 h-3.5" />
+            {decodage.enCours ? "Décodage en cours…" : "Remplir marque/modèle/année automatiquement"}
+          </button>
+          {decodage.erreur && <p className="text-xs text-mf-red mt-1">{decodage.erreur}</p>}
+        </div>
 
         <label className="flex flex-col gap-1 text-sm">
           <span className="font-medium text-mf-text-3 text-[11px] uppercase tracking-[0.08em]">
