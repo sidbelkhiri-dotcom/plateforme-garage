@@ -47,6 +47,16 @@ module.exports = {
         sans: ["var(--font-plex)", "system-ui", "sans-serif"],
         display: ["var(--font-archivo)", "var(--font-plex)", "system-ui", "sans-serif"],
       },
+      // La charte prescrit un corps de texte entre 15 et 17 px. `text-sm`
+      // est la taille dominante de l'application — plus de deux cents
+      // occurrences — et valait 14 px par défaut : l'interface était donc
+      // plus petite que sa propre charte. On relève le jeton plutôt que
+      // de réécrire chaque appel, et `text-base` s'aligne sur le haut de
+      // la fourchette pour que le saut entre les deux reste lisible.
+      fontSize: {
+        sm: ["0.9375rem", { lineHeight: "1.5rem" }],
+        base: ["1.0625rem", { lineHeight: "1.7rem" }],
+      },
       borderRadius: {
         "mf-sm": "var(--mf-radius-sm)",
         "mf-md": "var(--mf-radius-md)",

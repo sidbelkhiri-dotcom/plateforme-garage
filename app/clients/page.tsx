@@ -142,7 +142,7 @@ export default function ClientsPage() {
     <div className="p-6">
       <div className="flex items-center justify-between mb-4 flex-wrap gap-3">
         <div>
-          <h1 className="text-xl font-display font-black uppercase tracking-wide text-mf-text">Clients</h1>
+          <h1 className="text-xl font-display font-bold uppercase tracking-wide text-mf-text">Clients</h1>
           <p className="text-sm text-mf-text-2">{clients.length} client(s)</p>
         </div>
         {peutGererClients && (

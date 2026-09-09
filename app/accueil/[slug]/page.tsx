@@ -146,7 +146,7 @@ export default function PageAccueil({ params }: { params: { slug: string } }) {
       <div className="relative min-h-screen flex items-center justify-center bg-mf-bg p-6 overflow-hidden">
         <div className="relative bg-mf-surface border border-mf-border rounded-mf-lg shadow-mf-lg p-8 w-full max-w-sm text-center">
           <CheckCircle2 className="w-12 h-12 text-mf-success mx-auto mb-3" />
-          <h1 className="font-display font-black uppercase tracking-wide text-lg mb-2 text-mf-text">Merci !</h1>
+          <h1 className="font-display font-bold uppercase tracking-wide text-lg mb-2 text-mf-text">Merci !</h1>
           <p className="text-sm text-mf-text-2">
             Vos renseignements ont été transmis. Un membre de l'équipe vous accueillera dans un instant.
           </p>

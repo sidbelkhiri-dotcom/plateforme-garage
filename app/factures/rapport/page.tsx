@@ -177,7 +177,7 @@ export default async function RapportPage({
       <div className="bg-white border border-stone-200 rounded-lg p-8 print:border-none print:p-0 text-stone-900">
         <div className="flex items-start justify-between border-b border-stone-200 pb-4 mb-6">
           <div>
-            <div className="text-lg font-black uppercase tracking-wide text-stone-900 mb-2">
+            <div className="text-lg font-bold uppercase tracking-wide text-stone-900 mb-2">
               {garage?.nom ?? "Votre garage"}
             </div>
             {garage?.adresse && <div className="text-sm text-stone-600">{garage.adresse}</div>}
@@ -190,7 +190,7 @@ export default async function RapportPage({
             )}
           </div>
           <div className="text-right">
-            <div className="text-xl font-black uppercase tracking-wide text-stone-900">Rapport de facturation</div>
+            <div className="text-xl font-bold uppercase tracking-wide text-stone-900">Rapport de facturation</div>
             <div className="text-sm text-stone-500">{intitule}</div>
             <div className="text-xs text-stone-500">Du {formatDateLong(debut)} au {formatDateLong(fin)}</div>
             <div className="text-xs text-stone-400">Imprimé le {formatDateLong(todayLocal())}</div>

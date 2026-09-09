@@ -153,7 +153,7 @@ export default function ClientDetailPage() {
 
       <div className="bg-mf-surface rounded-mf-md border border-mf-border p-5 mb-6">
         <div className="flex items-start justify-between gap-3 flex-wrap">
-          <h1 className="text-xl font-display font-black uppercase tracking-wide text-mf-text">{client.nom}</h1>
+          <h1 className="text-xl font-display font-bold uppercase tracking-wide text-mf-text">{client.nom}</h1>
           {peutGererClients && (
             <div className="flex gap-2">
               <Bouton variante="secondaire" onClick={() => setShowEditClient(true)}>

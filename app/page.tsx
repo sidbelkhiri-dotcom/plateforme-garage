@@ -69,13 +69,17 @@ export default async function DashboardPage() {
     : { data: [] };
   const nomClient = (id: string | null) => (clients ?? []).find((c) => c.id === id)?.nom ?? "—";
 
+  // L'icône ne passe à côté du texte qu'en xl : c'est la première largeur
+  // où cinq colonnes laissent assez de place. Plus tôt, le libellé se
+  // retrouvait rogné à quelques pixels au lieu de simplement passer à la
+  // ligne.
   const stat = (label: string, value: number, Icon: any, tone: string) => (
-    <div className="bg-mf-surface rounded-mf-md border border-mf-border p-4 flex flex-col items-start gap-2 sm:flex-row sm:items-center sm:gap-4">
+    <div className="bg-mf-surface rounded-mf-md border border-mf-border p-4 flex flex-col items-start gap-2 xl:flex-row xl:items-center xl:gap-4">
       <div className={`w-10 h-10 rounded-mf-sm flex items-center justify-center shrink-0 ${tone}`}>
         <Icon className="w-5 h-5" />
       </div>
       <div className="min-w-0">
-        <div className="text-2xl font-black leading-none text-mf-text">{value}</div>
+        <div className="text-2xl font-bold leading-none text-mf-text">{value}</div>
         <div className="text-xs text-mf-text-3 uppercase tracking-wide mt-1">{label}</div>
       </div>
     </div>
@@ -83,12 +87,12 @@ export default async function DashboardPage() {
 
   return (
     <div className="p-6">
-      <h1 className="text-xl font-display font-black uppercase tracking-wide mb-1 text-mf-text">Tableau de bord</h1>
+      <h1 className="text-xl font-display font-bold uppercase tracking-wide mb-1 text-mf-text">Tableau de bord</h1>
       <p className="text-sm text-mf-text-2 mb-6">
         Bonjour {profil?.nom ?? user?.email} — voici l'atelier aujourd'hui.
       </p>
 
-      <div className="grid grid-cols-2 md:grid-cols-5 gap-4 mb-6">
+      <div className="grid grid-cols-2 md:grid-cols-3 xl:grid-cols-5 gap-4 mb-6">
         {stat("RDV aujourd'hui", rdv?.length ?? 0, Calendar, "bg-mf-navy text-white")}
         {stat("À l'atelier", enAtelier?.length ?? 0, Wrench, "bg-mf-warning-soft text-mf-warning")}
         {stat("En attente d'évaluation", enAttente?.length ?? 0, ClipboardList, "bg-mf-surface-3 text-mf-text-2")}

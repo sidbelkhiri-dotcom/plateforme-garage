@@ -70,7 +70,7 @@ export default function PageDemandesAccueil() {
   return (
     <div className="p-6">
       <div className="mb-4">
-        <h1 className="text-xl font-display font-black uppercase tracking-wide text-mf-text">Nouvelles arrivées</h1>
+        <h1 className="text-xl font-display font-bold uppercase tracking-wide text-mf-text">Nouvelles arrivées</h1>
         <p className="text-sm text-mf-text-2">{demandes.length} demande(s) en attente</p>
       </div>
 

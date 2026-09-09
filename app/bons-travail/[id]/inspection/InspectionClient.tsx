@@ -217,7 +217,7 @@ export default function InspectionClient({
 
       <div className="bg-mf-surface rounded-mf-md border border-mf-border p-5 mb-4">
         <div className="flex items-center justify-between flex-wrap gap-2">
-          <h1 className="text-xl font-black font-mono tracking-wide text-mf-text">Inspection — {bon.numero}</h1>
+          <h1 className="text-xl font-bold font-mono tracking-wide text-mf-text">Inspection — {bon.numero}</h1>
           {inspection && <Badge tone="ardoise">{LABEL_STATUT_INSPECTION[inspection.statut]}</Badge>}
         </div>
         <p className="text-sm text-mf-text-2 mt-1">

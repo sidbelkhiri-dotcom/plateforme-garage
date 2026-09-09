@@ -98,7 +98,7 @@ export default function FacturesPage() {
   return (
     <div className="p-6">
       <div className="mb-4">
-        <h1 className="text-xl font-display font-black uppercase tracking-wide text-mf-text">Factures</h1>
+        <h1 className="text-xl font-display font-bold uppercase tracking-wide text-mf-text">Factures</h1>
         <p className="text-sm text-mf-text-2">{filtrees.length} facture(s)</p>
       </div>
 

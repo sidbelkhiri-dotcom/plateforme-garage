@@ -88,7 +88,7 @@ export default function InspectionPubliquePage({ params }: { params: { jeton: st
     <div className="min-h-screen bg-mf-bg py-8 px-4">
       <div className="max-w-lg mx-auto">
         <div className="mb-6">
-          <div className="text-lg font-black uppercase tracking-wide text-mf-text">{nomGarage ?? "Votre garage"}</div>
+          <div className="text-lg font-bold uppercase tracking-wide text-mf-text">{nomGarage ?? "Votre garage"}</div>
           <p className="text-sm text-mf-text-2 mt-1">
             Voici les points relevés lors de l'inspection de votre véhicule. Approuvez ou refusez chaque réparation
             proposée.

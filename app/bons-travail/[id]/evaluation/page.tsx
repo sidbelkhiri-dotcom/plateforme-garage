@@ -95,7 +95,7 @@ export default async function EvaluationEcritePage({ params }: { params: { id: s
       <div className="bg-white border border-stone-200 rounded-lg p-8 print:border-none print:p-0 text-stone-900">
         <div className="flex items-start justify-between border-b border-stone-200 pb-4 mb-6">
           <div>
-            <div className="text-lg font-black uppercase tracking-wide text-stone-900 mb-2">
+            <div className="text-lg font-bold uppercase tracking-wide text-stone-900 mb-2">
               {garage?.nom ?? "Votre garage"}
             </div>
             {garage?.adresse && <div className="text-sm text-stone-600">{garage.adresse}</div>}
@@ -109,7 +109,7 @@ export default async function EvaluationEcritePage({ params }: { params: { id: s
             )}
           </div>
           <div className="text-right">
-            <div className="text-xl font-black uppercase tracking-wide text-stone-900">Évaluation écrite</div>
+            <div className="text-xl font-bold uppercase tracking-wide text-stone-900">Évaluation écrite</div>
             <div className="font-mono text-sm text-stone-500">{bon.numero}</div>
             <div className="text-sm text-stone-500">Date : {formatDateLong(bon.ouvert_le)}</div>
           </div>

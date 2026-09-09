@@ -86,7 +86,7 @@ export default function RendezVousPage() {
     <div className="p-6">
       <div className="flex items-center justify-between mb-4 flex-wrap gap-3">
         <div>
-          <h1 className="text-xl font-display font-black uppercase tracking-wide text-mf-text">Rendez-vous</h1>
+          <h1 className="text-xl font-display font-bold uppercase tracking-wide text-mf-text">Rendez-vous</h1>
           <p className="text-sm text-mf-text-2">
             {vue === "jour" ? formatDateLong(dateRef) : `Semaine du ${formatDateLong(debut)}`}
           </p>

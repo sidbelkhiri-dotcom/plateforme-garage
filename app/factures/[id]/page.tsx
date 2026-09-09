@@ -100,7 +100,7 @@ export default async function FacturePage({ params }: { params: { id: string } }
       <div className="bg-white border border-stone-200 rounded-lg p-8 print:border-none print:p-0 text-stone-900">
         {facture.statut === "annulee" && (
           <div className="mb-6 bg-red-50 border border-red-300 text-red-800 rounded px-4 py-3 text-sm">
-            <div className="font-black uppercase tracking-wide">
+            <div className="font-bold uppercase tracking-wide">
               {facture.sans_taxe ? "Reçu annulé" : "Facture annulée"}
             </div>
             {facture.annulee_le && <div>Le {formatDateLong(facture.annulee_le.slice(0, 10))}</div>}
@@ -109,7 +109,7 @@ export default async function FacturePage({ params }: { params: { id: string } }
         )}
         <div className="flex items-start justify-between border-b border-stone-200 pb-4 mb-6">
           <div>
-            <div className="text-lg font-black uppercase tracking-wide text-stone-900 mb-2">
+            <div className="text-lg font-bold uppercase tracking-wide text-stone-900 mb-2">
               {garage?.nom ?? "Votre garage"}
             </div>
             {garage?.adresse && <div className="text-sm text-stone-600">{garage.adresse}</div>}
@@ -123,7 +123,7 @@ export default async function FacturePage({ params }: { params: { id: string } }
             )}
           </div>
           <div className="text-right">
-            <div className="text-xl font-black uppercase tracking-wide text-stone-900">
+            <div className="text-xl font-bold uppercase tracking-wide text-stone-900">
               {facture.sans_taxe ? "Reçu de paiement" : "Facture"}
             </div>
             <div className="font-mono text-sm text-stone-500">{facture.numero}</div>

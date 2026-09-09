@@ -100,7 +100,7 @@ function FacturationContenu({ garageInitial, estAdmin }: { garageInitial: Garage
   return (
     <div className="p-6 max-w-lg">
       <div className="mb-6">
-        <h1 className="flex items-center gap-2 text-xl font-display font-black uppercase tracking-wide text-mf-text">
+        <h1 className="flex items-center gap-2 text-xl font-display font-bold uppercase tracking-wide text-mf-text">
           <CreditCard className="w-5 h-5" /> Facturation
         </h1>
         <p className="text-sm text-mf-text-2">Abonnement de {garageInitial?.nom ?? "votre garage"}</p>

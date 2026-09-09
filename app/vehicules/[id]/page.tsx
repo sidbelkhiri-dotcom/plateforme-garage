@@ -112,7 +112,7 @@ export default function VehiculeDetailPage() {
         <div className="flex items-start justify-between gap-3 flex-wrap">
           <div className="flex items-center gap-2">
             <Car className="w-5 h-5 text-mf-text-3" />
-            <h1 className="text-xl font-display font-black uppercase tracking-wide text-mf-text">
+            <h1 className="text-xl font-display font-bold uppercase tracking-wide text-mf-text">
               {vehicule.marque} {vehicule.modele}
             </h1>
           </div>

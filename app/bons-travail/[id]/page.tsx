@@ -372,7 +372,7 @@ export default function BonTravailDetailPage() {
 
       <div className="bg-mf-surface rounded-mf-md border border-mf-border p-5 mb-4">
         <div className="flex items-center justify-between flex-wrap gap-2">
-          <h1 className="text-xl font-black font-mono tracking-wide text-mf-text">{bon.numero}</h1>
+          <h1 className="text-xl font-bold font-mono tracking-wide text-mf-text">{bon.numero}</h1>
           <div className="flex items-center gap-3">
             <Link
               href={`/bons-travail/${bon.id}/evaluation`}
