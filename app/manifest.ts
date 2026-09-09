@@ -7,8 +7,8 @@ export default function manifest(): MetadataRoute.Manifest {
     description: "Plateforme de gestion pour garages mécaniques",
     start_url: "/",
     display: "standalone",
-    background_color: "#060b16",
-    theme_color: "#060b16",
+    background_color: "#f7f6f2",
+    theme_color: "#f7f6f2",
     icons: [
       { src: "/icon.svg", sizes: "any", type: "image/svg+xml" },
       { src: "/apple-icon", sizes: "180x180", type: "image/png" },

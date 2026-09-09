@@ -1,16 +1,21 @@
 import type { Metadata, Viewport } from "next";
-import { Inter, Saira } from "next/font/google";
+import { Archivo, IBM_Plex_Sans } from "next/font/google";
 import "./globals.css";
 import Sidebar from "@/components/Sidebar";
 import ToastProvider from "@/components/ui/ToastProvider";
 
 // Auto-hébergées par Next au build (next/font) — aucun appel réseau à
 // Google au chargement, donc rien à ajouter au CSP existant.
-const inter = Inter({ subsets: ["latin"], variable: "--font-inter", display: "swap" });
-const saira = Saira({
+const plex = IBM_Plex_Sans({
   subsets: ["latin"],
-  weight: ["700", "900"],
-  variable: "--font-saira",
+  weight: ["400", "500", "600"],
+  variable: "--font-plex",
+  display: "swap",
+});
+const archivo = Archivo({
+  subsets: ["latin"],
+  weight: ["600", "700"],
+  variable: "--font-archivo",
   display: "swap",
 });
 
@@ -19,18 +24,17 @@ export const metadata: Metadata = {
   description: "Plateforme de gestion pour garages mécaniques",
 };
 
-// mf-bg (sombre, mode principal) — la barre d'adresse mobile suit la
-// marque même quand la page n'a pas fini de charger le CSS.
+// mf-bg (clair, mode principal — direction « Bleu de travail ») — la
+// barre d'adresse mobile suit la marque même quand la page n'a pas fini
+// de charger le CSS.
 export const viewport: Viewport = {
-  themeColor: "#060b16",
+  themeColor: "#f7f6f2",
 };
 
 // Applique le thème AVANT le premier rendu (script bloquant, minuscule) —
-// sinon un utilisateur en mode clair verrait un flash sombre à chaque
-// chargement de page. Pas de bascule visible tant que la Phase 3 n'a pas
-// posé l'interrupteur dans la barre latérale ; par défaut : sombre
-// (« mode principal » du système de marque), sauf choix explicite
-// mémorisé en localStorage.
+// sinon un utilisateur en mode sombre verrait un flash clair à chaque
+// chargement de page. Par défaut : clair (« mode principal » du système
+// de marque), sauf choix explicite mémorisé en localStorage.
 const scriptTheme = `
 (function () {
   try {
@@ -48,7 +52,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <html lang="fr" className={`${inter.variable} ${saira.variable}`}>
+    <html lang="fr" className={`${plex.variable} ${archivo.variable}`}>
       <head>
         <script dangerouslySetInnerHTML={{ __html: scriptTheme }} />
       </head>

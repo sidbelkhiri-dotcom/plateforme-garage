@@ -3,80 +3,103 @@
 @tailwind utilities;
 
 /* ============================================================
-   Tokens de marque MECAFORCE — voir BRAND.md pour la doc complète.
-   Sombre = mode principal, posé directement sur :root. Le mode clair
-   (secondaire) s'active en posant data-theme="light" sur <html> — voir
-   le script bloquant dans app/layout.tsx, et le futur interrupteur de
-   la Phase 3. Aucune classe ne doit lire une couleur en dur : tout
-   passe par ces variables (branchées dans tailwind.config.js sous le
-   préfixe mf-*).
+   Tokens de marque Garagenda — direction « Bleu de travail ».
+   Clair = mode principal, posé directement sur :root (l'univers du
+   vêtement de travail : denim, craie, jaune signal — voir handoff de
+   design du 8 sept. 2026). Le mode sombre (secondaire) s'active en
+   posant data-theme="dark" sur <html> — voir le script bloquant dans
+   app/layout.tsx et components/ThemeToggle.tsx. Aucune classe ne doit
+   lire une couleur en dur : tout passe par ces variables (branchées
+   dans tailwind.config.js sous le préfixe mf-*).
+
+   Angles vifs partout (rayon 0) et aucune ombre portée — la hiérarchie
+   visuelle passe par les bordures et les fonds, pas par l'élévation.
+
+   --mf-sidebar-* sont des jetons FIXES, jamais redéfinis dans le bloc
+   sombre ci-dessous : la barre latérale reste toujours foncée (Encre),
+   c'est un repère de marque constant, pas une surface qui suit le
+   thème choisi.
    ============================================================ */
 :root {
-  /* Surfaces — du plus profond au plus élevé */
-  --mf-bg: #060b16;
-  --mf-surface: #0b1220;
-  --mf-surface-2: #111a2c;
-  --mf-surface-3: #18243a;
+  /* Surfaces — Papier en fond, Blanc pour les cartes/tableaux */
+  --mf-bg: #f7f6f2;
+  --mf-surface: #ffffff;
+  --mf-surface-2: #f2f0ea;
+  --mf-surface-3: #fcfbf8;
 
-  /* Bordures */
-  --mf-border: #1e2a44;
-  --mf-border-strong: #2c3b5c;
+  /* Bordures — Craie */
+  --mf-border: #e4e1d9;
+  --mf-border-strong: #d9d6ce;
 
-  /* Texte */
-  --mf-text: #f5f7fa;
-  --mf-text-2: #a8b3c7;
-  --mf-text-3: #8892a6; /* ajusté depuis #6B7890 (3.49:1 sur surface-3, sous AA) — voir BRAND.md */
+  /* Texte — Encre en primaire, Acier en secondaire */
+  --mf-text: #0e1f2b;
+  --mf-text-2: #6e7b85;
+  --mf-text-3: #8a8981;
 
-  /* Marque — mf-blue pour les remplissages (boutons, 5.71:1 en texte
-     blanc), mf-blue-hover aussi comme couleur de TEXTE bleu sur fond
-     sombre (mf-blue en texte ne fait que 3.44:1, sous AA) — voir BRAND.md */
-  --mf-blue: #0b5be8;
-  --mf-blue-hover: #2a74ff;
-  --mf-blue-soft: rgba(11, 91, 232, 0.14);
-  --mf-navy: #1b2a5c;
+  /* Marque — Denim pour les remplissages, Signal comme unique point
+     d'attention (jamais deux éléments jaunes visibles à la fois) */
+  --mf-blue: #1d5478;
+  --mf-blue-hover: #174a69;
+  --mf-blue-soft: rgba(29, 84, 120, 0.14);
+  --mf-navy: #0e1f2b;
+  --mf-signal: #e9a81c;
+  --mf-signal-soft: rgba(233, 168, 28, 0.16);
   --mf-red: #e01b24;
   --mf-red-hover: #f03a42;
   --mf-red-soft: rgba(224, 27, 36, 0.14);
 
-  /* Sémantique */
-  --mf-success: #22c55e;
-  --mf-success-soft: rgba(34, 197, 94, 0.14);
-  --mf-warning: #f59e0b;
-  --mf-warning-soft: rgba(245, 158, 11, 0.14);
+  /* Sémantique — teintes du tableau des états (voir handoff) */
+  --mf-success: #2c6a44;
+  --mf-success-soft: #dee9e0;
+  --mf-warning: #8a6206;
+  --mf-warning-soft: #f9edce;
   --mf-danger: var(--mf-red);
   --mf-info: var(--mf-blue);
 
-  /* Superposition de modale — mf-bg à 72 % (BRAND.md §6). Token dédié
-     pour que le seul rgba() du projet reste dans ce fichier, jamais
-     recopié en dur dans un composant (Modale.tsx référence var(--mf-overlay)). */
-  --mf-overlay: rgba(6, 11, 22, 0.72);
+  /* Superposition de modale — Encre à 55 % (fonctionne sur fond clair
+     comme sombre). Token dédié pour que le seul rgba() du projet reste
+     dans ce fichier, jamais recopié en dur dans un composant
+     (Modale.tsx référence var(--mf-overlay)). */
+  --mf-overlay: rgba(14, 31, 43, 0.55);
 
-  /* Rayons et élévation */
-  --mf-radius-sm: 6px;
-  --mf-radius-md: 10px;
-  --mf-radius-lg: 14px;
-  --mf-radius-pill: 999px;
-  --mf-shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.4);
-  --mf-shadow-md: 0 8px 24px rgba(0, 0, 0, 0.45);
-  --mf-shadow-lg: 0 20px 48px rgba(0, 0, 0, 0.55);
+  /* Rayons et élévation — angles vifs, aucune ombre */
+  --mf-radius-sm: 0px;
+  --mf-radius-md: 0px;
+  --mf-radius-lg: 0px;
+  --mf-radius-pill: 0px;
+  --mf-shadow-sm: none;
+  --mf-shadow-md: none;
+  --mf-shadow-lg: none;
+
+  /* Barre latérale — toujours Encre, indépendant du thème choisi */
+  --mf-sidebar-bg: #0e1f2b;
+  --mf-sidebar-text: #f7f6f2;
+  --mf-sidebar-text-2: #9fb0bc;
+  --mf-sidebar-text-3: #6e7b85;
+  --mf-sidebar-border: #22394a;
+  --mf-sidebar-icon-inactive: #55707f;
 }
 
-/* Mode clair — secondaire, activé explicitement (voir en-tête ci-dessus).
-   Couleurs de marque (bleu/navy/rouge) inchangées, seules les surfaces
-   et le texte sont remplacés. */
-:root[data-theme="light"] {
-  --mf-bg: #f4f6fa;
-  --mf-surface: #ffffff;
-  --mf-surface-2: #eff2f7;
-  --mf-surface-3: #e7ebf2;
-  --mf-border: #dde3ed;
-  --mf-border-strong: #c3ccda;
-  --mf-text: #0b1220;
-  --mf-text-2: #4a566b;
-  --mf-text-3: #5b6b85; /* ajusté depuis #6B7890 (3.97:1 sur surface-2, sous AA) — voir BRAND.md */
-  --mf-shadow-sm: 0 1px 2px rgba(15, 23, 42, 0.06);
-  --mf-shadow-md: 0 8px 24px rgba(15, 23, 42, 0.1);
-  --mf-shadow-lg: 0 20px 48px rgba(15, 23, 42, 0.16);
+/* Mode sombre — secondaire, activé explicitement. Même famille de
+   couleurs (Denim/Signal), surfaces et texte inversés. */
+:root[data-theme="dark"] {
+  --mf-bg: #0e1f2b;
+  --mf-surface: #16303f;
+  --mf-surface-2: #1c3a4b;
+  --mf-surface-3: #22394a;
+  --mf-border: #2a4657;
+  --mf-border-strong: #3a5a6d;
+  --mf-text: #f7f6f2;
+  --mf-text-2: #9fb0bc;
+  --mf-text-3: #6e7b85;
+  --mf-blue: #2c6e94;
+  --mf-blue-hover: #3d7ca0;
+  --mf-blue-soft: rgba(44, 110, 148, 0.22);
+  --mf-success: #3d8b5f;
+  --mf-success-soft: rgba(61, 139, 95, 0.18);
+  --mf-warning: #e9a81c;
+  --mf-warning-soft: rgba(233, 168, 28, 0.18);
+  --mf-overlay: rgba(0, 0, 0, 0.6);
 }
 
 @media (prefers-reduced-motion: reduce) {

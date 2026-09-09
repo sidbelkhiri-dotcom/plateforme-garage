@@ -9,7 +9,6 @@ import Champ from "@/components/ui/Champ";
 import Selecteur from "@/components/ui/Selecteur";
 import Bouton from "@/components/ui/Bouton";
 import MessageErreur from "@/components/ui/MessageErreur";
-import BrandStripes from "@/components/ui/BrandStripes";
 import Logo from "@/components/Logo";
 
 const AUTRE = "__autre__";
@@ -145,9 +144,6 @@ export default function PageAccueil({ params }: { params: { slug: string } }) {
   if (envoye) {
     return (
       <div className="relative min-h-screen flex items-center justify-center bg-mf-bg p-6 overflow-hidden">
-        <div className="pointer-events-none absolute -right-24 top-1/2 -translate-y-1/2 opacity-[0.06]">
-          <BrandStripes size={640} />
-        </div>
         <div className="relative bg-mf-surface border border-mf-border rounded-mf-lg shadow-mf-lg p-8 w-full max-w-sm text-center">
           <CheckCircle2 className="w-12 h-12 text-mf-success mx-auto mb-3" />
           <h1 className="font-display font-black uppercase tracking-wide text-lg mb-2 text-mf-text">Merci !</h1>
@@ -161,9 +157,6 @@ export default function PageAccueil({ params }: { params: { slug: string } }) {
 
   return (
     <div className="relative min-h-screen flex items-center justify-center bg-mf-bg p-6 overflow-hidden">
-      <div className="pointer-events-none absolute -right-24 top-1/2 -translate-y-1/2 opacity-[0.06]">
-        <BrandStripes size={640} />
-      </div>
       <form
         onSubmit={envoyer}
         className="relative bg-mf-surface border border-mf-border rounded-mf-lg shadow-mf-lg p-6 sm:p-8 w-full max-w-md flex flex-col gap-3"

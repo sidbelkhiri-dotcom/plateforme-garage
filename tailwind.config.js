@@ -22,6 +22,8 @@ module.exports = {
         "mf-blue-hover": "var(--mf-blue-hover)",
         "mf-blue-soft": "var(--mf-blue-soft)",
         "mf-navy": "var(--mf-navy)",
+        "mf-signal": "var(--mf-signal)",
+        "mf-signal-soft": "var(--mf-signal-soft)",
         "mf-red": "var(--mf-red)",
         "mf-red-hover": "var(--mf-red-hover)",
         "mf-red-soft": "var(--mf-red-soft)",
@@ -31,10 +33,18 @@ module.exports = {
         "mf-warning-soft": "var(--mf-warning-soft)",
         "mf-danger": "var(--mf-danger)",
         "mf-info": "var(--mf-info)",
+        // Barre latérale — toujours Encre, jamais affecté par le thème
+        // choisi (voir app/globals.css).
+        "mf-sidebar-bg": "var(--mf-sidebar-bg)",
+        "mf-sidebar-text": "var(--mf-sidebar-text)",
+        "mf-sidebar-text-2": "var(--mf-sidebar-text-2)",
+        "mf-sidebar-text-3": "var(--mf-sidebar-text-3)",
+        "mf-sidebar-border": "var(--mf-sidebar-border)",
+        "mf-sidebar-icon-inactive": "var(--mf-sidebar-icon-inactive)",
       },
       fontFamily: {
-        sans: ["var(--font-inter)", "system-ui", "sans-serif"],
-        display: ["var(--font-saira)", "var(--font-inter)", "system-ui", "sans-serif"],
+        sans: ["var(--font-plex)", "system-ui", "sans-serif"],
+        display: ["var(--font-archivo)", "var(--font-plex)", "system-ui", "sans-serif"],
       },
       borderRadius: {
         "mf-sm": "var(--mf-radius-sm)",

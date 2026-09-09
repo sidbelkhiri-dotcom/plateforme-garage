@@ -65,7 +65,7 @@ export default function SelecteurGarageAdmin() {
   if (garages === null) return null;
 
   return (
-    <div className="px-5 py-3 border-b border-mf-border">
+    <div className="px-5 py-3 border-b border-mf-sidebar-border [&_label>span:first-child]:!text-mf-sidebar-text-3">
       <Selecteur label="Garage consulté" value={selection} onChange={(e) => changer(e.target.value)}>
         <option value="">Mon garage</option>
         {garages.map((g) => (

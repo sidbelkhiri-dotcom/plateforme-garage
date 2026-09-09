@@ -59,12 +59,12 @@ export default function Sidebar() {
             onClick={() => setOuvert(false)}
             className={`relative w-full flex items-center gap-3 pl-5 pr-4 py-3 text-sm transition-colors min-h-[44px] ${
               active
-                ? "bg-mf-surface-2 text-mf-text"
-                : "text-mf-text-2 hover:bg-mf-surface-2/60 hover:text-mf-text"
+                ? "bg-mf-blue text-white font-semibold"
+                : "text-mf-sidebar-text-2 hover:bg-white/5 hover:text-mf-sidebar-text"
             }`}
           >
-            {active && <span className="absolute left-0 top-1.5 bottom-1.5 w-[3px] rounded-mf-pill bg-mf-blue" />}
-            <Icon className="w-4 h-4" />
+            {active && <span className="absolute left-0 top-0 bottom-0 w-[3px] bg-mf-signal" />}
+            <Icon className={`w-4 h-4 ${active ? "" : "text-mf-sidebar-icon-inactive"}`} />
             {n.label}
             {n.href === "/demandes-accueil" && nouvellesArrivees > 0 && (
               <span className="ml-auto flex items-center justify-center min-w-[20px] h-5 px-1 rounded-mf-pill bg-mf-red text-white text-[11px] font-bold">
@@ -86,11 +86,11 @@ export default function Sidebar() {
     <>
       {/* < 768px : barre du haut + tiroir, la barre latérale fixe ne
           tiendrait pas sur un écran de téléphone (D17). */}
-      <div className="sans-impression md:hidden flex items-center justify-between bg-mf-bg border-b border-mf-border text-mf-text px-4 h-14 shrink-0">
+      <div className="sans-impression md:hidden flex items-center justify-between bg-mf-sidebar-bg border-b border-mf-sidebar-border text-mf-sidebar-text px-4 h-14 shrink-0">
         <Logo height={18} />
         <button
           onClick={() => setOuvert(true)}
-          className="relative w-11 h-11 flex items-center justify-center -mr-2 focus:outline-none focus-visible:ring-2 focus-visible:ring-mf-blue rounded-mf-sm"
+          className="relative w-11 h-11 flex items-center justify-center -mr-2 focus:outline-none focus-visible:ring-2 focus-visible:ring-mf-blue"
           aria-label="Ouvrir le menu"
         >
           <Menu className="w-6 h-6" />
@@ -102,12 +102,12 @@ export default function Sidebar() {
 
       {ouvert && (
         <div className="md:hidden fixed inset-0 z-50 flex">
-          <div className="w-64 bg-mf-bg text-mf-text-2 flex flex-col min-h-screen border-r border-mf-border">
-            <div className="px-5 py-5 border-b border-mf-border flex items-center justify-between">
+          <div className="w-64 bg-mf-sidebar-bg text-mf-sidebar-text-2 flex flex-col min-h-screen border-r border-mf-sidebar-border">
+            <div className="px-5 py-5 border-b border-mf-sidebar-border flex items-center justify-between text-mf-sidebar-text">
               <Logo height={18} />
               <button
                 onClick={() => setOuvert(false)}
-                className="w-11 h-11 -mr-2 flex items-center justify-center text-mf-text-2 focus:outline-none focus-visible:ring-2 focus-visible:ring-mf-blue rounded-mf-sm"
+                className="w-11 h-11 -mr-2 flex items-center justify-center text-mf-sidebar-text-2 focus:outline-none focus-visible:ring-2 focus-visible:ring-mf-blue"
                 aria-label="Fermer le menu"
               >
                 <X className="w-5 h-5" />
@@ -115,7 +115,7 @@ export default function Sidebar() {
             </div>
             <SelecteurGarageAdmin />
             {liensNav}
-            <div className="border-t border-mf-border">
+            <div className="border-t border-mf-sidebar-border">
               <ThemeToggle />
               <LogoutButton />
             </div>
@@ -129,14 +129,14 @@ export default function Sidebar() {
       )}
 
       {/* ≥ 768px : barre latérale fixe, comme avant. */}
-      <aside className="sans-impression hidden md:flex w-56 bg-mf-bg text-mf-text-2 flex-col shrink-0 min-h-screen border-r border-mf-border">
-        <div className="px-5 py-5 border-b border-mf-border">
+      <aside className="sans-impression hidden md:flex w-56 bg-mf-sidebar-bg text-mf-sidebar-text-2 flex-col shrink-0 min-h-screen border-r border-mf-sidebar-border">
+        <div className="px-5 py-5 border-b border-mf-sidebar-border text-mf-sidebar-text">
           <Logo height={22} />
-          <div className="text-[10px] text-mf-text-3 tracking-wide mt-1.5">GESTION D'ATELIER</div>
+          <div className="text-[10px] text-mf-sidebar-text-3 tracking-wide mt-1.5">GESTION D'ATELIER</div>
         </div>
         <SelecteurGarageAdmin />
         {liensNav}
-        <div className="border-t border-mf-border">
+        <div className="border-t border-mf-sidebar-border">
           <ThemeToggle />
           <LogoutButton />
         </div>

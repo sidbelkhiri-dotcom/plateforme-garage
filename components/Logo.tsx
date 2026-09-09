@@ -5,7 +5,7 @@
 export default function Logo({ height = 20, className = "" }: { height?: number; className?: string }) {
   return (
     <span
-      className={`inline-flex items-center font-display font-black uppercase tracking-wide text-mf-text ${className}`}
+      className={`inline-flex items-center font-display font-black uppercase tracking-wide ${className}`}
       style={{ height, fontSize: height * 0.75, lineHeight: `${height}px` }}
     >
       Plateforme Garage

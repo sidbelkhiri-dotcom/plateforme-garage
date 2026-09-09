@@ -3,7 +3,6 @@
 import { Suspense, useEffect, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
-import BrandStripes from "@/components/ui/BrandStripes";
 import Logo from "@/components/Logo";
 
 export default function LoginPage() {
@@ -49,9 +48,6 @@ function FormulaireConnexion() {
 
   return (
     <div className="relative min-h-screen flex items-center justify-center bg-mf-bg overflow-hidden">
-      <div className="pointer-events-none absolute -right-24 top-1/2 -translate-y-1/2 opacity-[0.06]">
-        <BrandStripes size={640} />
-      </div>
       <form
         onSubmit={handleSubmit}
         className="relative bg-mf-surface border border-mf-border rounded-mf-lg shadow-mf-lg p-8 w-full max-w-sm"
