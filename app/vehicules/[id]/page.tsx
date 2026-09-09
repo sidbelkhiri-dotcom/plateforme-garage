@@ -167,7 +167,7 @@ export default function VehiculeDetailPage() {
 
       <div className="bg-mf-surface rounded-mf-md border border-mf-border p-5">
         <h2 className="font-display font-bold text-sm uppercase tracking-wide flex items-center gap-2 mb-3 text-mf-text">
-          <History className="w-4 h-4 text-mf-signal" /> Historique ({bons.length})
+          <History className="w-4 h-4 text-mf-signal-fg" /> Historique ({bons.length})
         </h2>
 
         {bons.length === 0 ? (

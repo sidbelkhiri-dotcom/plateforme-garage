@@ -44,6 +44,11 @@
   --mf-navy: #0e1f2b;
   --mf-signal: #e9a81c;
   --mf-signal-soft: rgba(233, 168, 28, 0.16);
+  /* Signal en avant-plan (pictogrammes, texte) : le jaune vif ne donne
+     que 2,1:1 sur blanc, sous le seuil de 3:1 exigé pour un élément
+     graphique. Cet ocre monte à 3,4:1. En sombre le jaune vif reprend
+     sa place, voir le bloc data-theme="dark". */
+  --mf-signal-fg: #b8820e;
   --mf-red: #e01b24;
   --mf-red-hover: #f03a42;
   --mf-red-soft: rgba(224, 27, 36, 0.14);
@@ -98,6 +103,9 @@
   --mf-blue: #2c6e94;
   --mf-blue-hover: #3d7ca0;
   --mf-blue-soft: rgba(44, 110, 148, 0.22);
+  /* Sur fond foncé le jaune vif est très lisible : il redevient la
+     couleur d'avant-plan, l'ocre du mode clair serait terne ici. */
+  --mf-signal-fg: #e9a81c;
   --mf-success: #3d8b5f;
   --mf-success-soft: rgba(61, 139, 95, 0.18);
   --mf-warning: #e9a81c;

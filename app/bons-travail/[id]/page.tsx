@@ -458,7 +458,7 @@ export default function BonTravailDetailPage() {
       {evaluations.length > 0 && (
         <div className="bg-mf-surface rounded-mf-md border border-mf-border p-5 mb-4">
           <h2 className="flex items-center gap-1.5 font-display font-bold text-sm uppercase tracking-wide mb-2 text-mf-text">
-            <History className="w-4 h-4 text-mf-signal" /> Historique d'évaluation
+            <History className="w-4 h-4 text-mf-signal-fg" /> Historique d'évaluation
           </h2>
           <div className="divide-y divide-mf-border">
             {evaluations.map((ev) => (

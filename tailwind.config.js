@@ -24,6 +24,7 @@ module.exports = {
         "mf-navy": "var(--mf-navy)",
         "mf-signal": "var(--mf-signal)",
         "mf-signal-soft": "var(--mf-signal-soft)",
+        "mf-signal-fg": "var(--mf-signal-fg)",
         "mf-red": "var(--mf-red)",
         "mf-red-hover": "var(--mf-red-hover)",
         "mf-red-soft": "var(--mf-red-soft)",

@@ -99,7 +99,7 @@ export default async function DashboardPage() {
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         <div className="bg-mf-surface rounded-mf-md border border-mf-border p-4">
           <h2 className="font-display font-bold text-sm uppercase tracking-wide flex items-center gap-2 mb-3 text-mf-text">
-            <Calendar className="w-4 h-4 text-mf-signal" /> Rendez-vous du jour
+            <Calendar className="w-4 h-4 text-mf-signal-fg" /> Rendez-vous du jour
           </h2>
           {!rdv || rdv.length === 0 ? (
             <p className="text-sm text-mf-text-2">Aucun rendez-vous aujourd'hui.</p>
@@ -124,7 +124,7 @@ export default async function DashboardPage() {
 
         <div className="bg-mf-surface rounded-mf-md border border-mf-border p-4">
           <h2 className="font-display font-bold text-sm uppercase tracking-wide flex items-center gap-2 mb-3 text-mf-text">
-            <Wrench className="w-4 h-4 text-mf-signal" /> Véhicules à l'atelier
+            <Wrench className="w-4 h-4 text-mf-signal-fg" /> Véhicules à l'atelier
           </h2>
           {!enAtelier || enAtelier.length === 0 ? (
             <p className="text-sm text-mf-text-2">Rien en cours actuellement.</p>
@@ -147,7 +147,7 @@ export default async function DashboardPage() {
 
         <div className="bg-mf-surface rounded-mf-md border border-mf-border p-4">
           <h2 className="font-display font-bold text-sm uppercase tracking-wide flex items-center gap-2 mb-3 text-mf-text">
-            <ClipboardList className="w-4 h-4 text-mf-signal" /> Bons en attente d'autorisation
+            <ClipboardList className="w-4 h-4 text-mf-signal-fg" /> Bons en attente d'autorisation
           </h2>
           {!enAttente || enAttente.length === 0 ? (
             <p className="text-sm text-mf-text-2">Aucun bon en attente.</p>
@@ -170,7 +170,7 @@ export default async function DashboardPage() {
 
         <div className="bg-mf-surface rounded-mf-md border border-mf-border p-4">
           <h2 className="font-display font-bold text-sm uppercase tracking-wide flex items-center gap-2 mb-3 text-mf-text">
-            <Receipt className="w-4 h-4 text-mf-signal" /> Factures impayées
+            <Receipt className="w-4 h-4 text-mf-signal-fg" /> Factures impayées
           </h2>
           {!facturesImpayees || facturesImpayees.length === 0 ? (
             <p className="text-sm text-mf-text-2">Aucune facture impayée.</p>
@@ -196,7 +196,7 @@ export default async function DashboardPage() {
 
         <div className="bg-mf-surface rounded-mf-md border border-mf-border p-4">
           <h2 className="font-display font-bold text-sm uppercase tracking-wide flex items-center gap-2 mb-3 text-mf-text">
-            <AlertTriangle className="w-4 h-4 text-mf-signal" /> Alertes de stock
+            <AlertTriangle className="w-4 h-4 text-mf-signal-fg" /> Alertes de stock
           </h2>
           {!stockBas || stockBas.length === 0 ? (
             <p className="text-sm text-mf-text-2">Inventaire au niveau.</p>

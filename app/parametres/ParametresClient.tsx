@@ -158,7 +158,7 @@ export default function ParametresClient({
 
       <form onSubmit={enregistrer} className="bg-mf-surface rounded-mf-md border border-mf-border p-5 mb-6 flex flex-col gap-3">
         <h2 className="font-display font-bold text-sm uppercase tracking-wide flex items-center gap-2 mb-1 text-mf-text">
-          <Building2 className="w-4 h-4 text-mf-signal" /> Coordonnées du garage
+          <Building2 className="w-4 h-4 text-mf-signal-fg" /> Coordonnées du garage
         </h2>
         <Champ label="Nom" required value={valeurs.nom} onChange={(e) => definir("nom", e.target.value)} />
         <Champ label="Adresse" value={valeurs.adresse ?? ""} onChange={(e) => definir("adresse", e.target.value)} />
@@ -172,7 +172,7 @@ export default function ParametresClient({
         </div>
 
         <h2 className="font-display font-bold text-sm uppercase tracking-wide flex items-center gap-2 mt-3 mb-1 text-mf-text">
-          <WrenchIcon className="w-4 h-4 text-mf-signal" /> Atelier
+          <WrenchIcon className="w-4 h-4 text-mf-signal-fg" /> Atelier
         </h2>
         <Champ
           label="Taux horaire de main-d'œuvre ($/h)"
@@ -203,7 +203,7 @@ export default function ParametresClient({
         </div>
 
         <h2 className="font-display font-bold text-sm uppercase tracking-wide flex items-center gap-2 mt-3 mb-1 text-mf-text">
-          <Star className="w-4 h-4 text-mf-signal" /> Avis Google
+          <Star className="w-4 h-4 text-mf-signal-fg" /> Avis Google
         </h2>
         <Champ
           label="Lien vers la fiche Google du garage"
@@ -223,7 +223,7 @@ export default function ParametresClient({
 
       <div className="bg-mf-surface rounded-mf-md border border-mf-border p-5">
         <h2 className="font-display font-bold text-sm uppercase tracking-wide flex items-center gap-2 mb-1 text-mf-text">
-          <UserCog className="w-4 h-4 text-mf-signal" /> Utilisateurs et rôles
+          <UserCog className="w-4 h-4 text-mf-signal-fg" /> Utilisateurs et rôles
         </h2>
         <p className="text-xs text-mf-text-3 mb-4">
           Pour ajouter un nouvel employé, créez son compte dans Supabase (Authentication → Users → Add user) — il
