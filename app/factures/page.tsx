@@ -3,17 +3,15 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import { createClient } from "@/lib/supabase/client";
-import { Receipt, DollarSign, Ban, Download, FileText } from "lucide-react";
+import { Receipt, DollarSign, Ban, FileText } from "lucide-react";
 import Badge, { type ToneBadge } from "@/components/ui/Badge";
 import Chargement from "@/components/ui/Chargement";
 import EtatVide from "@/components/ui/EtatVide";
 import Modale from "@/components/ui/Modale";
 import Bouton from "@/components/ui/Bouton";
 import Champ from "@/components/ui/Champ";
-import Selecteur from "@/components/ui/Selecteur";
 import MessageErreur from "@/components/ui/MessageErreur";
 import { useProfil } from "@/lib/useProfil";
-import { todayLocal } from "@/lib/dates";
 
 type Statut = "impayee" | "partielle" | "payee" | "annulee";
 
@@ -57,16 +55,6 @@ function formatMoney(n: number) {
   return new Intl.NumberFormat("fr-CA", { style: "currency", currency: "CAD" }).format(n);
 }
 
-// Point-virgule + virgule décimale : format attendu par défaut d'un
-// Excel en français à l'ouverture d'un .csv, pas la convention nord-
-// américaine (virgule + point).
-function csvNombre(n: number) {
-  return n.toFixed(2).replace(".", ",");
-}
-function csvChamp(valeur: string) {
-  return /[;"\n]/.test(valeur) ? `"${valeur.replace(/"/g, '""')}"` : valeur;
-}
-
 export default function FacturesPage() {
   const supabase = createClient();
   const { peutAutoriser, estAdmin } = useProfil();
@@ -77,51 +65,7 @@ export default function FacturesPage() {
   const [chargement, setChargement] = useState(true);
   const [facturePaiement, setFacturePaiement] = useState<Facture | null>(null);
   const [factureAAnnuler, setFactureAAnnuler] = useState<Facture | null>(null);
-  const [anneeExport, setAnneeExport] = useState(todayLocal().slice(0, 4));
-  const [exportEnCours, setExportEnCours] = useState(false);
-  const anneesDisponibles = useMemo(() => {
-    const courante = Number(todayLocal().slice(0, 4));
-    return Array.from({ length: 6 }, (_, i) => String(courante - i));
-  }, []);
 
-  async function exporterCsv() {
-    setExportEnCours(true);
-    const [{ data: f }, { data: c }] = await Promise.all([
-      supabase
-        .from("factures")
-        .select("numero, date, client_id, total_ht, montant_tps, montant_tvq, total_ttc, statut, montant_paye, sans_taxe, libelle")
-        .gte("date", `${anneeExport}-01-01`)
-        .lte("date", `${anneeExport}-12-31`)
-        .order("date"),
-      supabase.from("clients").select("id, nom"),
-    ]);
-    const nomsClients = Object.fromEntries((c ?? []).map((x) => [x.id, x.nom]));
-    const entetes = ["Numéro", "Date", "Client", "Total HT", "TPS", "TVQ", "Total TTC", "Sans taxe", "Libellé", "Statut", "Montant payé"];
-    const lignes = (f ?? []).map((fa) => [
-      fa.numero,
-      fa.date,
-      fa.client_id ? nomsClients[fa.client_id] ?? "" : "",
-      csvNombre(fa.total_ht),
-      csvNombre(fa.montant_tps),
-      csvNombre(fa.montant_tvq),
-      csvNombre(fa.total_ttc),
-      fa.sans_taxe ? "Oui" : "Non",
-      fa.libelle ?? "",
-      LABEL_STATUT[fa.statut as Statut] ?? fa.statut,
-      csvNombre(fa.montant_paye),
-    ]);
-    const csv = [entetes, ...lignes].map((ligne) => ligne.map((v) => csvChamp(String(v))).join(";")).join("\r\n");
-    // BOM UTF-8 : sans lui, Excel affiche les accents comme des symboles
-    // corrompus à l'ouverture d'un .csv.
-    const blob = new Blob(["﻿" + csv], { type: "text/csv;charset=utf-8;" });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement("a");
-    a.href = url;
-    a.download = `factures-${anneeExport}.csv`;
-    a.click();
-    URL.revokeObjectURL(url);
-    setExportEnCours(false);
-  }
 
   const charger = useCallback(async () => {
     setChargement(true);
@@ -159,28 +103,19 @@ export default function FacturesPage() {
       </div>
 
       {estAdmin && (
-        <div className="flex flex-wrap items-end gap-3 mb-4 bg-mf-surface border border-mf-border rounded-mf-md p-4">
-          <div className="w-28">
-            <Selecteur label="Année" value={anneeExport} onChange={(e) => setAnneeExport(e.target.value)}>
-              {anneesDisponibles.map((a) => (
-                <option key={a} value={a}>
-                  {a}
-                </option>
-              ))}
-            </Selecteur>
-          </div>
-          <Bouton variante="secondaire" onClick={exporterCsv} enEnvoi={exportEnCours}>
-            <Download className="w-4 h-4" /> Exporter en CSV
-          </Bouton>
+        <div className="flex flex-wrap items-center gap-3 mb-4 bg-mf-surface border border-mf-border rounded-mf-md p-4">
           <a
-            href={`/factures/rapport-annuel?annee=${anneeExport}`}
+            href="/factures/rapport"
             target="_blank"
             rel="noopener noreferrer"
             className="inline-flex items-center justify-center gap-2 min-h-[44px] px-4 rounded-mf-sm text-sm font-semibold border border-mf-border-strong text-mf-text hover:bg-mf-surface-2 transition-colors"
           >
-            <FileText className="w-4 h-4" /> Rapport annuel (PDF)
+            <FileText className="w-4 h-4" /> Rapport de facturation
           </a>
-          <p className="text-xs text-mf-text-3 w-full">Pour ton comptable : les deux couvrent l'année choisie au complet, peu importe le filtre ci-dessous.</p>
+          <p className="text-xs text-mf-text-3">
+            Pour ton comptable : choisis l&apos;année ou le trimestre, puis imprime ou exporte en CSV.
+            La TPS et la TVQ se déclarent le plus souvent par trimestre.
+          </p>
         </div>
       )}
 

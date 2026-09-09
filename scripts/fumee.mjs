@@ -48,7 +48,7 @@ function lireEnv() {
 // masque la panne.
 const ROUTES = [
   { chemin: "/", rendu: "serveur", attendu: [200] },
-  { chemin: "/factures/rapport-annuel", rendu: "serveur", attendu: [200] },
+  { chemin: "/factures/rapport", rendu: "serveur", attendu: [200] },
   { chemin: "/facturation", rendu: "serveur", attendu: [200, 307] },
   { chemin: "/clients", rendu: "client", attendu: [200] },
   { chemin: "/inventaire", rendu: "client", attendu: [200] },

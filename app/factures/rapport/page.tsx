@@ -3,6 +3,19 @@ import { ArrowLeft } from "lucide-react";
 import { createClient } from "@/lib/supabase/server";
 import { todayLocal, formatDateLong } from "@/lib/dates";
 import BoutonImprimer from "@/components/BoutonImprimer";
+import BoutonExportComptable from "@/components/BoutonExportComptable";
+
+// La TPS et la TVQ se déclarent le plus souvent par trimestre, rarement
+// par année civile. Un rapport uniquement annuel obligeait le comptable
+// à refaire l'addition à la main pour chaque déclaration ; les périodes
+// ci-dessous couvrent les deux cas.
+const PERIODES = [
+  { cle: "annee", nom: "Année", debut: "01-01", fin: "12-31" },
+  { cle: "t1", nom: "T1", debut: "01-01", fin: "03-31" },
+  { cle: "t2", nom: "T2", debut: "04-01", fin: "06-30" },
+  { cle: "t3", nom: "T3", debut: "07-01", fin: "09-30" },
+  { cle: "t4", nom: "T4", debut: "10-01", fin: "12-31" },
+] as const;
 
 const LABEL_STATUT: Record<string, string> = {
   impayee: "Impayée",
@@ -28,7 +41,8 @@ function formatMoney(n: number) {
 // pagination que scripts/sauvegarde.mjs.
 async function chargerToutesLesFactures(
   supabase: ReturnType<typeof createClient>,
-  annee: string
+  debut: string,
+  fin: string
 ) {
   const TAILLE_PAGE = 1000;
   const lignes: Array<{
@@ -43,14 +57,15 @@ async function chargerToutesLesFactures(
     statut: string;
     montant_paye: number;
     libelle: string | null;
+    sans_taxe: boolean;
   }> = [];
   let page = 0;
   for (;;) {
     const { data, error } = await supabase
       .from("factures")
-      .select("id, numero, date, client_id, total_ht, montant_tps, montant_tvq, total_ttc, statut, montant_paye, libelle")
-      .gte("date", `${annee}-01-01`)
-      .lte("date", `${annee}-12-31`)
+      .select("id, numero, date, client_id, total_ht, montant_tps, montant_tvq, total_ttc, statut, montant_paye, libelle, sans_taxe")
+      .gte("date", debut)
+      .lte("date", fin)
       .order("date")
       .range(page * TAILLE_PAGE, page * TAILLE_PAGE + TAILLE_PAGE - 1);
     if (error) throw error;
@@ -61,12 +76,20 @@ async function chargerToutesLesFactures(
   return lignes;
 }
 
-export default async function RapportAnnuelPage({ searchParams }: { searchParams: { annee?: string } }) {
+export default async function RapportPage({
+  searchParams,
+}: {
+  searchParams: { annee?: string; periode?: string };
+}) {
   const supabase = createClient();
   const annee = searchParams.annee || todayLocal().slice(0, 4);
+  const periode = PERIODES.find((p) => p.cle === searchParams.periode) ?? PERIODES[0];
+  const debut = `${annee}-${periode.debut}`;
+  const fin = `${annee}-${periode.fin}`;
+  const intitule = periode.cle === "annee" ? `Année ${annee}` : `${periode.nom} ${annee}`;
 
   const [factures, { data: clients }, { data: garage }] = await Promise.all([
-    chargerToutesLesFactures(supabase, annee),
+    chargerToutesLesFactures(supabase, debut, fin),
     supabase.from("clients").select("id, nom"),
     supabase.from("parametres").select("*").single(),
   ]);
@@ -98,13 +121,13 @@ export default async function RapportAnnuelPage({ searchParams }: { searchParams
         <Link href="/factures" className="flex items-center gap-1 text-sm text-mf-text-2 hover:text-mf-text min-h-[44px]">
           <ArrowLeft className="w-4 h-4" /> Retour aux factures
         </Link>
-        <div className="flex items-center gap-3">
+        <div className="flex items-center gap-3 flex-wrap">
           <div className="flex gap-1">
             {anneesDisponibles.map((a) => (
               <Link
                 key={a}
-                href={`/factures/rapport-annuel?annee=${a}`}
-                className={`px-3 min-h-[36px] flex items-center rounded-mf-pill text-xs font-semibold border transition-colors ${
+                href={`/factures/rapport?annee=${a}&periode=${periode.cle}`}
+                className={`px-3 min-h-[36px] flex items-center rounded-mf-sm text-xs font-semibold border transition-colors ${
                   a === annee
                     ? "bg-mf-blue text-white border-mf-blue"
                     : "bg-mf-surface text-mf-text-2 border-mf-border hover:bg-mf-surface-2"
@@ -114,6 +137,37 @@ export default async function RapportAnnuelPage({ searchParams }: { searchParams
               </Link>
             ))}
           </div>
+          <div className="flex gap-1">
+            {PERIODES.map((p) => (
+              <Link
+                key={p.cle}
+                href={`/factures/rapport?annee=${annee}&periode=${p.cle}`}
+                className={`px-3 min-h-[36px] flex items-center rounded-mf-sm text-xs font-semibold border transition-colors ${
+                  p.cle === periode.cle
+                    ? "bg-mf-blue text-white border-mf-blue"
+                    : "bg-mf-surface text-mf-text-2 border-mf-border hover:bg-mf-surface-2"
+                }`}
+              >
+                {p.nom}
+              </Link>
+            ))}
+          </div>
+          <BoutonExportComptable
+            nomFichier={`factures-${annee}-${periode.cle}.csv`}
+            lignes={toutes.map((f) => ({
+              numero: f.numero,
+              date: f.date,
+              client: f.client_id ? nomsClients[f.client_id] ?? "" : "",
+              libelle: f.libelle ?? "",
+              total_ht: f.total_ht,
+              montant_tps: f.montant_tps,
+              montant_tvq: f.montant_tvq,
+              total_ttc: f.total_ttc,
+              sans_taxe: f.sans_taxe,
+              statut: LABEL_STATUT[f.statut] ?? f.statut,
+              montant_paye: f.montant_paye,
+            }))}
+          />
           <BoutonImprimer />
         </div>
       </div>
@@ -136,14 +190,15 @@ export default async function RapportAnnuelPage({ searchParams }: { searchParams
             )}
           </div>
           <div className="text-right">
-            <div className="text-xl font-black uppercase tracking-wide text-stone-900">Rapport annuel</div>
-            <div className="text-sm text-stone-500">Année {annee}</div>
+            <div className="text-xl font-black uppercase tracking-wide text-stone-900">Rapport de facturation</div>
+            <div className="text-sm text-stone-500">{intitule}</div>
+            <div className="text-xs text-stone-500">Du {formatDateLong(debut)} au {formatDateLong(fin)}</div>
             <div className="text-xs text-stone-400">Imprimé le {formatDateLong(todayLocal())}</div>
           </div>
         </div>
 
         {toutes.length === 0 ? (
-          <p className="text-sm text-stone-500 py-8 text-center">Aucune facture pour l'année {annee}.</p>
+          <p className="text-sm text-stone-500 py-8 text-center">Aucune facture pour cette période ({intitule}).</p>
         ) : (
           <>
             <table className="w-full text-sm mb-4">
@@ -207,7 +262,7 @@ export default async function RapportAnnuelPage({ searchParams }: { searchParams
             </div>
 
             <p className="text-xs text-stone-400 mt-6 border-t border-stone-100 pt-4">
-              {toutes.length} facture(s) émise(s) en {annee}
+              {toutes.length} facture(s) émise(s) · {intitule}
               {toutes.length !== actives.length && <> · {toutes.length - actives.length} annulée(s), exclue(s) des totaux</>}.
             </p>
           </>
