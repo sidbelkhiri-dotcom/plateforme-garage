@@ -8,11 +8,11 @@
 // depuis le code, et il faut un fichier par métal.
 export default function LogoMark({
   size = 24,
-  metal = "argent",
+  metal = "or",
   className = "",
 }: {
   size?: number;
-  /** « or » sur fond clair, « argent » sur fond foncé. */
+  /** Or par défaut, pour les fonds clairs ; argent sur fond foncé. */
   metal?: "or" | "argent";
   className?: string;
 }) {

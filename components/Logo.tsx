@@ -6,11 +6,12 @@ import LogoMark from "./LogoMark";
 // symbole reste un G, mais le mot seul deviendrait « aragenda ».
 export default function Logo({
   height = 20,
-  metal = "argent",
+  metal = "or",
   className = "",
 }: {
   height?: number;
-  /** « or » sur fond clair, « argent » sur fond foncé. */
+  /** Or par défaut, pour les fonds clairs ; la barre latérale, toujours
+   *  foncée, est la seule à demander l'argent. */
   metal?: "or" | "argent";
   className?: string;
 }) {
