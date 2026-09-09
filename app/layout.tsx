@@ -20,8 +20,8 @@ const archivo = Archivo({
 });
 
 export const metadata: Metadata = {
-  title: "Plateforme Garage",
-  description: "Plateforme de gestion pour garages mécaniques",
+  title: "Garagenda",
+  description: "Gestion d'atelier pour garages mécaniques",
 };
 
 // mf-bg (clair, mode principal — direction « Bleu de travail ») — la

@@ -2,9 +2,9 @@ import type { MetadataRoute } from "next";
 
 export default function manifest(): MetadataRoute.Manifest {
   return {
-    name: "Plateforme Garage — Gestion d'atelier",
-    short_name: "Plateforme Garage",
-    description: "Plateforme de gestion pour garages mécaniques",
+    name: "Garagenda — Gestion d'atelier",
+    short_name: "Garagenda",
+    description: "Gestion d'atelier pour garages mécaniques",
     start_url: "/",
     display: "standalone",
     background_color: "#f7f6f2",
