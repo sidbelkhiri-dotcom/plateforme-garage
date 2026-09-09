@@ -422,37 +422,44 @@ export default function BonTravailDetailPage() {
         />
       </div>
 
-      <LignesSection
-        titre="Pièces"
-        lignes={lignes.filter((l) => l.type === "piece")}
-        peutModifier={peutModifierLignes}
-        onAjouter={() => setShowLigne({ type: "piece" })}
-        onModifier={(l) => setShowLigne({ type: "piece", ligne: l })}
-        onSupprimer={supprimerLigne}
-        renduLigne={(l) => (l.etat_piece ? LABEL_ETAT[l.etat_piece] : "")}
-      />
+      {/* Pièces, main-d'œuvre et totaux forment le chiffrage : un seul
+          document, pas trois cartes voisines au contour identique. Les
+          totaux en sont le pied, et non un encadré flottant à droite. */}
+      <div className="bg-mf-surface border border-mf-border divide-y divide-mf-border mb-4">
+        <LignesSection
+          titre="Pièces"
+          lignes={lignes.filter((l) => l.type === "piece")}
+          peutModifier={peutModifierLignes}
+          onAjouter={() => setShowLigne({ type: "piece" })}
+          onModifier={(l) => setShowLigne({ type: "piece", ligne: l })}
+          onSupprimer={supprimerLigne}
+          renduLigne={(l) => (l.etat_piece ? LABEL_ETAT[l.etat_piece] : "")}
+        />
 
-      <LignesSection
-        titre="Main-d'œuvre"
-        lignes={lignes.filter((l) => l.type === "main_oeuvre")}
-        peutModifier={peutModifierLignes}
-        onAjouter={() => setShowLigne({ type: "main_oeuvre" })}
-        onModifier={(l) => setShowLigne({ type: "main_oeuvre", ligne: l })}
-        onSupprimer={supprimerLigne}
-        renduLigne={(l) => `${l.quantite} h`}
-      />
+        <LignesSection
+          titre="Main-d'œuvre"
+          lignes={lignes.filter((l) => l.type === "main_oeuvre")}
+          peutModifier={peutModifierLignes}
+          onAjouter={() => setShowLigne({ type: "main_oeuvre" })}
+          onModifier={(l) => setShowLigne({ type: "main_oeuvre", ligne: l })}
+          onSupprimer={supprimerLigne}
+          renduLigne={(l) => `${l.quantite} h`}
+        />
 
-      <div className="bg-mf-surface rounded-mf-md border border-mf-border p-5 mb-4 ml-auto w-full sm:w-64">
-        <Row label="Pièces" value={formatMoney(totalPieces)} />
-        <Row label="Main-d'œuvre" value={formatMoney(totalMainOeuvre)} />
-        <div className="border-t border-mf-border mt-2 pt-2">
-          <Row label="Total HT" value={formatMoney(totalHt)} bold />
-        </div>
-        {bon.montant_evaluation != null && (
-          <div className="border-t border-mf-border mt-2 pt-2">
-            <Row label="Évaluation acceptée" value={formatMoney(bon.montant_evaluation)} muted />
+        <div className="p-4 flex justify-end">
+          <div className="w-full sm:w-64">
+            <Row label="Pièces" value={formatMoney(totalPieces)} />
+            <Row label="Main-d'œuvre" value={formatMoney(totalMainOeuvre)} />
+            <div className="border-t border-mf-border mt-2 pt-2">
+              <Row label="Total HT" value={formatMoney(totalHt)} bold />
+            </div>
+            {bon.montant_evaluation != null && (
+              <div className="border-t border-mf-border mt-2 pt-2">
+                <Row label="Évaluation acceptée" value={formatMoney(bon.montant_evaluation)} muted />
+              </div>
+            )}
           </div>
-        )}
+        </div>
       </div>
 
       {evaluations.length > 0 && (
@@ -731,7 +738,10 @@ function LignesSection({
 }) {
   const total = lignes.reduce((s, l) => s + l.quantite * l.prix_unitaire, 0);
   return (
-    <div className="bg-mf-surface rounded-mf-md border border-mf-border mb-4 overflow-hidden">
+    // Pas de cadre ni de marge propres : cette section est un morceau du
+    // bloc de chiffrage, pas une carte indépendante. C'est le conteneur
+    // parent qui porte le contour.
+    <div className="overflow-hidden">
       <div className="px-4 py-3 flex items-center justify-between border-b border-mf-border">
         <h2 className="font-display font-bold text-sm uppercase tracking-wide text-mf-text">
           {titre} <span className="text-mf-text-3 font-normal">({formatMoney(total)})</span>
