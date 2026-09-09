@@ -1,7 +1,7 @@
 "use client";
 
-import { useState } from "react";
-import { CheckCircle2 } from "lucide-react";
+import { useEffect, useState } from "react";
+import { CheckCircle2, AlertTriangle } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
 import { useFormulaire } from "@/lib/useFormulaire";
 import { useMarques, useModeles, useAnnees } from "@/lib/useMarquesModeles";
@@ -38,24 +38,40 @@ const VALEURS_VIDES: Valeurs = {
   plainte: "",
 };
 
+type GaragePublic = { id: string; nom: string };
+
 // Borne d'enregistrement client — accessible sans connexion via un QR
 // code au comptoir ou une tablette dans l'atelier (voir middleware.ts).
-// N'écrit jamais dans les vraies données : tout atterrit dans
-// demandes_accueil, en attente de validation par la réception.
-export default function PageAccueil() {
+// Le slug dans l'URL identifie le garage — résolu via la fonction
+// security definer obtenir_garage_public() (jamais une lecture directe
+// de `garages`, qui contient des colonnes sensibles comme
+// stripe_customer_id). N'écrit jamais dans les vraies données : tout
+// atterrit dans demandes_accueil, en attente de validation par la
+// réception de CE garage précis (garage_id posé à l'envoi).
+export default function PageAccueil({ params }: { params: { slug: string } }) {
   const supabase = createClient();
   const { valeurs, definir, soumettre, erreur, enEnvoi } = useFormulaire<Valeurs>(VALEURS_VIDES);
   const [marqueLibre, setMarqueLibre] = useState(false);
   const [modeleLibre, setModeleLibre] = useState(false);
   const [anneeLibre, setAnneeLibre] = useState(false);
   const [envoye, setEnvoye] = useState(false);
+  const [garage, setGarage] = useState<GaragePublic | null | undefined>(undefined);
   const marques = useMarques();
   const modeles = useModeles(marqueLibre ? "" : valeurs.marque);
   const annees = useAnnees(marqueLibre ? "" : valeurs.marque, modeleLibre ? "" : valeurs.modele);
 
+  useEffect(() => {
+    supabase
+      .rpc("obtenir_garage_public", { p_slug: params.slug })
+      .then(({ data }) => setGarage(data ?? null));
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [params.slug]);
+
   async function envoyer(e: React.FormEvent) {
     e.preventDefault();
+    if (!garage) return;
     const donnees = {
+      garage_id: garage.id,
       nom: valeurs.nom.trim(),
       telephone: valeurs.telephone || null,
       courriel: valeurs.courriel || null,
@@ -74,6 +90,22 @@ export default function PageAccueil() {
       };
     });
     if (reussi) setEnvoye(true);
+  }
+
+  // undefined = chargement en cours, null = slug inconnu ou garage inactif.
+  if (garage === undefined) {
+    return <div className="min-h-screen bg-mf-bg" />;
+  }
+
+  if (garage === null) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-mf-bg p-6">
+        <div className="max-w-sm text-center">
+          <AlertTriangle className="w-8 h-8 text-mf-red mx-auto mb-3" />
+          <p className="text-sm text-mf-text">Ce lien n'est plus valide. Adressez-vous directement au comptoir.</p>
+        </div>
+      </div>
+    );
   }
 
   if (envoye) {
@@ -106,7 +138,8 @@ export default function PageAccueil() {
           <Logo height={22} />
         </div>
         <p className="text-sm text-mf-text-2 mb-2">
-          Bienvenue ! Remplissez vos renseignements, un membre de l'équipe vous accueillera dans un instant.
+          Bienvenue chez {garage.nom} ! Remplissez vos renseignements, un membre de l'équipe vous accueillera dans un
+          instant.
         </p>
 
         <Champ label="Nom" required value={valeurs.nom} onChange={(e) => definir("nom", e.target.value)} />
