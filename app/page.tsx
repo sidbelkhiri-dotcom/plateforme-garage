@@ -69,13 +69,25 @@ export default async function DashboardPage() {
     : { data: [] };
   const nomClient = (id: string | null) => (clients ?? []).find((c) => c.id === id)?.nom ?? "—";
 
+  // Trois états, et un seul sens par couleur — auparavant le calendrier
+  // était encre pleine et la clé ambre sans qu'aucune règle ne le
+  // justifie, si bien que l'œil cherchait une logique inexistante.
+  //   gris   : information, rien à faire
+  //   ambre  : quelque chose attend une décision de ta part
+  //   rouge  : quelque chose ne va pas
+  const TONS = {
+    neutre: "bg-mf-surface-3 text-mf-text-2",
+    attente: "bg-mf-signal-soft text-mf-signal-fg",
+    probleme: "bg-mf-red-soft text-mf-red",
+  } as const;
+
   // L'icône ne passe à côté du texte qu'en xl : c'est la première largeur
   // où cinq colonnes laissent assez de place. Plus tôt, le libellé se
   // retrouvait rogné à quelques pixels au lieu de simplement passer à la
   // ligne.
-  const stat = (label: string, value: number, Icon: any, tone: string) => (
-    <div className="bg-mf-surface rounded-mf-md border border-mf-border p-4 flex flex-col items-start gap-2 xl:flex-row xl:items-center xl:gap-4">
-      <div className={`w-10 h-10 rounded-mf-sm flex items-center justify-center shrink-0 ${tone}`}>
+  const stat = (label: string, value: number, Icon: any, ton: keyof typeof TONS, etendue = "") => (
+    <div className={`bg-mf-surface p-4 flex flex-col items-start gap-2 xl:flex-row xl:items-center xl:gap-4 ${etendue}`}>
+      <div className={`w-10 h-10 flex items-center justify-center shrink-0 ${TONS[ton]}`}>
         <Icon className="w-5 h-5" />
       </div>
       <div className="min-w-0">
@@ -92,12 +104,21 @@ export default async function DashboardPage() {
         Bonjour {profil?.nom ?? user?.email} — voici l'atelier aujourd'hui.
       </p>
 
-      <div className="grid grid-cols-2 md:grid-cols-3 xl:grid-cols-5 gap-4 mb-6">
-        {stat("RDV aujourd'hui", rdv?.length ?? 0, Calendar, "bg-mf-navy text-white")}
-        {stat("À l'atelier", enAtelier?.length ?? 0, Wrench, "bg-mf-warning-soft text-mf-warning")}
-        {stat("En attente d'évaluation", enAttente?.length ?? 0, ClipboardList, "bg-mf-surface-3 text-mf-text-2")}
-        {stat("Factures impayées", facturesImpayees?.length ?? 0, Receipt, (facturesImpayees?.length ?? 0) > 0 ? "bg-mf-red-soft text-mf-red" : "bg-mf-surface-3 text-mf-text-2")}
-        {stat("Stock bas", stockBas?.length ?? 0, AlertTriangle, (stockBas?.length ?? 0) > 0 ? "bg-mf-red-soft text-mf-red" : "bg-mf-surface-3 text-mf-text-2")}
+      {/* Un seul objet, divisé par des filets d'un pixel, plutôt que cinq
+          cartes au contour identique à celles du contenu en dessous : le
+          bandeau se lit comme le résumé de la journée, et la hiérarchie
+          entre résumé et détail redevient visible. Le fond du conteneur
+          fait office de filet, ce qui reste correct quand la grille passe
+          à la ligne. */}
+      <div className="grid grid-cols-2 md:grid-cols-3 xl:grid-cols-5 gap-px bg-mf-border border border-mf-border mb-6">
+        {stat("RDV aujourd'hui", rdv?.length ?? 0, Calendar, "neutre")}
+        {stat("À l'atelier", enAtelier?.length ?? 0, Wrench, "neutre")}
+        {stat("En attente d'évaluation", enAttente?.length ?? 0, ClipboardList, (enAttente?.length ?? 0) > 0 ? "attente" : "neutre")}
+        {stat("Factures impayées", facturesImpayees?.length ?? 0, Receipt, (facturesImpayees?.length ?? 0) > 0 ? "probleme" : "neutre")}
+        {/* Cinq tuiles ne se divisent ni par deux ni par trois : la
+            dernière occupe la place restante pour qu'aucune cellule vide
+            ne laisse voir le fond du conteneur. */}
+        {stat("Stock bas", stockBas?.length ?? 0, AlertTriangle, (stockBas?.length ?? 0) > 0 ? "probleme" : "neutre", "col-span-2 xl:col-span-1")}
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
