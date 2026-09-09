@@ -87,7 +87,7 @@ export default function Sidebar() {
       {/* < 768px : barre du haut + tiroir, la barre latérale fixe ne
           tiendrait pas sur un écran de téléphone (D17). */}
       <div className="sans-impression md:hidden flex items-center justify-between bg-mf-sidebar-bg border-b border-mf-sidebar-border text-mf-sidebar-text px-4 h-14 shrink-0">
-        <Logo height={18} variante="claire" />
+        <Logo height={18} metal="argent" />
         <button
           onClick={() => setOuvert(true)}
           className="relative w-11 h-11 flex items-center justify-center -mr-2 focus:outline-none focus-visible:ring-2 focus-visible:ring-mf-blue"
@@ -104,7 +104,7 @@ export default function Sidebar() {
         <div className="md:hidden fixed inset-0 z-50 flex">
           <div className="w-64 bg-mf-sidebar-bg text-mf-sidebar-text-2 flex flex-col min-h-screen border-r border-mf-sidebar-border">
             <div className="px-5 py-5 border-b border-mf-sidebar-border flex items-center justify-between text-mf-sidebar-text">
-              <Logo height={18} variante="claire" />
+              <Logo height={18} metal="argent" />
               <button
                 onClick={() => setOuvert(false)}
                 className="w-11 h-11 -mr-2 flex items-center justify-center text-mf-sidebar-text-2 focus:outline-none focus-visible:ring-2 focus-visible:ring-mf-blue"
@@ -131,7 +131,7 @@ export default function Sidebar() {
       {/* ≥ 768px : barre latérale fixe, comme avant. */}
       <aside className="sans-impression hidden md:flex w-56 bg-mf-sidebar-bg text-mf-sidebar-text-2 flex-col shrink-0 min-h-screen border-r border-mf-sidebar-border">
         <div className="px-5 py-5 border-b border-mf-sidebar-border text-mf-sidebar-text">
-          <Logo height={22} variante="claire" />
+          <Logo height={22} metal="argent" />
           <div className="text-[10px] text-mf-sidebar-text-3 tracking-wide mt-1.5">GESTION D'ATELIER</div>
         </div>
         <SelecteurGarageAdmin />

@@ -1,27 +1,27 @@
 import LogoMark from "./LogoMark";
 
-// Le mot est écrit en entier, le symbole ne remplace aucune lettre : un
-// hexagone plein se lit comme un badge et non comme un G, si bien que la
-// version « symbole + aragenda » se lisait « aragenda ». Le symbole reste
-// utilisable seul (favicon, icône iOS), jamais comme initiale.
+// Le symbole tient la place du G : il est lui-même une lettre, pas un
+// badge qui en contiendrait une, donc « symbole + aragenda » se lit bien
+// « Garagenda ». Les deux ne se dissocient jamais — séparé du mot, le
+// symbole reste un G, mais le mot seul deviendrait « aragenda ».
 export default function Logo({
   height = 20,
-  variante = "sombre",
+  metal = "argent",
   className = "",
 }: {
   height?: number;
-  /** « claire » = symbole argent, à poser sur un fond foncé. */
-  variante?: "sombre" | "claire";
+  /** « or » sur fond clair, « argent » sur fond foncé. */
+  metal?: "or" | "argent";
   className?: string;
 }) {
   return (
-    <span className={`inline-flex items-center ${className}`} style={{ height, gap: height * 0.24 }}>
-      <LogoMark size={height * 1.12} variante={variante} />
+    <span className={`inline-flex items-center ${className}`} style={{ gap: height * 0.16 }}>
+      <LogoMark size={height * 1.15} metal={metal} />
       <span
         className="font-display font-bold tracking-tight"
-        style={{ fontSize: height * 0.92, lineHeight: 1 }}
+        style={{ fontSize: height, lineHeight: 1 }}
       >
-        Garagenda
+        aragenda
       </span>
     </span>
   );

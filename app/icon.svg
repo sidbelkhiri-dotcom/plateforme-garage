@@ -1,10 +1,15 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100">
-  <!-- Version 16 px : ni biseau ni dégradé, et un G agrandi. À cette
-       taille le chanfrein n'apporte que du bruit et la lettre se referme
-       si elle garde ses proportions d'affichage. -->
-  <polygon points="50,2 91.57,26 91.57,74 50,98 8.43,74 8.43,26" fill="#16324A"/>
-  <polygon points="50,12 82.9,31 82.9,69 50,88 17.1,69 17.1,31" fill="#D9B84A"/>
-  <polygon points="50,29 68.2,39.5 68.2,60.5 50,71 31.8,60.5 31.8,39.5" fill="#16324A"/>
-  <rect x="50" y="41" width="36" height="18" fill="#16324A"/>
-  <rect x="50" y="45.5" width="33" height="9" fill="#D9B84A"/>
+  <!-- Version petite taille : tuile encre pour rester visible sur un
+       onglet clair comme foncé, et G en or plat — à 16 px le facettage
+       ne produirait qu'une bouillie grise. -->
+  <rect width="100" height="100" rx="18" fill="#10243A"/>
+  <g transform="translate(12,12) scale(0.76)">
+    <mask id="g16">
+      <polygon points="50,4 89.84,27 89.84,73 50,96 10.16,73 10.16,27" fill="#fff"/>
+      <polygon points="50,24 72.52,37 72.52,63 50,76 27.48,63 27.48,37" fill="#000"/>
+      <rect x="60" y="36" width="40" height="16" fill="#000"/>
+      <rect x="56" y="52" width="44" height="11" fill="#fff"/>
+    </mask>
+    <rect width="100" height="100" fill="#D9B85C" mask="url(#g16)"/>
+  </g>
 </svg>

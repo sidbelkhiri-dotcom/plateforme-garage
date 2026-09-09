@@ -2,61 +2,54 @@
 
 import { useId } from "react";
 
-// Hexagone biseauté renfermant un G, reconstruit en vectoriel.
-// Le biseau est fait de six facettes en aplat — c'est ainsi qu'un vrai
-// chanfrein réagit à la lumière, une facette ne dégrade pas — éclairées
-// depuis le haut à gauche. Seules la face intérieure et l'or sont en
-// dégradé.
+// G hexagonal massif, sans contenant : la lettre EST la forme. C'est ce
+// qui permet au symbole de tenir la place du G dans « Garagenda » — un
+// hexagone qui enferme une lettre se lit comme un badge, et le mot
+// d'à côté se lit alors « aragenda ».
 //
-// Le G est lui-même hexagonal : ses fûts suivent les angles du cadre au
-// lieu de décrire un cercle, ce qui fait tenir la lettre et le contenant
-// dans une seule géométrie.
+// Le relief est obtenu en découpant l'hexagone en six secteurs, chacun
+// en aplat : c'est ainsi qu'un métal facetté réagit, une face renvoie
+// une valeur unique et ne dégrade pas. Lumière au haut à gauche.
 //
-// Aucune ombre portée : elle appartiendrait au fond et non à la marque,
-// et rendrait le logo inutilisable sur une surface foncée.
-const FACETTES = {
-  sombre: {
-    hautGauche: "#4A6B85",
-    gauche: "#3C5C76",
-    hautDroit: "#2E4E66",
-    basGauche: "#22405A",
-    droit: "#1A3348",
-    basDroit: "#14293A",
+// Aucune ombre portée : elle appartiendrait au fond et non à la marque.
+
+const SECTEURS = {
+  or: {
+    hautGauche: "#F5E3A8",
+    gauche: "#E3C97A",
+    hautDroit: "#D9B85C",
+    basGauche: "#C09A3A",
+    droit: "#A87F26",
+    basDroit: "#8A6318",
   },
-  claire: {
-    hautGauche: "#F2F5F7",
-    gauche: "#E4EAEE",
-    hautDroit: "#D3DADF",
-    basGauche: "#BFC7CD",
-    droit: "#A8B2BA",
-    basDroit: "#8F9AA3",
+  argent: {
+    hautGauche: "#FFFFFF",
+    gauche: "#E8EBED",
+    hautDroit: "#D2D6D9",
+    basGauche: "#B4BABE",
+    droit: "#94999D",
+    basDroit: "#74797D",
   },
 };
 
-// Trois arrêts plutôt que deux : un métal ne s'assombrit pas
-// linéairement, il garde une zone claire franche puis plonge.
-const FACE = {
-  sombre: ["#263B50", "#10243A", "#071421"],
-  claire: ["#FFFFFF", "#C7C9CA", "#777A7C"],
-};
-const OR = ["#F1D58A", "#B98A31", "#6F4B14"];
+// Hexagone pointe en haut, R = 46, centré sur (50,50).
+const EXTERIEUR = "50,4 89.84,27 89.84,73 50,96 10.16,73 10.16,27";
+// Contrepoinçon, R = 26.
+const CONTREPOINCON = "50,24 72.52,37 72.52,63 50,76 27.48,63 27.48,37";
 
 export default function LogoMark({
   size = 24,
-  variante = "sombre",
+  metal = "argent",
   className = "",
 }: {
   size?: number;
-  /** « claire » = corps argent, à poser sur un fond foncé. */
-  variante?: "sombre" | "claire";
+  /** « or » sur fond clair, « argent » sur fond foncé. */
+  metal?: "or" | "argent";
   className?: string;
 }) {
   // useId renvoie des deux-points, illégaux dans une référence url(#…).
-  const uid = useId().replace(/:/g, "");
-  const face = `face-${uid}`;
-  const or = `or-${uid}`;
-  const f = FACETTES[variante];
-  const [faceHaut, faceMilieu, faceBas] = FACE[variante];
+  const masque = `g-${useId().replace(/:/g, "")}`;
+  const s = SECTEURS[metal];
 
   return (
     <svg
@@ -67,32 +60,21 @@ export default function LogoMark({
       aria-hidden="true"
       focusable="false"
     >
-      <defs>
-        <linearGradient id={face} gradientUnits="userSpaceOnUse" x1="17" y1="12" x2="83" y2="88">
-          <stop offset="0" stopColor={faceHaut} />
-          <stop offset="0.55" stopColor={faceMilieu} />
-          <stop offset="1" stopColor={faceBas} />
-        </linearGradient>
-        <linearGradient id={or} gradientUnits="userSpaceOnUse" x1="22" y1="18" x2="78" y2="82">
-          <stop offset="0" stopColor={OR[0]} />
-          <stop offset="0.45" stopColor={OR[1]} />
-          <stop offset="1" stopColor={OR[2]} />
-        </linearGradient>
-      </defs>
+      <mask id={masque}>
+        <polygon points={EXTERIEUR} fill="#fff" />
+        <polygon points={CONTREPOINCON} fill="#000" />
+        <rect x="60" y="36" width="40" height="16" fill="#000" />
+        <rect x="56" y="52" width="44" height="11" fill="#fff" />
+      </mask>
 
-      <polygon points="8.43,26 50,2 50,12 17.1,31" fill={f.hautGauche} />
-      <polygon points="50,2 91.57,26 82.9,31 50,12" fill={f.hautDroit} />
-      <polygon points="91.57,26 91.57,74 82.9,69 82.9,31" fill={f.droit} />
-      <polygon points="91.57,74 50,98 50,88 82.9,69" fill={f.basDroit} />
-      <polygon points="50,98 8.43,74 17.1,69 50,88" fill={f.basGauche} />
-      <polygon points="8.43,74 8.43,26 17.1,31 17.1,69" fill={f.gauche} />
-
-      <polygon points="50,12 82.9,31 82.9,69 50,88 17.1,69 17.1,31" fill={`url(#${face})`} />
-
-      <polygon points="50,18 77.71,34 77.71,66 50,82 22.29,66 22.29,34" fill={`url(#${or})`} />
-      <polygon points="50,32 65.59,41 65.59,59 50,68 34.41,59 34.41,41" fill={`url(#${face})`} />
-      <rect x="50" y="43" width="30" height="14" fill={`url(#${face})`} />
-      <rect x="50" y="46.5" width="27" height="7" fill={`url(#${or})`} />
+      <g mask={`url(#${masque})`}>
+        <polygon points="50,50 10.16,27 50,4" fill={s.hautGauche} />
+        <polygon points="50,50 50,4 89.84,27" fill={s.hautDroit} />
+        <polygon points="50,50 89.84,27 89.84,73" fill={s.droit} />
+        <polygon points="50,50 89.84,73 50,96" fill={s.basDroit} />
+        <polygon points="50,50 50,96 10.16,73" fill={s.basGauche} />
+        <polygon points="50,50 10.16,73 10.16,27" fill={s.gauche} />
+      </g>
     </svg>
   );
 }
