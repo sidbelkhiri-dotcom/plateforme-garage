@@ -222,7 +222,7 @@ export default function ClientDetailPage() {
 
       <div className="flex items-center justify-between mb-3">
         <h2 className="font-display font-bold text-sm uppercase tracking-wide flex items-center gap-2 text-mf-text">
-          <Car className="w-4 h-4" /> Véhicules ({vehicules.length})
+          <Car className="w-4 h-4 text-mf-signal" /> Véhicules ({vehicules.length})
         </h2>
         {peutGererClients && (
           <Bouton variante="secondaire" onClick={() => setShowAddVehicule(true)}>
@@ -263,7 +263,7 @@ export default function ClientDetailPage() {
 
       <div className="mt-6">
         <h2 className="font-display font-bold text-sm uppercase tracking-wide flex items-center gap-2 mb-3 text-mf-text">
-          <History className="w-4 h-4" /> Historique récent
+          <History className="w-4 h-4 text-mf-signal" /> Historique récent
         </h2>
         {bons.length === 0 ? (
           <p className="text-sm text-mf-text-2">Aucun bon de travail pour l'instant.</p>
@@ -295,7 +295,7 @@ export default function ClientDetailPage() {
       {piecesGarantie.length > 0 && (
         <div className="mt-6">
           <h2 className="font-display font-bold text-sm uppercase tracking-wide flex items-center gap-2 mb-3 text-mf-text">
-            <ShieldCheck className="w-4 h-4" /> Pièces avec facture (garantie)
+            <ShieldCheck className="w-4 h-4 text-mf-signal" /> Pièces avec facture (garantie)
           </h2>
           <div className="bg-mf-surface rounded-mf-md border border-mf-border divide-y divide-mf-border">
             {piecesGarantie.map((p) => (

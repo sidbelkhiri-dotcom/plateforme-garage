@@ -165,7 +165,7 @@ function NouveauBonTravailContenu() {
 
       <div className="bg-mf-surface rounded-mf-md border border-mf-border p-5 mb-4">
         <h2 className="font-display font-bold text-sm uppercase tracking-wide flex items-center gap-2 mb-3 text-mf-text">
-          <User className="w-4 h-4" /> 1. Client
+          <User className="w-4 h-4 text-mf-signal" /> 1. Client
         </h2>
         {clientSelectionne ? (
           <div className="flex items-center justify-between bg-mf-success-soft border border-mf-success rounded-mf-sm px-3 py-2 min-h-[44px]">
@@ -215,7 +215,7 @@ function NouveauBonTravailContenu() {
       {clientSelectionne && historique.length > 0 && (
         <div className="bg-mf-surface rounded-mf-md border border-mf-border p-5 mb-4">
           <h2 className="font-display font-bold text-sm uppercase tracking-wide flex items-center gap-2 mb-3 text-mf-text">
-            <History className="w-4 h-4" /> Historique récent
+            <History className="w-4 h-4 text-mf-signal" /> Historique récent
           </h2>
           <div className="divide-y divide-mf-border border border-mf-border rounded-mf-sm overflow-hidden">
             {historique.map((b) => {
@@ -257,7 +257,7 @@ function NouveauBonTravailContenu() {
       {clientSelectionne && (
         <div className="bg-mf-surface rounded-mf-md border border-mf-border p-5 mb-4">
           <h2 className="font-display font-bold text-sm uppercase tracking-wide flex items-center gap-2 mb-3 text-mf-text">
-            <Car className="w-4 h-4" /> 2. Véhicule
+            <Car className="w-4 h-4 text-mf-signal" /> 2. Véhicule
           </h2>
           {vehicules.length === 0 ? (
             <p className="text-sm text-mf-text-2">
