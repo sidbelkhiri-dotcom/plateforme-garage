@@ -102,5 +102,11 @@ export async function middleware(request: NextRequest) {
 }
 
 export const config = {
-  matcher: ["/((?!_next/static|_next/image|favicon.ico|.*\\.(?:png|jpg|jpeg|svg|gif|webp|ico)$).*)"],
+  // apple-icon et manifest.webmanifest n'ont pas d'extension reconnue par
+  // la liste ci-dessous : sans exclusion explicite ils étaient redirigés
+  // vers /login, donc le manifeste PWA et l'icône iOS ne se chargeaient
+  // jamais pour un visiteur non connecté.
+  matcher: [
+    "/((?!_next/static|_next/image|favicon.ico|apple-icon|manifest.webmanifest|.*\\.(?:png|jpg|jpeg|svg|gif|webp|ico)$).*)",
+  ],
 };
