@@ -33,10 +33,13 @@ const FACETTES = {
   },
 };
 
+// Trois arrêts plutôt que deux : un métal ne s'assombrit pas
+// linéairement, il garde une zone claire franche puis plonge.
 const FACE = {
-  sombre: ["#24455F", "#0C1B26"],
-  claire: ["#EDF1F4", "#B9C2C9"],
+  sombre: ["#263B50", "#10243A", "#071421"],
+  claire: ["#FFFFFF", "#C7C9CA", "#777A7C"],
 };
+const OR = ["#F1D58A", "#B98A31", "#6F4B14"];
 
 export default function LogoMark({
   size = 24,
@@ -53,7 +56,7 @@ export default function LogoMark({
   const face = `face-${uid}`;
   const or = `or-${uid}`;
   const f = FACETTES[variante];
-  const [faceHaut, faceBas] = FACE[variante];
+  const [faceHaut, faceMilieu, faceBas] = FACE[variante];
 
   return (
     <svg
@@ -67,13 +70,13 @@ export default function LogoMark({
       <defs>
         <linearGradient id={face} gradientUnits="userSpaceOnUse" x1="17" y1="12" x2="83" y2="88">
           <stop offset="0" stopColor={faceHaut} />
+          <stop offset="0.55" stopColor={faceMilieu} />
           <stop offset="1" stopColor={faceBas} />
         </linearGradient>
-        <linearGradient id={or} gradientUnits="userSpaceOnUse" x1="26" y1="26" x2="74" y2="74">
-          <stop offset="0" stopColor="#F5E7B0" />
-          <stop offset="0.35" stopColor="#D9B84A" />
-          <stop offset="0.6" stopColor="#C9A227" />
-          <stop offset="1" stopColor="#8F7018" />
+        <linearGradient id={or} gradientUnits="userSpaceOnUse" x1="22" y1="18" x2="78" y2="82">
+          <stop offset="0" stopColor={OR[0]} />
+          <stop offset="0.45" stopColor={OR[1]} />
+          <stop offset="1" stopColor={OR[2]} />
         </linearGradient>
       </defs>
 
