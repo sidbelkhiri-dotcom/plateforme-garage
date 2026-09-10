@@ -228,9 +228,13 @@ export default async function DashboardPage() {
           ) : (
             <ul className="divide-y divide-mf-border">
               {stockBas.map((i) => (
-                <li key={i.id} className="py-2 text-sm flex justify-between text-mf-text">
-                  <span>{i.nom}</span>
-                  <span className="font-mono text-mf-red">
+                <li key={i.id} className="py-2 text-sm flex items-baseline justify-between gap-3 text-mf-text">
+                  {/* Le nom peut être long (« Huile synthétique 0W-20 (5 L) ») :
+                      il doit pouvoir rétrécir et passer à la ligne, tandis que
+                      la quantité reste d'un bloc. Sans ça les deux colonnes se
+                      chevauchent. */}
+                  <span className="min-w-0">{i.nom}</span>
+                  <span className="font-mono text-mf-red shrink-0 whitespace-nowrap">
                     {i.quantite} / seuil {i.seuil}
                   </span>
                 </li>

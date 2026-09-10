@@ -33,8 +33,8 @@
 
   /* Texte — Encre en primaire, Acier en secondaire */
   --mf-text: #0e1f2b;
-  --mf-text-2: #6e7b85;
-  --mf-text-3: #8a8981;
+  --mf-text-2: #65707a;  /* 4,66:1 sur le fond papier, la surface la plus exigeante */
+  --mf-text-3: #72716b;  /* 4,51:1 sur le fond papier — 119 usages, echouait a 3,25 */
 
   /* Marque — Denim pour les remplissages, Signal comme unique point
      d'attention (jamais deux éléments jaunes visibles à la fois) */
@@ -80,7 +80,7 @@
   --mf-sidebar-bg: #0e1f2b;
   --mf-sidebar-text: #f7f6f2;
   --mf-sidebar-text-2: #9fb0bc;
-  --mf-sidebar-text-3: #6e7b85;
+  --mf-sidebar-text-3: #7b8892;  /* 4,61:1 sur l'encre de la barre laterale */
   --mf-sidebar-border: #22394a;
   --mf-sidebar-icon-inactive: #55707f;
 }
@@ -99,15 +99,22 @@
   --mf-border-strong: #3a5a6d;
   --mf-text: #f7f6f2;
   --mf-text-2: #9fb0bc;
-  --mf-text-3: #6e7b85;
-  --mf-blue: #2c6e94;
+  --mf-text-3: #8c97a0;  /* 4,60:1 sur les cartes sombres */
+  --mf-blue: #4d9cca;  /* liens : 4,54:1, echouait a 2,46 */
   --mf-blue-hover: #3d7ca0;
   --mf-blue-soft: rgba(44, 110, 148, 0.22);
   /* Sur fond foncé le jaune vif est très lisible : il redevient la
      couleur d'avant-plan, l'ocre du mode clair serait terne ici. */
   --mf-signal-fg: #e9a81c;
-  --mf-success: #3d8b5f;
-  --mf-success-soft: rgba(61, 139, 95, 0.18);
+  /* Le rouge manquait purement et simplement dans ce bloc : il gardait
+     donc sa valeur pensée pour du blanc et tombait à 2,85:1 sur les
+     cartes sombres, alors qu'il sert aux erreurs et aux montants
+     impayés — les deux choses qu'on ne peut pas se permettre de rater. */
+  --mf-red: #ed6a70;  /* 4,51:1 */
+  --mf-red-hover: #f39599;
+  --mf-red-soft: rgba(237, 106, 112, 0.18);
+  --mf-success: #49a772;  /* 4,63:1 */
+  --mf-success-soft: rgba(73, 167, 114, 0.18);
   --mf-warning: #e9a81c;
   --mf-warning-soft: rgba(233, 168, 28, 0.18);
   --mf-overlay: rgba(0, 0, 0, 0.6);
@@ -125,14 +132,6 @@
 html,
 body {
   height: 100%;
-}
-
-/* Skeleton (components/ui/Skeleton.tsx) — neutralisé par la règle
-   prefers-reduced-motion ci-dessus, comme toute animation du projet. */
-@keyframes shimmer {
-  100% {
-    transform: translateX(100%);
-  }
 }
 
 /* Documents imprimables (évaluation écrite, Lot 6) : la barre latérale et
