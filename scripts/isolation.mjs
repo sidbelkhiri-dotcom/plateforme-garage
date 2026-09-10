@@ -284,6 +284,32 @@ async function nettoyer() {
   if (restes.length) console.warn("\nMénage incomplet : " + restes.join(", "));
 }
 
+// ------------------------------------------------------------
+// Ce que la suite ne sonde pas, elle ne le prouve pas — et une liste de
+// tables écrite à la main vieillit mal. L'ancien test SQL est tombé à 4
+// tables sur 17 par ce seul mécanisme, et le 9 septembre 2026 la suite
+// était verte tout en étant aveugle sur Storage. On compare donc la
+// couverture au schéma réel : toute table portant garage_id, tout seau
+// qui apparaît, et qui n'est pas sondé, fait échouer la suite. Un trou
+// doit coûter un échec, pas passer inaperçu.
+// ------------------------------------------------------------
+async function verifierCouverture(tablesSondees) {
+  const brut = await fetch(`${URL_SUPABASE}/rest/v1/`, { headers: admin }).then((r) => r.text());
+  // Le descripteur contient des caractères de contrôle bruts qui font
+  // échouer JSON.parse — on les neutralise avant d'analyser.
+  const defs = JSON.parse(brut.replace(/[\x00-\x1f]/g, " ")).definitions;
+  const cloisonnees = Object.keys(defs).filter((t) => defs[t].properties?.garage_id);
+  const sondees = [...tablesSondees, "parametres"];
+  const oubliees = cloisonnees.filter((t) => !sondees.includes(t));
+
+  const seaux = await fetch(`${URL_SUPABASE}/storage/v1/bucket`, { headers: admin }).then((r) => r.json());
+  const seauxOublies = (Array.isArray(seaux) ? seaux.map((b) => b.name) : []).filter((n) => !SEAUX.includes(n));
+
+  verifier("couverture", "table portant garage_id jamais sondée", oubliees.length === 0, oubliees.join(", "));
+  verifier("couverture", "seau Storage jamais sondé", seauxOublies.length === 0, seauxOublies.join(", "));
+  console.log(`Couverture : ${sondees.length} tables sur ${cloisonnees.length} cloisonnées, ${SEAUX.length} seaux sur ${Array.isArray(seaux) ? seaux.length : "?"}.`);
+}
+
 try {
   console.log("Mise en place de deux garages complets…");
   const A = await semerGarage("a");
@@ -292,11 +318,15 @@ try {
   const courrielA = `${marque}-a@example.com`;
   const courrielB = `${marque}-b@example.com`;
   const motDePasse = `Iso${Date.now()}!`;
-  await creerUtilisateur(courrielA, motDePasse, A.garage_id);
-  await creerUtilisateur(courrielB, motDePasse, B.garage_id);
+  // `profiles` porte garage_id comme les autres, mais sa ligne est posée
+  // par le déclencheur handle_new_user, pas par semerGarage — d'où ce
+  // rattachement après coup, sans quoi la table échapperait aux sondes.
+  A.profiles = await creerUtilisateur(courrielA, motDePasse, A.garage_id);
+  B.profiles = await creerUtilisateur(courrielB, motDePasse, B.garage_id);
   const sessionA = await ouvrirSession(courrielA, motDePasse);
 
   const TABLES = Object.keys(B).filter((t) => t !== "garage_id");
+  await verifierCouverture(TABLES);
   console.log(`Sondage de ${TABLES.length} tables depuis le garage A…\n`);
   console.log("table                        lecture ciblée  écriture  suppression  fuite en liste");
   console.log("-".repeat(84));
