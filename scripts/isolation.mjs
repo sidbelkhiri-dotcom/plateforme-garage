@@ -310,6 +310,47 @@ async function verifierCouverture(tablesSondees) {
   console.log(`Couverture : ${sondees.length} tables sur ${cloisonnees.length} cloisonnées, ${SEAUX.length} seaux sur ${Array.isArray(seaux) ? seaux.length : "?"}.`);
 }
 
+// ------------------------------------------------------------
+// L'angle mort inverse. La suite ne sonde que ce qu'elle sème : elle ne
+// peut pas voir une table arrivée sans cloison du tout, ni une politique
+// écrite à la main qui oublie garage_actuel() pendant que ses voisines
+// l'ont — la forme exacte du bug d'inspection-photos. auditer_cloisonnement()
+// interroge le catalogue et répond à cette question-là.
+// ------------------------------------------------------------
+async function auditerSchema() {
+  const r = await fetch(`${URL_SUPABASE}/rest/v1/rpc/auditer_cloisonnement`, {
+    method: "POST", headers: admin, body: "{}",
+  });
+  if (!r.ok) {
+    const texte = await r.text();
+    if (texte.includes("PGRST202") || r.status === 404) {
+      // Sauter l'audit en silence rendrait la suite verte tout en la
+      // rendant aveugle — précisément ce qu'on cherche à empêcher.
+      verifier("schéma", "auditer_cloisonnement() absente de la base", false,
+        "appliquer supabase/migrations/2026-09-30_auditer_cloisonnement.sql");
+      console.log("Audit du schéma : IMPOSSIBLE — migration 2026-09-30 non appliquée.\n");
+      return;
+    }
+    throw new Error(`audit du schéma : ${r.status} ${texte.slice(0, 200)}`);
+  }
+  const audit = await r.json();
+  const LIBELLES = {
+    rls_desactivee: "table publique sans RLS",
+    rls_sans_politique: "table avec RLS mais aucune politique",
+    politiques_non_cloisonnees: "politique ignorant garage_actuel()",
+    fonctions_search_path_mutable: "fonction security definer sans search_path fixé",
+    vues_security_definer: "vue en security definer",
+  };
+  let total = 0;
+  for (const [cle, libelle] of Object.entries(LIBELLES)) {
+    const trouves = audit[cle] ?? [];
+    total += trouves.length;
+    verifier("schéma", libelle, trouves.length === 0,
+      trouves.map((t) => (typeof t === "string" ? t : `${t.table}.${t.politique} (${t.commande})`)).join(", "));
+  }
+  console.log(`Audit du schéma : ${total === 0 ? "rien à signaler" : total + " point(s) à corriger"}.`);
+}
+
 try {
   console.log("Mise en place de deux garages complets…");
   const A = await semerGarage("a");
@@ -327,6 +368,7 @@ try {
 
   const TABLES = Object.keys(B).filter((t) => t !== "garage_id");
   await verifierCouverture(TABLES);
+  await auditerSchema();
   console.log(`Sondage de ${TABLES.length} tables depuis le garage A…\n`);
   console.log("table                        lecture ciblée  écriture  suppression  fuite en liste");
   console.log("-".repeat(84));
