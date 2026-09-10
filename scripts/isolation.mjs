@@ -79,6 +79,9 @@ const creer = (table, donnees) => srv(table, { method: "POST", body: JSON.string
 // Mise en place : deux garages complets, deux comptes ordinaires.
 // ------------------------------------------------------------
 const aCreer = { garages: [], utilisateurs: [] };
+const SEAUX = ["vehicules-stock", "inspection-photos", "factures-pieces"];
+const SEAUX_PUBLICS = ["vehicules-stock", "inspection-photos"];
+const objetsSemes = [];
 
 async function creerUtilisateur(courriel, motDePasse, garageId) {
   const r = await fetch(`${URL_SUPABASE}/auth/v1/admin/users`, {
@@ -256,6 +259,11 @@ const ORDRE_MENAGE = [
 
 async function nettoyer() {
   const restes = [];
+  for (const [seau, chemin] of objetsSemes) {
+    await fetch(`${URL_SUPABASE}/storage/v1/object/${seau}/${chemin}`, {
+      method: "DELETE", headers: { apikey: SERVICE, Authorization: `Bearer ${SERVICE}` },
+    }).catch(() => {});
+  }
   for (const id of aCreer.utilisateurs) {
     await fetch(`${URL_SUPABASE}/auth/v1/admin/users/${id}`, { method: "DELETE", headers: admin }).catch(() => {});
   }
@@ -352,6 +360,65 @@ try {
   verifier("clients", "insertion forcée dans l'autre garage", intrusionBloquee,
     `garage_id obtenu : ${insert.corps?.[0]?.garage_id ?? insert.statut}`);
   console.log("\ninsertion forcée dans l'autre garage : " + (intrusionBloquee ? "bloquée" : "ACCEPTÉE — FUITE"));
+
+  // ------------------------------------------------------------
+  // 6. Storage. Les fichiers ne sont pas des lignes : RLS sur les tables
+  //    ne les protège en rien, et c'est exactement là que la suite était
+  //    aveugle quand elle a été écrite. Le 9 septembre 2026, une sonde
+  //    manuelle y a trouvé une vraie fuite (`inspection-photos` laissait
+  //    lister le dossier du voisin) — d'où ce volet, pour qu'elle ne
+  //    puisse plus se rouvrir sans que personne ne le voie.
+  // ------------------------------------------------------------
+  console.log("\nseau                 dépôt chez B   liste de B   lecture de B     suppression chez B");
+  console.log("-".repeat(84));
+  for (const seau of SEAUX) {
+    const chemin = `${B.garage_id}/${marque}.txt`;
+    // Semé avec la clé service : on éprouve l'accès, pas la création.
+    await fetch(`${URL_SUPABASE}/storage/v1/object/${seau}/${chemin}`, {
+      method: "POST",
+      headers: { apikey: SERVICE, Authorization: `Bearer ${SERVICE}`, "Content-Type": "text/plain" },
+      body: "donnees du garage B",
+    });
+    objetsSemes.push([seau, chemin]);
+
+    const depot = await fetch(`${URL_SUPABASE}/storage/v1/object/${seau}/${B.garage_id}/${marque}-intrus.txt`, {
+      method: "POST", headers: { ...sessionA, "Content-Type": "text/plain" }, body: "intrusion",
+    });
+    if (depot.ok) objetsSemes.push([seau, `${B.garage_id}/${marque}-intrus.txt`]);
+    const depotOk = verifier(seau, "dépôt d'un fichier chez l'autre garage", depot.status >= 400, `statut ${depot.status}`);
+
+    const liste = await fetch(`${URL_SUPABASE}/storage/v1/object/list/${seau}`, {
+      method: "POST", headers: { ...sessionA, "Content-Type": "application/json" },
+      body: JSON.stringify({ prefix: `${B.garage_id}/`, limit: 50 }),
+    }).then((r) => r.json()).catch(() => null);
+    const listeOk = verifier(seau, "listage du dossier de l'autre garage",
+      !Array.isArray(liste) || liste.length === 0, `${Array.isArray(liste) ? liste.length : "?"} objet(s)`);
+
+    // Sur un seau public, lire par chemin ne consulte aucune politique :
+    // c'est le drapeau `public` du seau, le compromis assumé rappelé plus
+    // bas. Le compter comme une fuite ferait crier la suite sur un choix
+    // délibéré, et une suite qui crie pour rien finit ignorée. Ce qui doit
+    // rester verrouillé même sur un seau public, c'est le LISTAGE : sans
+    // lui, le chemin reste un UUID indevinable ; avec lui, plus rien à
+    // deviner. Sur un seau privé, en revanche, la lecture doit échouer.
+    const lecture = await fetch(`${URL_SUPABASE}/storage/v1/object/${seau}/${chemin}`, { headers: sessionA });
+    const estPublic = SEAUX_PUBLICS.includes(seau);
+    const lectureOk = estPublic
+      ? true
+      : verifier(seau, "lecture d'un fichier de l'autre garage", lecture.status >= 400, `statut ${lecture.status}`);
+
+    const suppression = await fetch(`${URL_SUPABASE}/storage/v1/object/${seau}/${chemin}`, { method: "DELETE", headers: sessionA });
+    const supprOk = verifier(seau, "suppression d'un fichier de l'autre garage", suppression.status >= 400, `statut ${suppression.status}`);
+
+    const c = (ok) => (ok ? "ok" : "FUITE");
+    const lectureAffichee = estPublic ? "public (assumé)" : c(lectureOk);
+    console.log(seau.padEnd(21) + c(depotOk).padEnd(15) + c(listeOk).padEnd(13) + lectureAffichee.padEnd(17) + c(supprOk));
+  }
+  // Les seaux publics sont lisibles par URL sans aucune clé — c'est le
+  // drapeau `public` du seau, pas une politique, et c'est voulu : le
+  // client doit voir ses photos d'inspection sans compte. On l'affiche
+  // pour que ce compromis reste sous les yeux, sans faire échouer la suite.
+  console.log("\nRappel — seaux publics en lecture par URL (assumé) : " + SEAUX_PUBLICS.join(", "));
 
   await nettoyer();
 
