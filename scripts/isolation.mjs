@@ -82,6 +82,11 @@ const aCreer = { garages: [], utilisateurs: [] };
 const SEAUX = ["vehicules-stock", "inspection-photos", "factures-pieces"];
 const SEAUX_PUBLICS = ["vehicules-stock", "inspection-photos"];
 const objetsSemes = [];
+// Volontairement identiques d'un garage à l'autre — voir la collision
+// dans semerGarage(). Suffixés par la marque du run pour ne pas heurter
+// les restes d'une exécution précédente.
+const PLAQUE_PARTAGEE = `ISO${String(Date.now()).slice(-4)}`;
+const VIN_PARTAGE = `ISO${String(Date.now()).slice(-14)}`;
 
 async function creerUtilisateur(courriel, motDePasse, garageId) {
   const r = await fetch(`${URL_SUPABASE}/auth/v1/admin/users`, {
@@ -133,7 +138,15 @@ async function semerGarage(suffixe) {
   }
 
   const client = await creer("clients", { garage_id: g, nom: `${marque}-client-${suffixe}` });
-  const vehicule = await creer("vehicules", { garage_id: g, client_id: client.id, marque: "Testo", modele: "Iso" });
+  // Collision volontaire. Les deux garages immatriculent délibérément la
+  // même plaque et le même NIV : les index uniques ont été repartitionnés
+  // en (garage_id, upper(plaque)) le 2026-09-02, sans quoi le deuxième
+  // garage à voir un véhicule déjà connu ailleurs se ferait refuser — et
+  // apprendrait au passage qu'un autre garage l'a en fiche.
+  const vehicule = await creer("vehicules", {
+    garage_id: g, client_id: client.id, marque: "Testo", modele: "Iso",
+    plaque: PLAQUE_PARTAGEE, vin: VIN_PARTAGE,
+  });
   const bon = await creer("bons_travail", {
     garage_id: g,
     client_id: client.id,
@@ -211,6 +224,8 @@ async function semerGarage(suffixe) {
   const demandeRdv = await creer("demandes_rendez_vous", { garage_id: g, nom: `${marque} demande` });
 
   Object.assign(donnees, {
+    numero_bon: bon.numero,
+    numero_facture: facture.numero,
     clients: client.id,
     vehicules: vehicule.id,
     bons_travail: bon.id,
@@ -382,7 +397,7 @@ try {
   B.profiles = await creerUtilisateur(courrielB, motDePasse, B.garage_id);
   const sessionA = await ouvrirSession(courrielA, motDePasse);
 
-  const TABLES = Object.keys(B).filter((t) => t !== "garage_id");
+  const TABLES = Object.keys(B).filter((t) => !["garage_id", "numero_bon", "numero_facture"].includes(t));
   await verifierCouverture(TABLES);
   await auditerSchema();
   console.log(`Sondage de ${TABLES.length} tables depuis le garage A…\n`);
@@ -448,6 +463,32 @@ try {
   verifier("clients", "insertion forcée dans l'autre garage", intrusionBloquee,
     `garage_id obtenu : ${insert.corps?.[0]?.garage_id ?? insert.statut}`);
   console.log("\ninsertion forcée dans l'autre garage : " + (intrusionBloquee ? "bloquée" : "ACCEPTÉE — FUITE"));
+
+  // ------------------------------------------------------------
+  // 5 bis. Numérotation. Les séquences globales BT-/FA- ont été
+  //   remplacées le 2026-09-09 par un compteur par garage. Deux garages
+  //   neufs doivent donc tous deux commencer à 0001 : si l'un repart où
+  //   l'autre s'est arrêté, les numéros s'entremêlent, et un garage peut
+  //   déduire le volume d'affaires de ses voisins en regardant les trous
+  //   dans sa propre suite. Sur une facture, la suite est en outre une
+  //   obligation comptable, pas un confort.
+  // ------------------------------------------------------------
+  const numerosOk =
+    A.numero_bon === B.numero_bon && A.numero_facture === B.numero_facture;
+  verifier("numérotation", "deux garages neufs ne commencent pas au même numéro", numerosOk,
+    `A : ${A.numero_bon}/${A.numero_facture}, B : ${B.numero_bon}/${B.numero_facture}`);
+  console.log(`\nNumérotation — garage A : ${A.numero_bon} et ${A.numero_facture}, garage B : ${B.numero_bon} et ${B.numero_facture}` +
+    (numerosOk ? " (compteurs indépendants)" : " — ENTREMÊLÉS"));
+  // Une ligne d'affichage ne prouve rien : on vérifie que la collision a
+  // bien eu lieu en base. Si l'index redevenait global, le deuxième semis
+  // échouerait et la suite s'arrêterait avant d'arriver ici — mais si la
+  // plaque cessait d'être partagée, le test deviendrait creux sans que
+  // rien ne le signale. C'est ce second cas que cette assertion couvre.
+  const memePlaque = await srv(`vehicules?select=garage_id&plaque=eq.${PLAQUE_PARTAGEE}`);
+  const garagesDistincts = new Set(memePlaque.map((v) => v.garage_id));
+  verifier("collision", "la même plaque n'est pas immatriculée dans les deux garages",
+    garagesDistincts.size === 2, `${garagesDistincts.size} garage(s)`);
+  console.log(`Collision volontaire — la plaque ${PLAQUE_PARTAGEE} est immatriculée dans ${garagesDistincts.size} garages : acceptée.`);
 
   // ------------------------------------------------------------
   // 6. Storage. Les fichiers ne sont pas des lignes : RLS sur les tables
