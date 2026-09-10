@@ -12,7 +12,7 @@ import MessageErreur from "@/components/ui/MessageErreur";
 import Chargement from "@/components/ui/Chargement";
 import { todayLocal, formatDateLong } from "@/lib/dates";
 
-type Client = { id: string; nom: string; telephone: string | null };
+type Client = { id: string; nom: string; telephone: string | null; taux_horaire: number | null };
 type Vehicule = { id: string; marque: string; modele: string | null; annee: number | null };
 type BonHistorique = {
   id: string;
@@ -67,7 +67,7 @@ function NouveauBonTravailContenu() {
   useEffect(() => {
     supabase
       .from("clients")
-      .select("id, nom, telephone")
+      .select("id, nom, telephone, taux_horaire")
       .order("nom")
       .then(({ data }) => {
         setClients(data ?? []);
@@ -122,6 +122,14 @@ function NouveauBonTravailContenu() {
 
     const { data: parametres } = await supabase.from("parametres").select("taux_horaire").single();
 
+    // Le tarif négocié du client l'emporte sur celui du garage. `??` et
+    // non `||` : un client à qui on a réellement accordé 0 $ de
+    // main-d'œuvre garde son zéro, au lieu de retomber en silence sur le
+    // taux plein. Cette valeur est recopiée sur le bon ci-dessous et n'est
+    // plus jamais relue depuis la fiche client — changer le tarif d'un
+    // client ne touchera donc aucun bon déjà ouvert.
+    const tauxApplique = clientSelectionne.taux_horaire ?? parametres?.taux_horaire ?? 0;
+
     const { data, error } = await supabase
       .from("bons_travail")
       .insert({
@@ -131,7 +139,7 @@ function NouveauBonTravailContenu() {
         employe_id: employeId || null,
         kilometrage: Number(kilometrage),
         plainte_client: plainteClient.trim(),
-        taux_horaire: parametres?.taux_horaire ?? 0,
+        taux_horaire: tauxApplique,
         statut: "evaluation",
         // Jamais le défaut `current_date` du schéma : ce serait de l'UTC
         // côté base de données, le même piège que D18 déplacé d'un cran (D18).

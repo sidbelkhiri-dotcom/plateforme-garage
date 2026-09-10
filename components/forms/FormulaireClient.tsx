@@ -12,6 +12,7 @@ export type ClientValeurs = {
   email: string;
   adresse: string;
   codePostal: string;
+  tauxHoraire: string;
   notes: string;
 };
 
@@ -21,6 +22,7 @@ const VALEURS_VIDES: ClientValeurs = {
   email: "",
   adresse: "",
   codePostal: "",
+  tauxHoraire: "",
   notes: "",
 };
 
@@ -50,6 +52,10 @@ export default function FormulaireClient({
       email: valeurs.email || null,
       adresse: valeurs.adresse || null,
       code_postal: valeurs.codePostal || null,
+      // Champ vide = null = le client suit le taux du garage. On ne
+      // convertit surtout pas en 0, qui signifierait « main-d'œuvre
+      // gratuite » et ne se verrait qu'à la facture.
+      taux_horaire: valeurs.tauxHoraire.trim() === "" ? null : Number(valeurs.tauxHoraire),
       notes: valeurs.notes || null,
     };
     const reussi = await soumettre(async () =>
@@ -86,6 +92,15 @@ export default function FormulaireClient({
           onChange={(e) => definir("codePostal", e.target.value)}
         />
       </div>
+      <Champ
+        label="Taux horaire négocié ($/h)"
+        type="number"
+        min="0"
+        step="0.01"
+        placeholder="Taux du garage"
+        value={valeurs.tauxHoraire}
+        onChange={(e) => definir("tauxHoraire", e.target.value)}
+      />
       <Champ label="Notes" value={valeurs.notes} onChange={(e) => definir("notes", e.target.value)} />
       {erreur && <MessageErreur>{erreur}</MessageErreur>}
       <div className="flex justify-end gap-2 mt-1">

@@ -4,7 +4,7 @@ import { useCallback, useEffect, useState } from "react";
 import Link from "next/link";
 import { useParams, useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
-import { ArrowLeft, Plus, Car, Phone, Mail, MapPin, Pencil, Trash2, History, Camera, ShieldCheck } from "lucide-react";
+import { ArrowLeft, Plus, Car, Phone, Mail, MapPin, Pencil, Trash2, History, Camera, ShieldCheck, DollarSign } from "lucide-react";
 import Modale from "@/components/ui/Modale";
 import ModaleConfirmation from "@/components/ui/ModaleConfirmation";
 import Bouton from "@/components/ui/Bouton";
@@ -24,6 +24,7 @@ type Client = {
   email: string | null;
   adresse: string | null;
   code_postal: string | null;
+  taux_horaire: number | null;
   notes: string | null;
 };
 
@@ -182,6 +183,15 @@ export default function ClientDetailPage() {
             <span className="flex items-center gap-1.5">
               <MapPin className="w-3.5 h-3.5 text-mf-text-3" />
               {[client.adresse, client.code_postal].filter(Boolean).join(", ")}
+            </span>
+          )}
+          {/* Un tarif négocié doit se voir sur la fiche : sinon il ne se
+              découvre qu'au moment de facturer, quand il est trop tard
+              pour le corriger. */}
+          {client.taux_horaire != null && (
+            <span className="flex items-center gap-1.5">
+              <DollarSign className="w-3.5 h-3.5 text-mf-signal-fg" />
+              <span className="font-semibold text-mf-text">{client.taux_horaire} $/h</span> négocié
             </span>
           )}
         </div>
@@ -346,6 +356,7 @@ export default function ClientDetailPage() {
               email: client.email ?? "",
               adresse: client.adresse ?? "",
               codePostal: client.code_postal ?? "",
+              tauxHoraire: client.taux_horaire != null ? String(client.taux_horaire) : "",
               notes: client.notes ?? "",
             }}
             onSucces={() => {
