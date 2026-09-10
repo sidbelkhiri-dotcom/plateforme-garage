@@ -92,14 +92,30 @@ async function creerUtilisateur(courriel, motDePasse, garageId) {
   if (!r.ok) throw new Error(`création utilisateur : ${await r.text()}`);
   const { id } = await r.json();
   aCreer.utilisateurs.push(id);
-  // Le déclencheur handle_new_user a posé un profil ; on le rattache au
-  // garage voulu, en rôle admin pour que les écritures soient permises —
-  // admin DU GARAGE, surtout pas admin de plateforme, qui traverse le
-  // cloisonnement par conception et rendrait le test inutile.
-  await srv(`profiles?id=eq.${id}`, {
-    method: "PATCH",
-    body: JSON.stringify({ garage_id: garageId, role: "admin", actif: true }),
-  });
+  // Le déclencheur handle_new_user a posé un profil en rôle mecanicien.
+  // On le veut admin DU GARAGE — surtout pas admin de plateforme, qui
+  // traverse le cloisonnement par conception et rendrait le test inutile.
+  //
+  // Mais on ne peut pas y arriver par un PATCH : protect_profile_role()
+  // annule silencieusement tout changement de rôle demandé sans
+  // auth.uid(), et la clé service n'en a pas. Le PATCH renvoie 200 et
+  // laisse le compte en mecanicien. La suite a tourné ainsi jusqu'au
+  // 2026-09-30, sondant les écritures avec un rôle plus faible que celui
+  // qu'elle annonçait : là où une politique exige est_role('admin'), le
+  // refus venait du rôle et non du cloisonnement, et le « ok » ne
+  // prouvait rien.
+  //
+  // Le déclencheur n'est posé que sur UPDATE : on remplace donc la ligne
+  // au lieu de la modifier.
+  await srv(`profiles?id=eq.${id}`, { method: "DELETE" });
+  await creer("profiles", { id, nom: courriel, garage_id: garageId, role: "admin", actif: true });
+
+  // Vérifié plutôt que supposé : c'est exactement l'hypothèse qui a
+  // rendu la suite trop indulgente pendant une journée.
+  const [profil] = await srv(`profiles?select=role,garage_id&id=eq.${id}`);
+  if (profil?.role !== "admin" || profil?.garage_id !== garageId) {
+    throw new Error(`semis du compte ${courriel} : rôle ${profil?.role}, garage ${profil?.garage_id} — attendu admin dans ${garageId}`);
+  }
   return id;
 }
 
@@ -491,6 +507,38 @@ try {
   // client doit voir ses photos d'inspection sans compte. On l'affiche
   // pour que ce compromis reste sous les yeux, sans faire échouer la suite.
   console.log("\nRappel — seaux publics en lecture par URL (assumé) : " + SEAUX_PUBLICS.join(", "));
+
+  // ------------------------------------------------------------
+  // 7. L'autre moitié. Tout ce qui précède vérifie que l'interdit reste
+  //    interdit ; rien ne vérifiait que le permis reste permis. Une
+  //    politique trop serrée passe donc toutes les sondes ci-dessus avec
+  //    un sans-faute, en ayant coupé le garage de ses propres données.
+  //    Le 2026-09-30, faute de ce contrôle, j'ai cru vingt minutes durant
+  //    avoir cassé la gestion du personnel.
+  // ------------------------------------------------------------
+  console.log("\nAccès légitime du garage à ses propres données :");
+  for (const table of TABLES) {
+    const lecture = await commeUtilisateur(sessionA, `${table}?select=id&id=eq.${A[table]}`);
+    verifier(table, "le garage ne voit plus sa propre ligne",
+      Array.isArray(lecture.corps) && lecture.corps.length === 1,
+      `${lecture.corps?.length ?? "?"} ligne(s)`);
+  }
+  // Une écriture réelle sur trois tables représentatives : la lecture
+  // seule ne dirait rien d'un UPDATE devenu trop strict.
+  const ECRITURES = [
+    ["clients", { notes: `${marque} note` }],
+    ["inventaire", { quantite: 4 }],
+    ["profiles", { nom: `${marque} employé` }],
+  ];
+  for (const [table, corps] of ECRITURES) {
+    const r = await commeUtilisateur(sessionA, `${table}?id=eq.${A[table]}`, {
+      method: "PATCH", body: JSON.stringify(corps),
+    });
+    verifier(table, "le garage ne peut plus modifier sa propre ligne",
+      r.statut < 400 && Array.isArray(r.corps) && r.corps.length === 1,
+      `statut ${r.statut}, ${r.corps?.length ?? 0} ligne(s)`);
+  }
+  console.log(`  ${TABLES.length} lectures et ${ECRITURES.length} écritures sur ses propres données.`);
 
   await nettoyer();
 
