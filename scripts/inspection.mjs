@@ -278,6 +278,42 @@ try {
   const revocation = await appeler("revoquer_inspections_bon", {});
   verifier("appeler revoquer_inspections_bon()", revocation.statut >= 400, `statut ${revocation.statut}`);
 
+  // L'inventaire complet. Supabase accorde EXECUTE à anon sur toute
+  // nouvelle fonction du schéma public : chaque fonction ajoutée sans
+  // revoke explicite devient une porte, sans bruit. L'omission s'est
+  // produite trois fois dans ce projet. Sonder une fonction connue ne
+  // suffit donc pas — il faut comparer la liste entière à ce qu'on
+  // attend, pour que l'ouverture d'une porte reste un geste conscient.
+  //
+  // Les six attendues, et pourquoi chacune :
+  //   obtenir_inspection_publique, repondre_inspection_point
+  //     Les deux portes de l'inspection — l'objet même de cette suite.
+  //   obtenir_garage_public
+  //     La fiche publique d'un garage par son slug, pour la prise de
+  //     rendez-vous en ligne. Ne renvoie que nom, adresse, téléphone,
+  //     et seulement pour un garage actif.
+  //   est_role, est_admin_plateforme, garage_actuel
+  //     Appelées par les politiques RLS, lesquelles s'évaluent avec les
+  //     privilèges de l'appelant : les révoquer ferait échouer en
+  //     « permission denied » toute requête anonyme légitime, dont la
+  //     borne d'accueil. Exposition nulle — elles ne renseignent que sur
+  //     l'appelant, et pour un anonyme c'est null et false.
+  const ATTENDUES = [
+    "est_admin_plateforme", "est_role", "garage_actuel",
+    "obtenir_garage_public", "obtenir_inspection_publique", "repondre_inspection_point",
+  ];
+  const inventaire = await srv("rpc/fonctions_publiques", { method: "POST", body: "{}" })
+    .catch(() => null);
+  if (inventaire === null) {
+    verifier("inventaire des fonctions publiques indisponible", false,
+      "appliquer supabase/migrations/2026-10-02_inventaire_fonctions_publiques.sql");
+  } else {
+    const surplus = inventaire.filter((f) => !ATTENDUES.includes(f));
+    const manquantes = ATTENDUES.filter((f) => !inventaire.includes(f));
+    verifier("aucune fonction publique inattendue", surplus.length === 0, surplus.join(", "));
+    verifier("les portes attendues sont toutes ouvertes", manquantes.length === 0, manquantes.join(", "));
+  }
+
   // ------------------------------------------------------------
   console.log("\n5. Facturer le bon coupe le lien, comme promis");
   // ------------------------------------------------------------
