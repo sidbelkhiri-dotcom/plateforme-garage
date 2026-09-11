@@ -10,7 +10,8 @@
     "types": "supabase gen types typescript --project-id \"$SUPABASE_PROJECT_ID\" > lib/database.types.ts",
     "sauvegarde": "node scripts/sauvegarde.mjs",
     "fumee": "node scripts/fumee.mjs",
-    "isolation": "node scripts/isolation.mjs"
+    "isolation": "node scripts/isolation.mjs",
+    "inspection": "node scripts/inspection.mjs"
   },
   "dependencies": {
     "@supabase/ssr": "^0.5.1",
