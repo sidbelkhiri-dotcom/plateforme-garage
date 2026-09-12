@@ -62,13 +62,24 @@ export default function InventairePage() {
   const colonnes: ColonneTableau<Item>[] = [
     { cle: "nom", titre: "Nom" },
     { cle: "reference", titre: "Référence", rendu: (i) => i.reference ?? "—" },
+    // Même règle que sur le tableau de bord : le rouge est réservé à la
+    // rupture (zéro en stock), l'ocre signale le passage sous le seuil. Les
+    // deux écrans montraient la même information dans deux couleurs
+    // différentes, ce qui apprend au lecteur que la couleur ne veut rien
+    // dire. Et seule la quantité est teintée — « / seuil 6 » est une
+    // référence, pas une alarme.
     {
       cle: "quantite",
       titre: "Stock",
       rendu: (i) => (
-        <span className={i.stock_bas ? "text-mf-red font-semibold flex items-center gap-1 justify-end md:justify-start" : ""}>
-          {i.stock_bas && <AlertTriangle className="w-3.5 h-3.5" />}
-          {i.quantite} / seuil {i.seuil}
+        <span className="flex items-center gap-1 justify-end md:justify-start tabular-nums">
+          {i.stock_bas && (
+            <AlertTriangle className={`w-3.5 h-3.5 shrink-0 ${i.quantite === 0 ? "text-mf-red" : "text-mf-warning"}`} />
+          )}
+          <span className={i.quantite === 0 ? "font-semibold text-mf-red" : i.stock_bas ? "font-semibold text-mf-warning" : ""}>
+            {i.quantite}
+          </span>
+          <span className={i.stock_bas ? "text-mf-text-3" : ""}> / seuil {i.seuil}</span>
         </span>
       ),
     },
@@ -115,7 +126,7 @@ export default function InventairePage() {
           <h1 className="text-[1.625rem] font-display font-bold uppercase tracking-[0.01em] text-mf-text">Inventaire</h1>
           <p className="text-sm text-mf-text-2">
             {items.length} pièce(s)
-            {stockBasCount > 0 && <span className="text-mf-red font-semibold"> · {stockBasCount} en stock bas</span>}
+            {stockBasCount > 0 && <span className="text-mf-warning font-semibold"> · {stockBasCount} en stock bas</span>}
           </p>
         </div>
         {peutGererClients && (

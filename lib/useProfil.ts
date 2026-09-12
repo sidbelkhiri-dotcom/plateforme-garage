@@ -16,13 +16,34 @@ export type Profil = {
 // Le rôle du compte connecté, côté client — sert seulement à adapter
 // l'affichage (cacher un bouton qui échouerait de toute façon). La vraie
 // autorisation vit dans la RLS (D3), jamais ici.
+// Le rôle du dernier compte connecté, gardé dans le navigateur. Il ne
+// donne aucun droit — la RLS reste le seul verrou — il sert uniquement à
+// dessiner la bonne barre latérale dès le premier pixel. Sans lui, tant
+// que la requête de profil n'a pas répondu, tout le monde est traité
+// comme un mécanicien : les entrées Paramètres et Facturation
+// apparaissent après coup et le menu saute à chaque rechargement de page.
+const CLE_ROLE = "garagenda:dernier-role";
+
 export function useProfil() {
   const supabase = createClient();
   const [profil, setProfil] = useState<Profil | null>(null);
+  const [roleMemorise, setRoleMemorise] = useState<Role | null>(null);
   const [chargement, setChargement] = useState(true);
 
   useEffect(() => {
     let actif = true;
+
+    // Lu dans un effet, jamais à l'initialisation de l'état : le serveur
+    // n'a pas de localStorage, et un état initial différent entre le rendu
+    // serveur et le rendu client casserait l'hydratation.
+    try {
+      const memorise = localStorage.getItem(CLE_ROLE);
+      if (memorise === "admin" || memorise === "reception" || memorise === "mecanicien") {
+        setRoleMemorise(memorise);
+      }
+    } catch {
+      // Navigation privée ou stockage refusé : on repart simplement sans.
+    }
 
     // Requête du profil pour un utilisateur donné, avec quelques
     // tentatives si Supabase répond un hoquet passager — sans ça, un
@@ -38,6 +59,11 @@ export function useProfil() {
         if (!actif) return;
         if (error) throw error;
         setProfil(data as Profil);
+        try {
+          localStorage.setItem(CLE_ROLE, (data as Profil).role);
+        } catch {
+          // Sans stockage, on perd seulement le confort au prochain chargement.
+        }
         setChargement(false);
       } catch {
         if (!actif) return;
@@ -65,7 +91,15 @@ export function useProfil() {
       if (session?.user) {
         chargerProfil(session.user.id);
       } else {
+        // Déconnexion : on oublie le rôle mémorisé, sinon le compte suivant
+        // hériterait de la barre latérale du précédent le temps d'un éclair.
         setProfil(null);
+        setRoleMemorise(null);
+        try {
+          localStorage.removeItem(CLE_ROLE);
+        } catch {
+          // Rien à faire : la valeur n'aura de toute façon pas été posée.
+        }
         setChargement(false);
       }
     });
@@ -77,8 +111,10 @@ export function useProfil() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  const peutGererClients = profil?.role === "admin" || profil?.role === "reception";
-  const estAdmin = profil?.role === "admin";
+  // Le profil réel dès qu'il arrive, le rôle mémorisé en attendant.
+  const roleEffectif = profil?.role ?? roleMemorise;
+  const peutGererClients = roleEffectif === "admin" || roleEffectif === "reception";
+  const estAdmin = roleEffectif === "admin";
   // Même ensemble de rôles que peutGererClients (admin/reception), nommé
   // différemment pour que les pages de bons de travail restent lisibles —
   // la vraie protection vit dans la RLS et le trigger D25, pas ici.
