@@ -292,14 +292,14 @@ try {
   //     La fiche publique d'un garage par son slug, pour la prise de
   //     rendez-vous en ligne. Ne renvoie que nom, adresse, téléphone,
   //     et seulement pour un garage actif.
-  //   est_role, est_admin_plateforme, garage_actuel
+  //   est_role, est_admin_plateforme, garage_actuel, garage_operationnel
   //     Appelées par les politiques RLS, lesquelles s'évaluent avec les
   //     privilèges de l'appelant : les révoquer ferait échouer en
   //     « permission denied » toute requête anonyme légitime, dont la
   //     borne d'accueil. Exposition nulle — elles ne renseignent que sur
   //     l'appelant, et pour un anonyme c'est null et false.
   const ATTENDUES = [
-    "est_admin_plateforme", "est_role", "garage_actuel",
+    "est_admin_plateforme", "est_role", "garage_actuel", "garage_operationnel",
     "obtenir_garage_public", "obtenir_inspection_publique", "repondre_inspection_point",
   ];
   const inventaire = await srv("rpc/fonctions_publiques", { method: "POST", body: "{}" })
