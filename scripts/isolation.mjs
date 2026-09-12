@@ -639,6 +639,20 @@ try {
     console.log(`  ${etiquette.padEnd(30)} lecture ${r.litEncore ? "ok" : "PERDUE"}   écriture ${r.ecritEncore ? "TOUJOURS POSSIBLE" : "gelée"}`);
   }
 
+  // Garage inscrit mais jamais abonné. DÉCISION DE PHASE PILOTE du
+  // 2026-09-12 : il garde un accès complet et sans limite de durée — voir
+  // la note dans middleware.ts. Cette assertion n'est pas là parce que
+  // c'est souhaitable à terme, mais pour que ce soit un choix écrit plutôt
+  // qu'une valeur par défaut qu'on découvre un jour. Le jour où un essai
+  // gratuit ou un paiement préalable sera introduit, elle échouera : c'est
+  // voulu, il faudra alors la réécrire en même temps que la décision.
+  await etatGarage({ statut: "actif", abonnement_statut: null });
+  const sansAbonnement = await sonderEtat("sans abonnement");
+  verifier("cycle de vie", "sans abonnement — la décision de phase pilote a changé (voir middleware.ts)",
+    sansAbonnement.litEncore && sansAbonnement.ecritEncore,
+    `lecture ${sansAbonnement.litEncore}, écriture ${sansAbonnement.ecritEncore}`);
+  console.log(`  ${"sans abonnement (pilote)".padEnd(30)} lecture ${sansAbonnement.litEncore ? "ok" : "PERDUE"}   écriture ${sansAbonnement.ecritEncore ? "ouverte, par décision" : "GELÉE — décision changée ?"}`);
+
   // Et le retour. Une suspension qu'on ne sait pas lever est une panne,
   // pas un levier — c'est l'autre moitié, celle qu'on oublie.
   await etatGarage({ statut: "actif", abonnement_statut: "active" });

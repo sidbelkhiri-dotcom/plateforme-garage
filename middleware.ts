@@ -75,6 +75,17 @@ export async function middleware(request: NextRequest) {
     // /facturation reste toujours accessible pour permettre de régler le
     // problème (ou de contacter l'admin du garage, voir FacturationClient).
     const garage = profil?.garages as unknown as { statut: string; abonnement_statut: string | null } | null;
+    // DÉCISION DE PHASE PILOTE (2026-09-12) — un garage sans abonnement
+    // (abonnement_statut null, soit tout garage qui vient de s'inscrire)
+    // garde un accès complet, sans limite de durée. Ce n'est pas un oubli :
+    // aucun garage payant n'existe encore, et on laisse l'accès libre le
+    // temps de la phase pilote. Avant le premier garage payant, trancher
+    // entre un essai à durée limitée et le paiement avant usage.
+    //
+    // Cette règle est recopiée dans garage_operationnel() côté base, et
+    // éprouvée par scripts/isolation.mjs, qui échouera si l'une des deux
+    // change sans l'autre — et si elle change tout court, pour forcer à
+    // réviser cette note plutôt qu'à la laisser mentir.
     const STATUTS_ABONNEMENT_BLOQUANTS = ["past_due", "canceled", "unpaid", "incomplete_expired"];
     const garageBloque =
       garage &&
