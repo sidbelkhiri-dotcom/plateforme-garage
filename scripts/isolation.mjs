@@ -260,6 +260,12 @@ async function ouvrirSession(courriel, motDePasse) {
 // ------------------------------------------------------------
 const echecs = [];
 function verifier(table, epreuve, reussi, detail = "") {
+  // Un détail de 45 éléments sur une seule ligne n'est pas un rapport,
+  // c'est un mur. On montre les premiers et on dit combien il en reste.
+  if (detail.length > 180) {
+    const morceaux = detail.split(", ");
+    detail = morceaux.slice(0, 3).join(", ") + ` … et ${morceaux.length - 3} autres`;
+  }
   if (!reussi) echecs.push(`${table} — ${epreuve}${detail ? " : " + detail : ""}`);
   return reussi;
 }
