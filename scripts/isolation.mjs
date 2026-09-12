@@ -599,6 +599,47 @@ try {
 
   console.log(`  ${TABLES.length} lectures, ${ECRITURES.length} écritures et 1 déclencheur sur ses propres données.`);
 
+  // ------------------------------------------------------------
+  // 8. Cycle de vie. Suspendre un garage doit l'empêcher de travailler
+  //    sans lui cacher ses propres données : ses factures sont des
+  //    pièces comptables qu'il doit pouvoir produire. Le 2026-09-11, la
+  //    suspension n'existait que dans middleware.ts — le jeton d'un
+  //    employé continuait d'écrire par l'API, dans les quatre états.
+  //    Cette section doit rester la dernière : elle change l'état de A.
+  // ------------------------------------------------------------
+  console.log("\nCycle de vie du garage :");
+  const etatGarage = (donnees) => srv(`garages?id=eq.${A.garage_id}`, { method: "PATCH", body: JSON.stringify(donnees) });
+  const sonderEtat = async (etiquette) => {
+    const lecture = await commeUtilisateur(sessionA, `clients?select=id&id=eq.${A.clients}`);
+    const ecriture = await commeUtilisateur(sessionA, "clients", {
+      method: "POST", body: JSON.stringify({ nom: `${marque}-${etiquette.replace(/\W+/g, "")}` }),
+    });
+    return {
+      litEncore: Array.isArray(lecture.corps) && lecture.corps.length === 1,
+      ecritEncore: ecriture.statut < 400 && Array.isArray(ecriture.corps) && ecriture.corps.length === 1,
+      statut: ecriture.statut,
+    };
+  };
+
+  for (const [etiquette, donnees] of [
+    ["suspendu par le super-admin", { statut: "suspendu" }],
+    ["abonnement en échec", { statut: "actif", abonnement_statut: "past_due" }],
+    ["résilié", { statut: "resilie", abonnement_statut: null }],
+  ]) {
+    await etatGarage(donnees);
+    const r = await sonderEtat(etiquette);
+    verifier("cycle de vie", `${etiquette} — le garage ne voit plus ses données`, r.litEncore);
+    verifier("cycle de vie", `${etiquette} — le garage peut encore écrire`, !r.ecritEncore, `statut ${r.statut}`);
+    console.log(`  ${etiquette.padEnd(30)} lecture ${r.litEncore ? "ok" : "PERDUE"}   écriture ${r.ecritEncore ? "TOUJOURS POSSIBLE" : "gelée"}`);
+  }
+
+  // Et le retour. Une suspension qu'on ne sait pas lever est une panne,
+  // pas un levier — c'est l'autre moitié, celle qu'on oublie.
+  await etatGarage({ statut: "actif", abonnement_statut: "active" });
+  const retabli = await sonderEtat("rétabli");
+  verifier("cycle de vie", "rétabli — le garage ne réécrit pas", retabli.ecritEncore, `statut ${retabli.statut}`);
+  console.log(`  ${"rétabli".padEnd(30)} lecture ${retabli.litEncore ? "ok" : "PERDUE"}   écriture ${retabli.ecritEncore ? "rendue" : "TOUJOURS GELÉE"}`);
+
   await nettoyer();
 
   console.log("\n" + "-".repeat(84));
