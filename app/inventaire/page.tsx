@@ -112,7 +112,7 @@ export default function InventairePage() {
     <div className="p-6">
       <div className="flex items-center justify-between mb-4 flex-wrap gap-3">
         <div>
-          <h1 className="text-xl font-display font-bold uppercase tracking-wide text-mf-text">Inventaire</h1>
+          <h1 className="text-[1.625rem] font-display font-bold uppercase tracking-[0.01em] text-mf-text">Inventaire</h1>
           <p className="text-sm text-mf-text-2">
             {items.length} pièce(s)
             {stockBasCount > 0 && <span className="text-mf-red font-semibold"> · {stockBasCount} en stock bas</span>}

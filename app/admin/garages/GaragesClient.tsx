@@ -99,7 +99,7 @@ export default function GaragesClient({ garagesInitial }: { garagesInitial: Gara
   return (
     <div className="p-6">
       <div className="mb-4">
-        <h1 className="flex items-center gap-2 text-xl font-display font-bold uppercase tracking-wide text-mf-text">
+        <h1 className="flex items-center gap-2 text-[1.625rem] font-display font-bold uppercase tracking-[0.01em] text-mf-text">
           <Building2 className="w-5 h-5" /> Garages
         </h1>
         <p className="text-sm text-mf-text-2">{garages.length} garage(s) sur la plateforme</p>

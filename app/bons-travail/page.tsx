@@ -12,6 +12,10 @@ import { useProfil } from "@/lib/useProfil";
 
 type Statut = "evaluation" | "autorise" | "en_cours" | "attente_piece" | "termine" | "facture" | "annule";
 
+// Format monétaire canadien-français, comme sur le tableau de bord.
+const argent = (n: number) =>
+  new Intl.NumberFormat("fr-CA", { style: "currency", currency: "CAD" }).format(n);
+
 type BonTotaux = {
   id: string;
   numero: string;
@@ -108,7 +112,7 @@ export default function BonsTravailPage() {
     <div className="p-6">
       <div className="flex items-center justify-between mb-4 flex-wrap gap-3">
         <div>
-          <h1 className="text-xl font-display font-bold uppercase tracking-wide text-mf-text">Bons de travail</h1>
+          <h1 className="text-[1.625rem] font-display font-bold uppercase tracking-[0.01em] text-mf-text">Bons de travail</h1>
           <p className="text-sm text-mf-text-2">{filtres.length} bon(s)</p>
         </div>
         {peutAutoriser && (
@@ -176,13 +180,25 @@ export default function BonsTravailPage() {
                     </div>
                   </div>
                 </div>
-                <div className="flex items-center gap-2 shrink-0">
+                {/* Le montant courant occupe le vide entre le véhicule et
+                    l'état. Il était déjà chargé — la vue des totaux est lue
+                    plus haut pour détecter les dépassements — mais n'était
+                    montré nulle part dans la liste, alors que c'est le premier
+                    chiffre qu'un patron d'atelier cherche en balayant l'écran.
+                    Chasse tabulaire et largeur fixe pour que la colonne des
+                    montants s'aligne d'une ligne à l'autre. */}
+                <div className="flex items-center gap-4 shrink-0">
+                  <span className="hidden sm:block text-sm font-mono tabular-nums text-right w-24 text-mf-text-2">
+                    {t ? argent(t.total_ht) : ""}
+                  </span>
                   {t?.depasse_evaluation && (
                     <span title="Dépasse l'évaluation acceptée">
                       <AlertTriangle className="w-4 h-4 text-mf-red" />
                     </span>
                   )}
-                  <Badge tone={TON_STATUT[b.statut]}>{LABEL_STATUT[b.statut]}</Badge>
+                  <span className="w-[104px] flex justify-end">
+                    <Badge tone={TON_STATUT[b.statut]}>{LABEL_STATUT[b.statut]}</Badge>
+                  </span>
                 </div>
               </Link>
             );

@@ -79,7 +79,7 @@ export default function PageDemandesRendezVous() {
   return (
     <div className="p-6">
       <div className="mb-4">
-        <h1 className="text-xl font-display font-bold uppercase tracking-wide text-mf-text">
+        <h1 className="text-[1.625rem] font-display font-bold uppercase tracking-[0.01em] text-mf-text">
           Demandes de rendez-vous
         </h1>
         <p className="text-sm text-mf-text-2">

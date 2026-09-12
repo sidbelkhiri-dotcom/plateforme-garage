@@ -153,7 +153,7 @@ export default function ParametresClient({
 
   return (
     <div className="p-6 max-w-2xl">
-      <h1 className="text-xl font-display font-bold uppercase tracking-wide mb-1 text-mf-text">Paramètres</h1>
+      <h1 className="text-[1.625rem] font-display font-bold uppercase tracking-[0.01em] mb-1 text-mf-text">Paramètres</h1>
       <p className="text-sm text-mf-text-2 mb-6">Réservé à l'administrateur.</p>
 
       <form onSubmit={enregistrer} className="bg-mf-surface rounded-mf-md border border-mf-border p-5 mb-6 flex flex-col gap-3">

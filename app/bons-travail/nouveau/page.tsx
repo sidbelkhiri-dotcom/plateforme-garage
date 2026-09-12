@@ -165,7 +165,7 @@ function NouveauBonTravailContenu() {
         <ArrowLeft className="w-4 h-4" /> Retour aux bons de travail
       </button>
 
-      <h1 className="text-xl font-display font-bold uppercase tracking-wide mb-1 text-mf-text">Nouveau bon de travail</h1>
+      <h1 className="text-[1.625rem] font-display font-bold uppercase tracking-[0.01em] mb-1 text-mf-text">Nouveau bon de travail</h1>
       <p className="text-sm text-mf-text-2 mb-6">
         Le kilométrage et la plainte du client sont obligatoires — ils servent à la facture et au rappel
         d'entretien plus tard.

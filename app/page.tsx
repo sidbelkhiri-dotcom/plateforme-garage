@@ -75,31 +75,33 @@ export default async function DashboardPage() {
   //   gris   : information, rien à faire
   //   ambre  : quelque chose attend une décision de ta part
   //   rouge  : quelque chose ne va pas
+  // La couleur ne remplit plus un carré derrière l'icône : elle teinte le
+  // glyphe seul. Un aplat de 40 px pesait autant que le chiffre et lui
+  // disputait l'attention, alors que c'est le chiffre le contenu.
   const TONS = {
-    neutre: "bg-mf-surface-3 text-mf-text-2",
-    attente: "bg-mf-signal-soft text-mf-signal-fg",
-    probleme: "bg-mf-red-soft text-mf-red",
+    neutre: "text-mf-text-3",
+    attente: "text-mf-signal-fg",
+    probleme: "text-mf-red",
   } as const;
 
-  // L'icône ne passe à côté du texte qu'en xl : c'est la première largeur
-  // où cinq colonnes laissent assez de place. Plus tôt, le libellé se
-  // retrouvait rogné à quelques pixels au lieu de simplement passer à la
-  // ligne.
+  // Trois rangées empilées, dans cet ordre précis : l'icône occupe une
+  // rangée de hauteur fixe, puis le chiffre, puis le libellé. C'est ce qui
+  // aligne les cinq chiffres sur une même ligne de base — si le libellé
+  // était au-dessus, « En attente d'évaluation » passerait sur deux lignes
+  // et décalerait son chiffre par rapport aux quatre autres. L'empilement
+  // supprime aussi la bascule horizontale en xl, dont le réglage fin avait
+  // déjà provoqué un rognage entre 768 et 1100 px.
   const stat = (label: string, value: number, Icon: any, ton: keyof typeof TONS, etendue = "") => (
-    <div className={`bg-mf-surface p-4 flex flex-col items-start gap-2 xl:flex-row xl:items-center xl:gap-4 ${etendue}`}>
-      <div className={`w-10 h-10 flex items-center justify-center shrink-0 ${TONS[ton]}`}>
-        <Icon className="w-5 h-5" />
-      </div>
-      <div className="min-w-0">
-        <div className="text-2xl font-bold leading-none text-mf-text">{value}</div>
-        <div className="text-xs text-mf-text-3 uppercase tracking-wide mt-1">{label}</div>
-      </div>
+    <div className={`bg-mf-surface px-5 py-4 ${etendue}`}>
+      <Icon className={`w-4 h-4 mb-3 ${TONS[ton]}`} />
+      <div className="font-display text-[2.25rem] font-bold leading-none tabular-nums text-mf-text">{value}</div>
+      <div className="text-[11px] font-semibold text-mf-text-3 uppercase tracking-[0.09em] leading-snug mt-2">{label}</div>
     </div>
   );
 
   return (
     <div className="p-6">
-      <h1 className="text-xl font-display font-bold uppercase tracking-wide mb-1 text-mf-text">Tableau de bord</h1>
+      <h1 className="text-[1.625rem] font-display font-bold uppercase tracking-[0.01em] mb-1 text-mf-text">Tableau de bord</h1>
       <p className="text-sm text-mf-text-2 mb-6">
         Bonjour {profil?.nom ?? user?.email} — voici l'atelier aujourd'hui.
       </p>
@@ -219,23 +221,40 @@ export default async function DashboardPage() {
           </Link>
         </div>
 
-        <div className="bg-mf-surface rounded-mf-md border border-mf-border p-4">
+        {/* Pleine largeur : en demi-colonne cette carte laissait un vide
+            équivalent en face d'elle, soit près d'un tiers de l'écran. Une
+            liste d'articles à recommander se lit mieux large, et le tableau
+            de bord se termine alors sur un bloc plein plutôt que sur un trou. */}
+        <div className="bg-mf-surface rounded-mf-md border border-mf-border p-4 md:col-span-2">
           <h2 className="font-display font-bold text-sm uppercase tracking-wide flex items-center gap-2 mb-3 text-mf-text">
             <AlertTriangle className="w-4 h-4 text-mf-signal-fg" /> Alertes de stock
           </h2>
+          {/* Deux colonnes : en pleine largeur, une simple liste laissait le
+              nom à gauche et le chiffre à l'autre bout de l'écran, et l'œil
+              devait traverser le vide pour les relier. Appairés deux par deux,
+              chaque article reste près de son chiffre. */}
           {!stockBas || stockBas.length === 0 ? (
             <p className="text-sm text-mf-text-2">Inventaire au niveau.</p>
           ) : (
-            <ul className="divide-y divide-mf-border">
+            <ul className="grid sm:grid-cols-2 sm:gap-x-10 border-t border-mf-border">
               {stockBas.map((i) => (
-                <li key={i.id} className="py-2 text-sm flex items-baseline justify-between gap-3 text-mf-text">
+                <li key={i.id} className="py-2 text-sm flex items-baseline justify-between gap-3 text-mf-text border-b border-mf-border">
                   {/* Le nom peut être long (« Huile synthétique 0W-20 (5 L) ») :
                       il doit pouvoir rétrécir et passer à la ligne, tandis que
                       la quantité reste d'un bloc. Sans ça les deux colonnes se
                       chevauchent. */}
                   <span className="min-w-0">{i.nom}</span>
-                  <span className="font-mono text-mf-red shrink-0 whitespace-nowrap">
-                    {i.quantite} / seuil {i.seuil}
+                  {/* Quatre lignes toutes rouges ne hiérarchisent rien : si
+                      tout est urgent, plus rien ne l'est. Le rouge est donc
+                      réservé à la rupture réelle (zéro en stock) ; en dessous
+                      du seuil mais encore servable, c'est un avertissement.
+                      Et seule la quantité est teintée — « / seuil 6 » est une
+                      référence, pas une alarme. */}
+                  <span className="font-mono shrink-0 whitespace-nowrap tabular-nums">
+                    <span className={i.quantite === 0 ? "font-bold text-mf-red" : "font-bold text-mf-warning"}>
+                      {i.quantite}
+                    </span>
+                    <span className="text-mf-text-3"> / seuil {i.seuil}</span>
                   </span>
                 </li>
               ))}

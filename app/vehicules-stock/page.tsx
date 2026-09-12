@@ -263,7 +263,7 @@ export default function VehiculesStockPage() {
     <div className="p-6">
       <div className="flex items-center justify-between mb-4 flex-wrap gap-3">
         <div>
-          <h1 className="text-xl font-display font-bold uppercase tracking-wide text-mf-text">Véhicules en stock</h1>
+          <h1 className="text-[1.625rem] font-display font-bold uppercase tracking-[0.01em] text-mf-text">Véhicules en stock</h1>
           <p className="text-sm text-mf-text-2">{items.length} véhicule(s)</p>
         </div>
         {peutGererClients && (
