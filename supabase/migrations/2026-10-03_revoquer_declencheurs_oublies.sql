@@ -29,9 +29,22 @@
 -- le 2026-09-11).
 -- ============================================================
 
-revoke execute on function fixer_garage_inspection_points() from anon, authenticated;
-revoke execute on function fixer_garage_inspection_photos() from anon, authenticated;
-revoke execute on function generer_slug_garage() from anon, authenticated;
+-- `public` d'abord, et ce n'est pas décoratif. PostgreSQL accorde
+-- EXECUTE au pseudo-rôle PUBLIC sur chaque nouvelle fonction, et
+-- has_function_privilege('anon', …) répond « oui » dès qu'anon a le
+-- droit par n'importe quel chemin. Une révocation qui ne vise qu'anon
+-- et authenticated peut donc réussir, ne rien signaler, et ne rien
+-- changer. C'est la forme la plus désagréable d'échec : silencieuse.
+--
+-- Honnêteté sur le diagnostic : les premières tentatives, sans `public`,
+-- n'ont produit aucun effet, et l'ajout de `public` a fonctionné. Mais
+-- je n'ai pas la preuve que ces tentatives avaient bien été exécutées —
+-- je n'ai vu le résultat qu'au dernier essai. Le lien de cause à effet
+-- est donc plausible, pas démontré. Ce qui est sûr : inclure `public`
+-- est correct dans tous les cas, et ne rien coûter quand c'est inutile.
+revoke execute on function fixer_garage_inspection_points() from public, anon, authenticated;
+revoke execute on function fixer_garage_inspection_photos() from public, anon, authenticated;
+revoke execute on function generer_slug_garage() from public, anon, authenticated;
 
 notify pgrst, 'reload schema';
 
