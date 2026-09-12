@@ -579,7 +579,25 @@ try {
       r.statut < 400 && Array.isArray(r.corps) && r.corps.length === 1,
       `statut ${r.statut}, ${r.corps?.length ?? 0} ligne(s)`);
   }
-  console.log(`  ${TABLES.length} lectures et ${ECRITURES.length} écritures sur ses propres données.`);
+  // Les déclencheurs doivent encore tourner pour un employé connecté.
+  // Le 2026-10-03 on a révoqué EXECUTE à public/anon/authenticated sur
+  // fixer_garage_inspection_points et fixer_garage_inspection_photos :
+  // Postgres ne vérifie pas ce droit au déclenchement d'un trigger, donc
+  // rien n'a cassé — mais c'est le genre d'hypothèse qui mérite une
+  // sonde plutôt qu'une confiance. Les deux suites sèment tout avec la
+  // clé service : sans ce contrôle, aucune ne passerait par le chemin
+  // d'un vrai employé, et une régression resterait invisible.
+  const pointSeme = await commeUtilisateur(sessionA, "inspection_points", {
+    method: "POST",
+    body: JSON.stringify({ inspection_id: A.inspections, description: `${marque} par employé`, etat: "a_reparer", ordre: 9 }),
+  });
+  const garagePose = Array.isArray(pointSeme.corps) ? pointSeme.corps[0]?.garage_id : null;
+  verifier("inspection_points", "un employé ne peut plus créer de point d'inspection",
+    pointSeme.statut < 400, `statut ${pointSeme.statut}`);
+  verifier("inspection_points", "le déclencheur ne pose plus le garage_id",
+    garagePose === A.garage_id, `garage_id obtenu : ${garagePose}`);
+
+  console.log(`  ${TABLES.length} lectures, ${ECRITURES.length} écritures et 1 déclencheur sur ses propres données.`);
 
   await nettoyer();
 
