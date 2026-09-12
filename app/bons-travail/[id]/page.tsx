@@ -326,7 +326,10 @@ export default function BonTravailDetailPage() {
   }
 
   return (
-    <div className="p-6 max-w-3xl">
+    // 896 px plutôt que 768 : assez pour que les lignes de pièces et de
+    // main-d'œuvre respirent, sans étirer les zones de saisie au point
+    // qu'on perde la ligne en tapant un diagnostic.
+    <div className="p-6 max-w-4xl">
       <button
         onClick={() => router.push("/bons-travail")}
         className="flex items-center gap-1 text-sm text-mf-text-2 hover:text-mf-text mb-4 min-h-[44px]"
@@ -372,8 +375,11 @@ export default function BonTravailDetailPage() {
 
       <div className="bg-mf-surface rounded-mf-md border border-mf-border p-5 mb-4">
         <div className="flex items-center justify-between flex-wrap gap-2">
-          <h1 className="text-xl font-bold font-mono tracking-wide text-mf-text">{bon.numero}</h1>
-          <div className="flex items-center gap-3">
+          <h1 className="text-[1.625rem] font-bold font-mono tracking-wide text-mf-text">{bon.numero}</h1>
+          {/* flex-wrap : sans lui, les deux liens et le badge s'obstinaient à
+              tenir sur une seule ligne, et le badge sortait de la carte sur
+              écran étroit. */}
+          <div className="flex items-center flex-wrap gap-x-3 gap-y-2">
             <Link
               href={`/bons-travail/${bon.id}/evaluation`}
               className="flex items-center gap-1.5 text-xs font-semibold text-mf-blue-hover hover:text-mf-blue min-h-[44px]"
@@ -511,7 +517,21 @@ export default function BonTravailDetailPage() {
         </div>
       </div>
 
-      <div className="flex flex-wrap gap-2">
+      {/* Barre d'action collée au bas de la fenêtre. C'est l'écran le plus
+          long de l'application — plainte, diagnostic, pièces, main-d'œuvre,
+          évaluations, notes — et les gestes décisifs vivaient tout en bas :
+          il fallait dérouler la page entière pour marquer un bon terminé.
+          Ils restent désormais sous la main où qu'on en soit.
+
+          Fond opaque et non translucide : les jetons de couleur sont des
+          valeurs CSS brutes, sur lesquelles Tailwind ne sait pas appliquer
+          d'opacité — bg-mf-bg/95 ne produirait rien et le contenu défilerait
+          visiblement sous la barre.
+
+          empty:hidden : dans certains états et pour certains rôles aucun
+          bouton ne s'affiche, et React rend alors un conteneur vide. Sans
+          cette règle, une barre grise vide resterait collée en bas. */}
+      <div className="sticky bottom-0 z-10 -mx-6 mt-2 px-6 py-3 bg-mf-bg border-t border-mf-border flex flex-wrap gap-2 empty:hidden">
         {bon.statut === "evaluation" && peutAutoriser && (
           <>
             <Bouton onClick={accepterEvaluation} enEnvoi={busy}>
@@ -761,10 +781,29 @@ function LignesSection({
         <div className="divide-y divide-mf-border">
           {lignes.map((l) => (
             <div key={l.id} className="px-4 py-3 flex items-center justify-between gap-3">
-              <div className="min-w-0">
-                <div className="text-sm font-medium truncate text-mf-text">{l.description}</div>
-                <div className="text-xs text-mf-text-3">
-                  {renduLigne(l)} · {l.quantite} × {formatMoney(l.prix_unitaire)} = {formatMoney(l.quantite * l.prix_unitaire)}
+              <div className="min-w-0 flex-1">
+                {/* Le nom de la pièce se replie au lieu d'être tronqué : c'est
+                    l'information principale de la ligne et il y a de la place
+                    en dessous. « Batterie 600 ACC » devenait « Batterie 60… »
+                    sur téléphone, ce qui est exactement le mot qu'il ne faut
+                    pas couper. */}
+                <div className="text-sm font-medium text-mf-text break-words">{l.description}</div>
+                {/* Le détail et le total partagent la deuxième ligne. Mettre le
+                    total en face du nom paraissait plus juste, mais sur
+                    téléphone la carte fait 230 px : le nom se retrouvait sur
+                    trois lignes pour laisser passer le montant. Ici le nom
+                    dispose de toute la largeur, et le total reste malgré tout
+                    aligné à droite d'une ligne à l'autre — une colonne qu'on
+                    balaie, au lieu d'une fin de phrase (« 1 × 189,00 $ =
+                    189,00 $ ») qui s'arrête à une abscisse différente à chaque
+                    ligne. */}
+                <div className="flex items-baseline justify-between gap-3 mt-0.5">
+                  <span className="text-xs text-mf-text-3">
+                    {renduLigne(l)} · {l.quantite} × {formatMoney(l.prix_unitaire)}
+                  </span>
+                  <span className="text-sm font-mono tabular-nums shrink-0 text-mf-text">
+                    {formatMoney(l.quantite * l.prix_unitaire)}
+                  </span>
                 </div>
                 {l.type === "piece" && (l.code_barre || l.installee_le) && (
                   <div className="text-xs text-mf-text-3 mt-0.5">

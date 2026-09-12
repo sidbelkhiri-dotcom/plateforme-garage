@@ -60,7 +60,14 @@ export default function RootLayout({
         <ToastProvider>
           <div className="flex flex-col md:flex-row min-h-screen">
             <Sidebar />
-            <main className="flex-1 overflow-y-auto">{children}</main>
+            {/* Pas d'overflow ici. `overflow-y-auto` faisait de <main>
+                l'ancêtre de défilement aux yeux du navigateur, alors qu'il
+                n'a aucune hauteur contrainte — son parent est en min-h-screen
+                et la barre latérale défile avec la page. Il ne défilait donc
+                jamais, mais il suffisait à neutraliser tout position:sticky
+                placé à l'intérieur : un élément collant s'accroche à son
+                ancêtre de défilement, et celui-ci ne bougeait pas. */}
+            <main className="flex-1">{children}</main>
           </div>
         </ToastProvider>
       </body>

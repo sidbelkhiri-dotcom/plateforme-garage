@@ -103,7 +103,13 @@ export default function FormulaireClient({
       />
       <Champ label="Notes" value={valeurs.notes} onChange={(e) => definir("notes", e.target.value)} />
       {erreur && <MessageErreur>{erreur}</MessageErreur>}
-      <div className="flex justify-end gap-2 mt-1">
+      <div /* Pied collant. Ces formulaires vivent tous dans une modale, dont c'est
+             le conteneur de dialogue qui défile : sans ça, sur un formulaire de
+             huit champs, il fallait remplir puis chercher le bouton. Les marges
+             négatives le font affleurer les bords du dialogue, dont il reprend
+             le fond — un pied collant translucide laisserait les champs défiler
+             visiblement dessous. */
+          className="sticky bottom-0 z-10 -mx-5 -mb-5 mt-3 px-5 py-3 bg-mf-surface-2 border-t border-mf-border flex justify-end gap-2">
         <Bouton type="button" variante="secondaire" onClick={onAnnuler}>
           Annuler
         </Bouton>

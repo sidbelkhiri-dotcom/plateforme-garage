@@ -11,6 +11,10 @@ const TONES = {
 
 export type ToneBadge = keyof typeof TONES;
 
+// whitespace-nowrap et shrink-0 ne sont pas cosmétiques : la pastille a une
+// hauteur fixe de 22 px, donc un libellé qui passe à la ligne déborde par le
+// bas et se fait couper. « En cours » le faisait dans l'en-tête d'un bon de
+// travail sur écran étroit. Un badge doit rétrécir la ligne, jamais lui-même.
 export default function Badge({
   children,
   tone = "stone",
@@ -20,7 +24,7 @@ export default function Badge({
 }) {
   return (
     <span
-      className={`inline-flex items-center h-[22px] text-[11px] font-bold uppercase tracking-wide px-2.5 rounded-mf-pill ${TONES[tone]}`}
+      className={`inline-flex items-center shrink-0 whitespace-nowrap h-[22px] text-[11px] font-bold uppercase tracking-wide px-2.5 rounded-mf-pill ${TONES[tone]}`}
     >
       {children}
     </span>

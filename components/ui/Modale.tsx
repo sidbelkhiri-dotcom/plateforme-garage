@@ -32,7 +32,10 @@ export default function Modale({
           large ? "max-w-2xl" : "max-w-md"
         } max-h-[90vh] overflow-y-auto`}
       >
-        <div className="flex items-center justify-between px-5 py-4 border-b border-mf-border">
+        {/* En-tête collant : c'est le conteneur de dialogue qui défile, donc
+            sur un formulaire long le titre disparaissait et on ne savait plus
+            ce qu'on était en train de remplir. */}
+        <div className="sticky top-0 z-10 bg-mf-surface-2 flex items-center justify-between px-5 py-4 border-b border-mf-border">
           <h2 className="font-display font-bold text-sm uppercase tracking-wide text-mf-text">{titre}</h2>
           <button
             onClick={surFermeture}
