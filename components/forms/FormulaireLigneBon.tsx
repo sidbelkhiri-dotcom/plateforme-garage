@@ -164,8 +164,24 @@ export default function FormulaireLigneBon({
     if (reussi) onSucces();
   }
 
+  // Trois temps plutôt qu'une liste de huit champs de poids égal : d'où
+  // vient la pièce, ce qui permettra de la retracer, ce qu'elle coûte. Le
+  // formulaire n'a pas changé, seulement sa lecture — un intertitre fin,
+  // souligné d'un filet, sans cadre ni fond : la modale porte déjà un
+  // contour, un deuxième niveau de boîte alourdirait pour rien.
+  //
+  // Rien de tout ça pour la main-d'œuvre, qui n'a que deux champs : y
+  // poser des sections serait du décor.
+  const Intertitre = ({ children }: { children: React.ReactNode }) => (
+    <div className="text-[11px] font-semibold uppercase tracking-[0.09em] text-mf-text-3 border-b border-mf-border pb-1.5 mt-1">
+      {children}
+    </div>
+  );
+
   return (
     <form onSubmit={envoyer} className="flex flex-col gap-3">
+      {type === "piece" && <Intertitre>Provenance et identification</Intertitre>}
+
       {type === "piece" && (
         <div>
           <Selecteur
@@ -194,7 +210,7 @@ export default function FormulaireLigneBon({
           <p className="text-xs text-mf-text-3 mt-1">
             {pieceId
               ? "Reliée à ton stock — la quantité sera déduite automatiquement à la fin des travaux."
-              : "Si cette pièce vient de ton propre stock, choisis-la ici pour que la quantité en soit déduite automatiquement. Sinon, laisse « hors inventaire »."}
+              : "Choisis-la ici si elle vient de ton stock : la quantité en sera déduite. Sinon, laisse « hors inventaire »."}
           </p>
         </div>
       )}
@@ -263,6 +279,8 @@ export default function FormulaireLigneBon({
           ))}
         </Selecteur>
       )}
+
+      {type === "piece" && <Intertitre>Traçabilité</Intertitre>}
 
       {type === "piece" && (
         <div className="grid grid-cols-2 gap-3">
@@ -337,6 +355,8 @@ export default function FormulaireLigneBon({
           {erreurPhoto && <MessageErreur>{erreurPhoto}</MessageErreur>}
         </div>
       )}
+
+      {type === "piece" && <Intertitre>Montant</Intertitre>}
 
       <div className="grid grid-cols-2 gap-3">
         <Champ
