@@ -345,9 +345,11 @@ export default function BonTravailDetailPage() {
             <div className="font-bold">Le total dépasse l'évaluation acceptée.</div>
             <div>
               Évaluation : {formatMoney(bon.montant_evaluation ?? 0)} · Travaux actuels : {formatMoney(totalHt)}.
-              Rappelez le client pour une évaluation complémentaire avant de continuer.
+              {bon.statut === "termine"
+                ? "Le bon ne peut pas être facturé tant que le client n'a pas accepté ce nouveau montant."
+                : "Rappelez le client pour une évaluation complémentaire avant de continuer."}
             </div>
-            {peutAutoriser && ["autorise", "en_cours", "attente_piece"].includes(bon.statut) && (
+            {peutAutoriser && ["autorise", "en_cours", "attente_piece", "termine"].includes(bon.statut) && (
               <button
                 onClick={() => setShowReevaluation(true)}
                 className="mt-2 inline-flex items-center gap-1.5 text-xs font-semibold underline underline-offset-2 hover:no-underline min-h-[44px]"
@@ -569,7 +571,9 @@ export default function BonTravailDetailPage() {
           </Bouton>
         )}
         {bon.statut === "termine" && peutAutoriser && (
-          <Bouton onClick={ouvrirCreerFacture} enEnvoi={busy}>
+          // La base refuse de facturer au-dessus de l'évaluation acceptée
+          // (migration 2026-10-10) ; le bandeau du haut donne l'issue.
+          <Bouton onClick={ouvrirCreerFacture} enEnvoi={busy} disabled={depasseEvaluation}>
             <Receipt className="w-4 h-4" /> Créer la facture
           </Bouton>
         )}

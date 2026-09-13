@@ -11,7 +11,8 @@
     "sauvegarde": "node scripts/sauvegarde.mjs",
     "fumee": "node scripts/fumee.mjs",
     "isolation": "node scripts/isolation.mjs",
-    "inspection": "node scripts/inspection.mjs"
+    "inspection": "node scripts/inspection.mjs",
+    "conformite": "node scripts/conformite.mjs"
   },
   "dependencies": {
     "@supabase/ssr": "^0.5.1",
