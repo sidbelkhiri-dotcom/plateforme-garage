@@ -700,6 +700,29 @@ try {
   }
 
   // ------------------------------------------------------------
+  // 7 ter. Une seule identité. Le nom, l'adresse, le téléphone et le
+  //   courriel d'un garage vivent dans `parametres`, que le garage édite,
+  //   et sont recopiés dans `garages` par un déclencheur. Sans cette copie,
+  //   un garage qui se renommait envoyait SMS et lien d'inspection sous son
+  //   ancien nom (lus dans garages) et évaluation et facture sous le
+  //   nouveau (lus dans parametres). Éprouvé par le vrai chemin : l'admin
+  //   du garage, sous RLS, modifie ses paramètres.
+  // ------------------------------------------------------------
+  const nouveauNom = `${marque} renommé`;
+  const nouveauTel = "514-555-0199";
+  const edition = await commeUtilisateur(sessionA, `parametres?garage_id=eq.${A.garage_id}`, {
+    method: "PATCH", body: JSON.stringify({ nom: nouveauNom, telephone: nouveauTel }),
+  });
+  verifier("parametres", "l'admin du garage ne peut pas modifier ses paramètres",
+    edition.statut < 400 && Array.isArray(edition.corps) && edition.corps.length === 1,
+    `statut ${edition.statut}`);
+  const [identite] = await srv(`garages?select=nom,telephone&id=eq.${A.garage_id}`);
+  const synchro = identite?.nom === nouveauNom && identite?.telephone === nouveauTel;
+  verifier("identité", "un renommage dans Paramètres n'atteint pas garages (SMS et lien d'inspection garderaient l'ancien nom)",
+    synchro, `garages : « ${identite?.nom} », ${identite?.telephone}`);
+  console.log(`\nIdentité du garage : renommage dans Paramètres ${synchro ? "recopié dans garages" : "NON RECOPIÉ — deux identités"}.`);
+
+  // ------------------------------------------------------------
   // 8. Cycle de vie. Suspendre un garage doit l'empêcher de travailler
   //    sans lui cacher ses propres données : ses factures sont des
   //    pièces comptables qu'il doit pouvoir produire. Le 2026-09-11, la
