@@ -1,9 +1,14 @@
 "use client";
 
 import { Suspense, useState } from "react";
+import Link from "next/link";
 import { useRouter } from "next/navigation";
+import { MailCheck } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
-import Logo from "@/components/Logo";
+import Champ from "@/components/ui/Champ";
+import Bouton from "@/components/ui/Bouton";
+import CadreAuth, { MessageAuth } from "@/components/auth/CadreAuth";
+import ChampMotDePasse from "@/components/auth/ChampMotDePasse";
 
 export default function InscriptionPage() {
   return (
@@ -23,6 +28,12 @@ function FormulaireInscription() {
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
   const [inscrit, setInscrit] = useState(false);
+  const [renvoi, setRenvoi] = useState<"envoi" | "envoye" | null>(null);
+
+  // Sans emailRedirectTo, Supabase renvoie le lien de confirmation vers son
+  // « Site URL » — localhost sur le projet de dev, donc un lien mort pour
+  // un vrai garage. La route /auth/confirmation reçoit désormais le lien.
+  const redirection = () => `${window.location.origin}/auth/confirmation`;
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -36,9 +47,12 @@ function FormulaireInscription() {
     }
 
     const { data, error } = await supabase.auth.signUp({
-      email,
+      email: email.trim(),
       password,
-      options: { data: { nom, nom_garage: nomGarage } },
+      options: {
+        data: { nom: nom.trim(), nom_garage: nomGarage.trim() },
+        emailRedirectTo: redirection(),
+      },
     });
 
     setLoading(false);
@@ -46,7 +60,9 @@ function FormulaireInscription() {
       setError(
         error.message.includes("already registered") || error.message.includes("already been registered")
           ? "Un compte existe déjà avec ce courriel."
-          : "Impossible de créer le compte. Vérifiez les informations et réessayez."
+          : error.status === 429
+            ? "Trop de tentatives. Patientez quelques minutes avant de réessayer."
+            : "Impossible de créer le compte. Vérifiez les informations et réessayez."
       );
       return;
     }
@@ -62,105 +78,103 @@ function FormulaireInscription() {
     }
   }
 
+  async function renvoyer() {
+    setRenvoi("envoi");
+    await supabase.auth.resend({ type: "signup", email: email.trim(), options: { emailRedirectTo: redirection() } });
+    setRenvoi("envoye");
+  }
+
   if (inscrit) {
     return (
-      <div className="relative min-h-screen flex items-center justify-center bg-mf-bg overflow-hidden">
-        <div className="relative bg-mf-surface border border-mf-border rounded-mf-lg shadow-mf-lg p-8 w-full max-w-sm text-center">
-          <div className="mb-6 flex justify-center">
-            <Logo height={22} />
+      <CadreAuth
+        titre="Vérifiez vos courriels"
+        pied={
+          <Link href="/login" className="font-semibold text-mf-blue hover:underline">
+            Retour à la connexion
+          </Link>
+        }
+      >
+        <div className="flex gap-3">
+          <MailCheck className="w-6 h-6 shrink-0 text-mf-blue" aria-hidden />
+          <div className="text-sm text-mf-text flex flex-col gap-3">
+            <p>
+              Nous avons envoyé un lien de confirmation à <strong className="break-all">{email.trim()}</strong>. Cliquez
+              dessus pour ouvrir {nomGarage.trim() ? <strong>{nomGarage.trim()}</strong> : "votre garage"}.
+            </p>
+            <p className="text-mf-text-2">Rien reçu après quelques minutes ? Regardez dans les courriels indésirables.</p>
+            {renvoi === "envoye" ? (
+              <p className="text-mf-text-2">Nouveau courriel envoyé.</p>
+            ) : (
+              <Bouton variante="secondaire" onClick={renvoyer} enEnvoi={renvoi === "envoi"} className="self-start">
+                Renvoyer le courriel
+              </Bouton>
+            )}
           </div>
-          <p className="text-sm text-mf-text">
-            Un courriel de confirmation a été envoyé à <strong>{email}</strong>. Cliquez sur le lien qu'il contient pour
-            activer votre compte, puis connectez-vous.
-          </p>
         </div>
-      </div>
+      </CadreAuth>
     );
   }
 
   return (
-    <div className="relative min-h-screen flex items-center justify-center bg-mf-bg overflow-hidden">
-      <form
-        onSubmit={handleSubmit}
-        className="relative bg-mf-surface border border-mf-border rounded-mf-lg shadow-mf-lg p-8 w-full max-w-sm"
-      >
-        <div className="mb-6">
-          <Logo height={22} />
-        </div>
-        <label className="flex flex-col gap-1 text-sm mb-3">
-          <span className="font-medium text-mf-text-3 text-[11px] uppercase tracking-[0.08em]">
-            Nom du garage
-          </span>
-          <input
-            type="text"
-            name="nom_garage"
-            required
-            value={nomGarage}
-            onChange={(e) => setNomGarage(e.target.value)}
-            className="bg-mf-surface-3 border border-mf-border-strong rounded-mf-sm px-3 py-2 text-sm text-mf-text focus:outline-none focus:border-mf-blue focus:ring-2 focus:ring-mf-blue-soft min-h-[44px]"
-          />
-        </label>
-        <label className="flex flex-col gap-1 text-sm mb-3">
-          <span className="font-medium text-mf-text-3 text-[11px] uppercase tracking-[0.08em]">
-            Votre nom
-          </span>
-          <input
-            type="text"
-            name="nom"
-            autoComplete="name"
-            required
-            value={nom}
-            onChange={(e) => setNom(e.target.value)}
-            className="bg-mf-surface-3 border border-mf-border-strong rounded-mf-sm px-3 py-2 text-sm text-mf-text focus:outline-none focus:border-mf-blue focus:ring-2 focus:ring-mf-blue-soft min-h-[44px]"
-          />
-        </label>
-        <label className="flex flex-col gap-1 text-sm mb-3">
-          <span className="font-medium text-mf-text-3 text-[11px] uppercase tracking-[0.08em]">
-            Courriel
-          </span>
-          <input
-            type="email"
-            name="email"
-            autoComplete="username"
-            required
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
-            className="bg-mf-surface-3 border border-mf-border-strong rounded-mf-sm px-3 py-2 text-sm text-mf-text focus:outline-none focus:border-mf-blue focus:ring-2 focus:ring-mf-blue-soft min-h-[44px]"
-          />
-        </label>
-        <label className="flex flex-col gap-1 text-sm mb-4">
-          <span className="font-medium text-mf-text-3 text-[11px] uppercase tracking-[0.08em]">
-            Mot de passe
-          </span>
-          <input
-            type="password"
-            name="password"
-            autoComplete="new-password"
-            required
-            minLength={8}
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-            className="bg-mf-surface-3 border border-mf-border-strong rounded-mf-sm px-3 py-2 text-sm text-mf-text focus:outline-none focus:border-mf-blue focus:ring-2 focus:ring-mf-blue-soft min-h-[44px]"
-          />
-        </label>
-        {error && (
-          <p role="alert" className="text-xs text-mf-red mb-3">
-            {error}
-          </p>
-        )}
-        <button
-          disabled={loading}
-          className="w-full bg-mf-blue hover:bg-mf-blue-hover disabled:opacity-50 text-white rounded-mf-sm py-2 text-sm font-semibold min-h-[44px] transition-colors"
-        >
-          {loading ? "Création..." : "Créer mon garage"}
-        </button>
-        <p className="text-center text-xs text-mf-text-3 mt-4">
+    <CadreAuth
+      titre="Créez votre garage"
+      sousTitre="Évaluations écrites, bons de travail et factures avec TPS et TVQ, au même endroit."
+      pied={
+        <>
           Déjà un compte ?{" "}
-          <a href="/login" className="text-mf-blue hover:underline">
+          <Link href="/login" className="font-semibold text-mf-blue hover:underline">
             Se connecter
-          </a>
-        </p>
+          </Link>
+        </>
+      }
+    >
+      {error && <MessageAuth ton="erreur">{error}</MessageAuth>}
+      <form onSubmit={handleSubmit} className="flex flex-col gap-4">
+        <Champ
+          label="Nom du garage"
+          name="nom_garage"
+          autoComplete="organization"
+          required
+          marquerRequis={false}
+          value={nomGarage}
+          onChange={(e) => setNomGarage(e.target.value)}
+        />
+        <Champ
+          label="Votre nom"
+          name="nom"
+          autoComplete="name"
+          required
+          marquerRequis={false}
+          value={nom}
+          onChange={(e) => setNom(e.target.value)}
+        />
+        <Champ
+          label="Courriel"
+          type="email"
+          name="email"
+          autoComplete="username"
+          inputMode="email"
+          autoCapitalize="none"
+          spellCheck={false}
+          required
+          marquerRequis={false}
+          value={email}
+          onChange={(e) => setEmail(e.target.value)}
+        />
+        <ChampMotDePasse
+          label="Mot de passe"
+          name="password"
+          autoComplete="new-password"
+          aide="8 caractères minimum."
+          required
+          minLength={8}
+          value={password}
+          onChange={(e) => setPassword(e.target.value)}
+        />
+        <Bouton type="submit" enEnvoi={loading} className="w-full mt-1">
+          {loading ? "Création…" : "Créer mon garage"}
+        </Bouton>
       </form>
-    </div>
+    </CadreAuth>
   );
 }

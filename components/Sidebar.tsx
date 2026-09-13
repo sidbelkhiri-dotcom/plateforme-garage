@@ -37,6 +37,8 @@ export default function Sidebar() {
   if (
     pathname === "/login" ||
     pathname === "/inscription" ||
+    pathname === "/mot-de-passe-oublie" ||
+    pathname === "/nouveau-mot-de-passe" ||
     pathname.startsWith("/accueil") ||
     pathname.startsWith("/inspection/")
   )

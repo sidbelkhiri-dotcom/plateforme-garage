@@ -2,17 +2,21 @@ export default function Champ({
   label,
   erreur,
   required,
+  marquerRequis = true,
   className = "",
   ...props
 }: {
   label: string;
   erreur?: string;
+  /** Faux sur un formulaire où tout est obligatoire (connexion,
+   *  inscription) : un astérisque partout n'apprend rien. */
+  marquerRequis?: boolean;
 } & React.InputHTMLAttributes<HTMLInputElement>) {
   return (
     <label className="flex flex-col gap-1 text-sm">
       <span className="font-semibold text-mf-text-3 text-[11px] uppercase tracking-[0.08em]">
         {label}
-        {required && " *"}
+        {required && marquerRequis && " *"}
       </span>
       <input
         required={required}

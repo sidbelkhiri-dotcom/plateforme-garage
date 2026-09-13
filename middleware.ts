@@ -45,8 +45,13 @@ export async function middleware(request: NextRequest) {
   // Tâche programmée (Vercel Cron) : aucune session utilisateur possible,
   // CRON_SECRET est le seul verrou (voir app/api/cron/.../route.ts).
   const isCron = request.nextUrl.pathname.startsWith("/api/cron/");
+  // Liens reçus par courriel (confirmation, réinitialisation) et demande de
+  // nouveau mot de passe : par définition, la personne n'est pas connectée.
+  const isPageAuthPublique =
+    request.nextUrl.pathname.startsWith("/auth/confirmation") ||
+    request.nextUrl.pathname.startsWith("/mot-de-passe-oublie");
 
-  if (!user && !isLoginPage && !isPageAccueil && !isPageInscription && !isWebhookStripe && !isPageInspectionPublique && !isCron) {
+  if (!user && !isLoginPage && !isPageAccueil && !isPageInscription && !isWebhookStripe && !isPageInspectionPublique && !isCron && !isPageAuthPublique) {
     const url = request.nextUrl.clone();
     url.pathname = "/login";
     return NextResponse.redirect(url);
