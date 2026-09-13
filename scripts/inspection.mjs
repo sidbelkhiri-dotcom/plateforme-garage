@@ -114,7 +114,13 @@ async function semerInspection(suffixe) {
   }
 
   const client = await creer("clients", { garage_id: g, nom: `${marque}-client-${suffixe}` });
-  const vehicule = await creer("vehicules", { garage_id: g, client_id: client.id, marque: "Testo", modele: "Insp" });
+  // Plaque et NIV renseignés exprès : sans eux, prouver qu'ils ne fuient pas
+  // dans la réponse publique ne prouverait rien.
+  const plaque = `P${String(Date.now()).slice(-5)}${suffixe.toUpperCase()}`;
+  const vin = `VIN${String(Date.now()).slice(-12)}${suffixe.toUpperCase()}`;
+  const vehicule = await creer("vehicules", {
+    garage_id: g, client_id: client.id, marque: "Testo", modele: "Insp", annee: 2019, plaque, vin,
+  });
   const bon = await creer("bons_travail", {
     garage_id: g, client_id: client.id, vehicule_id: vehicule.id,
     kilometrage: 1000, plainte_client: `${marque} plainte`, taux_horaire: 100,
@@ -135,7 +141,7 @@ async function semerInspection(suffixe) {
     inspection_point_id: points[0].id, chemin: `${g}/${marque}.jpg`, type: "photo",
   });
 
-  return { garage: g, bon: bon.id, inspection: inspection.id, jeton: inspection.jeton_acces, points, photo };
+  return { garage: g, bon: bon.id, inspection: inspection.id, jeton: inspection.jeton_acces, points, photo, plaque, vin };
 }
 
 async function nettoyer() {
@@ -179,6 +185,15 @@ try {
   const charge = JSON.stringify(vueA.corps ?? {});
   verifier("la réponse publique ne contient pas le jeton lui-même",
     !charge.includes(A.jeton), "le jeton se retrouve dans la charge publique");
+
+  // Le véhicule est montré au client (marque, modèle, année) pour qu'il
+  // sache de quelle voiture on parle. La plaque et le NIV, eux, identifient
+  // une personne : ils n'ont rien à faire dans une réponse que quiconque
+  // détenant le lien peut lire. Si quelqu'un les ajoute un jour à
+  // obtenir_inspection_publique(), cette sonde le signale.
+  const fuites = [charge.includes(A.plaque) && "la plaque", charge.includes(A.vin) && "le NIV"].filter(Boolean);
+  verifier("la réponse publique n'expose ni plaque ni NIV", fuites.length === 0,
+    `${fuites.join(" et ")} figure${fuites.length > 1 ? "nt" : ""} dans la charge publique`);
 
   // Observation, pas défaut. La réponse expose le garage_id, parce que
   // les photos sont servies par leur chemin Storage, lequel est préfixé
