@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { createServiceRoleClient } from "@/lib/supabase/serviceRole";
 import { envoyerSms, smsConfigure } from "@/lib/sms";
 import { formatTimeShort } from "@/lib/dates";
+import { garageOperationnel, type EtatGarage } from "@/lib/abonnement";
 
 // Appelée une fois par jour par Vercel Cron (voir vercel.json) — aucune
 // session utilisateur, donc aucun garage_actuel() : on doit balayer tous
@@ -33,18 +34,31 @@ export async function GET(request: Request) {
 
   const { data: rendezVous } = await supabase
     .from("rendez_vous")
-    .select("id, heure, description, client_id, garage_id, garages(nom), clients(nom, telephone)")
+    .select("id, heure, description, client_id, garage_id, garages(nom, statut, abonnement_statut), clients(nom, telephone)")
     .eq("date", dateDemain)
     .in("statut", ["prevu", "confirme"])
     .is("rappel_envoye_le", null);
 
   let envoyes = 0;
+  let ignoresGarageBloque = 0;
   const echecs: string[] = [];
 
   for (const rdv of rendezVous ?? []) {
     const client = rdv.clients as unknown as { nom: string; telephone: string | null } | null;
-    const garage = rdv.garages as unknown as { nom: string } | null;
+    const garage = rdv.garages as unknown as (EtatGarage & { nom: string }) | null;
     if (!client?.telephone) continue;
+
+    // La clé service contourne le gel d'écriture : sans ce contrôle, un
+    // garage suspendu, en échec de paiement ou résilié continuait d'envoyer
+    // des rappels en son nom — payés par la plateforme. Et un garage gelé
+    // ne peut même plus annuler le rendez-vous : le client recevait le
+    // rappel et se présentait devant un atelier qui ne pouvait rien saisir.
+    // Le rappel n'est pas marqué comme envoyé : si le garage est rétabli
+    // avant la date, il partira au passage suivant.
+    if (!garageOperationnel(garage)) {
+      ignoresGarageBloque++;
+      continue;
+    }
 
     const message = `${garage?.nom ?? "Votre garage"} : rappel de votre rendez-vous demain à ${formatTimeShort(rdv.heure)}. ${rdv.description}`;
     const envoi = await envoyerSms({ destinataire: client.telephone, message });
@@ -56,5 +70,5 @@ export async function GET(request: Request) {
     }
   }
 
-  return NextResponse.json({ ok: true, envoyes, echecs });
+  return NextResponse.json({ ok: true, envoyes, ignoresGarageBloque, echecs });
 }

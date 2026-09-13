@@ -1,5 +1,6 @@
 import { createServerClient, type CookieOptions } from "@supabase/ssr";
 import { NextResponse, type NextRequest } from "next/server";
+import { garageOperationnel } from "@/lib/abonnement";
 
 export async function middleware(request: NextRequest) {
   let response = NextResponse.next({ request: { headers: request.headers } });
@@ -82,15 +83,16 @@ export async function middleware(request: NextRequest) {
     // temps de la phase pilote. Avant le premier garage payant, trancher
     // entre un essai à durée limitée et le paiement avant usage.
     //
-    // Cette règle est recopiée dans garage_operationnel() côté base, et
-    // éprouvée par scripts/isolation.mjs, qui échouera si l'une des deux
-    // change sans l'autre — et si elle change tout court, pour forcer à
-    // réviser cette note plutôt qu'à la laisser mentir.
-    const STATUTS_ABONNEMENT_BLOQUANTS = ["past_due", "canceled", "unpaid", "incomplete_expired"];
-    const garageBloque =
-      garage &&
-      (garage.statut !== "actif" ||
-        (garage.abonnement_statut !== null && STATUTS_ABONNEMENT_BLOQUANTS.includes(garage.abonnement_statut)));
+    // La règle elle-même vit dans lib/abonnement.ts, partagée avec les
+    // tâches planifiées, et a une jumelle côté base (garage_operationnel()).
+    // scripts/isolation.mjs éprouve la version SQL état par état : il
+    // échouera si la décision change, pour forcer à réviser cette note
+    // plutôt qu'à la laisser mentir.
+    //
+    // Le `!!garage &&` préserve le comportement d'origine : un compte sans
+    // garage (admin de plateforme, inscription en cours) n'est pas considéré
+    // comme bloqué ici.
+    const garageBloque = !!garage && !garageOperationnel(garage);
 
     if (garageBloque && !isPageFacturation) {
       const { data: estAdmin } = await supabase.rpc("est_admin_plateforme");
