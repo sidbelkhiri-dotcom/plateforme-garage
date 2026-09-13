@@ -134,6 +134,26 @@ body {
   height: 100%;
 }
 
+/* Safari sur iPhone zoome dès qu'on touche un champ dont le texte fait moins
+   de 16 px, et la page se décale. Or text-sm vaut 15 px dans ce projet (voir
+   tailwind.config.js) : chaque champ de chaque formulaire le déclenchait,
+   à commencer par la page d'arrivée au comptoir, faite pour être remplie sur
+   le téléphone du client après avoir scanné le code QR.
+
+   Réglé ici une fois pour toutes plutôt que composant par composant : c'est
+   une contrainte de plateforme, pas une préférence de style, et une règle
+   globale couvre aussi les formulaires qui seront écrits plus tard. Le
+   !important est voulu — une classe utilitaire comme text-sm l'emporterait
+   sinon sur ce sélecteur d'élément. 16 px reste dans la fourchette de la
+   charte (15 à 17 px). */
+@media (max-width: 639px) {
+  input:not([type="checkbox"]):not([type="radio"]),
+  select,
+  textarea {
+    font-size: 16px !important;
+  }
+}
+
 /* Documents imprimables (évaluation écrite, Lot 6) : la barre latérale et
    tout ce qui est marqué .sans-impression disparaissent au moment
    d'imprimer ou d'exporter en PDF depuis le navigateur (6.2). */

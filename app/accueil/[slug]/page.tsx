@@ -9,7 +9,6 @@ import Champ from "@/components/ui/Champ";
 import Selecteur from "@/components/ui/Selecteur";
 import Bouton from "@/components/ui/Bouton";
 import MessageErreur from "@/components/ui/MessageErreur";
-import Logo from "@/components/Logo";
 
 const AUTRE = "__autre__";
 
@@ -156,49 +155,60 @@ export default function PageAccueil({ params }: { params: { slug: string } }) {
   }
 
   return (
-    <div className="relative min-h-screen flex items-center justify-center bg-mf-bg p-6 overflow-hidden">
+    <div className="relative min-h-screen flex items-center justify-center bg-mf-bg p-3 sm:p-6 overflow-hidden">
       <form
         onSubmit={envoyer}
         className="relative bg-mf-surface border border-mf-border rounded-mf-lg shadow-mf-lg p-6 sm:p-8 w-full max-w-md flex flex-col gap-3"
       >
+        {/* Le nom du garage en titre, pas le logo de Garagenda. Le client qui
+            scanne le code QR est chez SON garage : la première chose qu'il
+            lisait était le nom d'un logiciel qu'il ne connaît pas, et le nom
+            du garage était noyé dans une phrase. Même règle que la page
+            d'inspection. Garagenda reste mentionné, discrètement, en pied. */}
         <div className="mb-1">
-          <Logo height={22} />
+          <div className="font-display text-[1.625rem] font-bold uppercase leading-tight tracking-[0.01em] text-mf-text">
+            {garage.nom}
+          </div>
+          <p className="text-sm text-mf-text-2 mt-1.5">
+            Bienvenue ! Remplissez vos renseignements, un membre de l'équipe vous accueillera dans un instant.
+          </p>
         </div>
-        <p className="text-sm text-mf-text-2 mb-2">
-          Bienvenue chez {garage.nom} ! Remplissez vos renseignements, un membre de l'équipe vous accueillera dans un
-          instant.
-        </p>
 
-        <Champ label="Nom" required value={valeurs.nom} onChange={(e) => definir("nom", e.target.value)} />
-        <div className="grid grid-cols-2 gap-3">
+        <Champ label="Nom" required autoComplete="name" value={valeurs.nom} onChange={(e) => definir("nom", e.target.value)} />
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
           <Champ
             label="Téléphone"
             type="tel"
+            autoComplete="tel"
             value={valeurs.telephone}
             onChange={(e) => definir("telephone", e.target.value)}
           />
           <Champ
             label="Courriel"
             type="email"
+            autoComplete="email"
             value={valeurs.courriel}
             onChange={(e) => definir("courriel", e.target.value)}
           />
         </div>
 
-        <div className="grid grid-cols-2 gap-3">
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
           <Champ
             label="Adresse"
+            autoComplete="street-address"
             value={valeurs.adresse}
             onChange={(e) => definir("adresse", e.target.value)}
           />
           <Champ
             label="Code postal"
+            autoComplete="postal-code"
+            autoCapitalize="characters"
             value={valeurs.codePostal}
             onChange={(e) => definir("codePostal", e.target.value)}
           />
         </div>
 
-        <div className="grid grid-cols-2 gap-3">
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
           {marqueLibre ? (
             <Champ label="Marque" value={valeurs.marque} onChange={(e) => definir("marque", e.target.value)} />
           ) : (
@@ -290,8 +300,15 @@ export default function PageAccueil({ params }: { params: { slug: string } }) {
             label="NIV (VIN) — facultatif"
             value={valeurs.vin}
             onChange={(e) => definir("vin", e.target.value.toUpperCase())}
-            placeholder="17 caractères, inscrit sur votre carte d'immatriculation"
+            placeholder="Sur votre carte d'immatriculation"
             maxLength={17}
+            // Un NIV n'est pas un mot : sans ces attributs, le clavier du
+            // téléphone tentait de le « corriger » et de lui mettre une
+            // majuscule initiale.
+            autoCapitalize="characters"
+            autoCorrect="off"
+            autoComplete="off"
+            spellCheck={false}
           />
           <button
             type="button"
@@ -300,7 +317,7 @@ export default function PageAccueil({ params }: { params: { slug: string } }) {
             className="mt-1.5 inline-flex items-center gap-1.5 text-xs font-semibold text-mf-blue-hover hover:text-mf-blue disabled:opacity-40 disabled:cursor-not-allowed"
           >
             <ScanSearch className="w-3.5 h-3.5" />
-            {decodage.enCours ? "Décodage en cours…" : "Remplir marque/modèle/année automatiquement"}
+            {decodage.enCours ? "Décodage en cours…" : "Remplir le véhicule à partir du NIV"}
           </button>
           {decodage.erreur && <p className="text-xs text-mf-red mt-1">{decodage.erreur}</p>}
         </div>
@@ -328,6 +345,7 @@ export default function PageAccueil({ params }: { params: { slug: string } }) {
         <Bouton type="submit" enEnvoi={enEnvoi} className="w-full mt-1">
           Envoyer
         </Bouton>
+        <p className="text-center text-[11px] text-mf-text-3 mt-1">Propulsé par Garagenda</p>
       </form>
     </div>
   );

@@ -722,6 +722,16 @@ try {
     synchro, `garages : « ${identite?.nom} », ${identite?.telephone}`);
   console.log(`\nIdentité du garage : renommage dans Paramètres ${synchro ? "recopié dans garages" : "NON RECOPIÉ — deux identités"}.`);
 
+  // Le slug d'un nouveau garage : l'adresse publique qu'il imprime sous son
+  // code QR. Le générateur remplaçait les lettres accentuées par des tirets
+  // — « Mécanique Côté » devenait m-canique-c-t.
+  const garageAccents = await creer("garages", { nom: `Mécanique Côté & Fils ${String(Date.now()).slice(-5)}`, statut: "actif" });
+  aCreer.garages.push(garageAccents.id);
+  const slugAttendu = `mecanique-cote-fils-${String(garageAccents.nom).slice(-5)}`;
+  verifier("garages", "le slug d'un nom accentué est illisible",
+    garageAccents.slug === slugAttendu, `obtenu « ${garageAccents.slug} », attendu « ${slugAttendu} »`);
+  console.log(`Slug d'un nom accentué : ${garageAccents.slug}`);
+
   // ------------------------------------------------------------
   // 8. Cycle de vie. Suspendre un garage doit l'empêcher de travailler
   //    sans lui cacher ses propres données : ses factures sont des
