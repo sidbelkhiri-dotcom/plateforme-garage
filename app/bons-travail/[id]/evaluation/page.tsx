@@ -1,3 +1,4 @@
+import { formatQuantite } from "@/lib/nombres";
 import { notFound } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { formatDateLong } from "@/lib/dates";
@@ -5,6 +6,7 @@ import BoutonImprimer from "@/components/BoutonImprimer";
 import BoutonEnvoyerEvaluation from "@/components/BoutonEnvoyerEvaluation";
 import Link from "next/link";
 import { ArrowLeft } from "lucide-react";
+import { montantTaxe, formatTaux } from "@/lib/taxes";
 
 const LABEL_ETAT: Record<string, string> = {
   neuve: "Neuve",
@@ -53,6 +55,12 @@ export default async function EvaluationEcritePage({ params }: { params: { id: s
   // évaluation n'a encore été acceptée.
   const evaluationAcceptee = bon.montant_evaluation != null;
   const totalHt = evaluationAcceptee ? bon.montant_evaluation : totaux?.total_ht ?? 0;
+  // Taxes estimées, au cent près comme creer_facture() — voir lib/taxes.ts.
+  const tauxTps: number | null = garage?.taux_tps ?? null;
+  const tauxTvq: number | null = garage?.taux_tvq ?? null;
+  const tpsEstimee = tauxTps != null ? montantTaxe(Number(totalHt), tauxTps) : 0;
+  const tvqEstimee = tauxTvq != null ? montantTaxe(Number(totalHt), tauxTvq) : 0;
+  const totalEstime = Math.round((Number(totalHt) + tpsEstimee + tvqEstimee) * 100) / 100;
   // Supabase infère accepte_par:profiles(nom) comme un tableau dans ce
   // contexte de jointure — à l'exécution c'est bien un objet unique
   // (relation plusieurs-à-un), seule l'inférence de type est trop prudente.
@@ -101,17 +109,21 @@ export default async function EvaluationEcritePage({ params }: { params: { id: s
             {garage?.adresse && <div className="text-sm text-stone-600">{garage.adresse}</div>}
             {garage?.telephone && <div className="text-sm text-stone-600">{garage.telephone}</div>}
             {garage?.courriel && <div className="text-sm text-stone-600">{garage.courriel}</div>}
+            {/* Un numéro par ligne. Sur une seule ligne séparée par « · », la
+                paire se coupait au hasard de la largeur. */}
             {(garage?.tps || garage?.tvq) && (
-              <div className="text-xs text-stone-500 mt-1">
-                {garage?.tps && <>TPS : {garage.tps} </>}
-                {garage?.tvq && <>· TVQ : {garage.tvq}</>}
+              <div className="text-xs text-stone-500 mt-1 leading-relaxed">
+                {garage?.tps && <div>TPS : {garage.tps}</div>}
+                {garage?.tvq && <div>TVQ : {garage.tvq}</div>}
               </div>
             )}
           </div>
-          <div className="text-right">
+          {/* shrink-0 : l'identité du garage prenait toute la place et la date
+              se coupait avant l'année. */}
+          <div className="text-right shrink-0 pl-6">
             <div className="text-xl font-bold uppercase tracking-wide text-stone-900">Évaluation écrite</div>
             <div className="font-mono text-sm text-stone-500">{bon.numero}</div>
-            <div className="text-sm text-stone-500">Date : {formatDateLong(bon.ouvert_le)}</div>
+            <div className="text-sm text-stone-500 whitespace-nowrap">Date : {formatDateLong(bon.ouvert_le)}</div>
           </div>
         </div>
 
@@ -213,7 +225,7 @@ export default async function EvaluationEcritePage({ params }: { params: { id: s
               <tr key={l.id} className="border-b border-stone-100">
                 <td className="py-1.5">{l.description}</td>
                 <td className="py-1.5">{LABEL_ETAT[l.etat_piece ?? ""] ?? "—"}</td>
-                <td className="py-1.5 text-right">{l.quantite}</td>
+                <td className="py-1.5 text-right">{formatQuantite(l.quantite)}</td>
                 <td className="py-1.5 text-right">{formatMoney(l.prix_unitaire)}</td>
                 <td className="py-1.5 text-right">{formatMoney(l.quantite * l.prix_unitaire)}</td>
               </tr>
@@ -222,7 +234,7 @@ export default async function EvaluationEcritePage({ params }: { params: { id: s
               <tr key={l.id} className="border-b border-stone-100">
                 <td className="py-1.5">{l.description}</td>
                 <td className="py-1.5 text-stone-500">Main-d'œuvre</td>
-                <td className="py-1.5 text-right">{l.quantite} h</td>
+                <td className="py-1.5 text-right">{formatQuantite(l.quantite)} h</td>
                 <td className="py-1.5 text-right">{formatMoney(l.prix_unitaire)}</td>
                 <td className="py-1.5 text-right">{formatMoney(l.quantite * l.prix_unitaire)}</td>
               </tr>
@@ -237,21 +249,62 @@ export default async function EvaluationEcritePage({ params }: { params: { id: s
           </tbody>
         </table>
 
+        {/* Le prix avant taxes reste le montant engageant : c'est lui que fige
+            accepter_evaluation(). Mais le client comparera ce document à sa
+            facture, qui ajoute TPS et TVQ — sans ces lignes, une évaluation à
+            277,45 $ suivie d'une facture à 319,00 $ laissait croire à un
+            dépassement. Les taxes sont dites estimées : creer_facture()
+            applique le taux en vigueur le jour de la facturation, et une
+            facture émise sans taxe ne peut qu'être inférieure.
+
+            La colonne passe de 224 px à 320 px : « Prix total (avant taxes) »
+            et la mention de projet s'y repliaient chacune sur deux lignes, sur
+            le chiffre le plus important du document. */}
         <div className="flex justify-end">
-          <div className="w-56">
-            <div className="flex justify-between text-base font-bold border-t border-stone-300 pt-2 mt-1">
-              <span>
-                Prix total (avant taxes)
-                {!evaluationAcceptee && (
-                  <span className="block text-[11px] font-normal text-amber-700 normal-case tracking-normal">
-                    Projet, non accepté par le client
-                  </span>
-                )}
-              </span>
-              <span className="font-mono">{formatMoney(totalHt)}</span>
+          <div className="w-full max-w-xs text-sm">
+            <div className="flex justify-between gap-4 text-base font-bold border-t border-stone-300 pt-2 mt-1">
+              <span className="whitespace-nowrap">Prix total (avant taxes)</span>
+              <span className="font-mono tabular-nums">{formatMoney(totalHt)}</span>
             </div>
+            {tauxTps != null && tauxTvq != null && (
+              <>
+                <div className="flex justify-between gap-4 text-stone-500 mt-1.5">
+                  <span>TPS estimée ({formatTaux(tauxTps)})</span>
+                  <span className="font-mono tabular-nums">{formatMoney(tpsEstimee)}</span>
+                </div>
+                <div className="flex justify-between gap-4 text-stone-500">
+                  <span>TVQ estimée ({formatTaux(tauxTvq)})</span>
+                  <span className="font-mono tabular-nums">{formatMoney(tvqEstimee)}</span>
+                </div>
+                <div className="flex justify-between gap-4 border-t border-stone-200 pt-1.5 mt-1.5 text-stone-700">
+                  <span>Total estimé avec taxes</span>
+                  <span className="font-mono tabular-nums">{formatMoney(totalEstime)}</span>
+                </div>
+              </>
+            )}
+            {!evaluationAcceptee && (
+              <div className="text-right text-xs text-amber-700 mt-2">Projet, non accepté par le client</div>
+            )}
           </div>
         </div>
+
+        {/* Un emplacement pour signer. Imprimée au comptoir, l'évaluation est le
+            document que le client accepte, et la version papier n'offrait
+            aucune place pour le faire. Absent dès que l'acceptation est
+            enregistrée — elle figure alors dans l'historique plus haut — ou
+            qu'une renonciation écrite a été obtenue. */}
+        {!evaluationAcceptee && !bon.renonciation_ecrite && (
+          <div className="mt-10 grid grid-cols-2 gap-10 text-xs text-stone-500 break-inside-avoid">
+            <div>
+              <div className="border-b border-stone-400 h-10" />
+              <div className="mt-1.5">Signature du client — acceptation de l'évaluation</div>
+            </div>
+            <div>
+              <div className="border-b border-stone-400 h-10" />
+              <div className="mt-1.5">Date</div>
+            </div>
+          </div>
+        )}
 
         <p className="text-xs text-stone-500 mt-8 border-t border-stone-100 pt-4">
           Une fois acceptée, cette évaluation lie {garage?.nom ?? "le garage"} au prix indiqué — aucun

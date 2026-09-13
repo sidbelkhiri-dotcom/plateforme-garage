@@ -1,3 +1,4 @@
+import { formatQuantite } from "@/lib/nombres";
 import { notFound } from "next/navigation";
 import Link from "next/link";
 import { ArrowLeft } from "lucide-react";
@@ -6,6 +7,7 @@ import { formatDateLong } from "@/lib/dates";
 import BoutonImprimer from "@/components/BoutonImprimer";
 import BoutonEnvoyerCourriel from "@/components/BoutonEnvoyerCourriel";
 import BoutonDemanderAvis from "@/components/BoutonDemanderAvis";
+import { formatTaux } from "@/lib/taxes";
 
 const LABEL_ETAT: Record<string, string> = {
   neuve: "Neuve",
@@ -115,19 +117,23 @@ export default async function FacturePage({ params }: { params: { id: string } }
             {garage?.adresse && <div className="text-sm text-stone-600">{garage.adresse}</div>}
             {garage?.telephone && <div className="text-sm text-stone-600">{garage.telephone}</div>}
             {garage?.courriel && <div className="text-sm text-stone-600">{garage.courriel}</div>}
+            {/* Un numéro par ligne. Sur une seule ligne séparée par « · », la
+                paire se coupait au hasard de la largeur. */}
             {(garage?.tps || garage?.tvq) && (
-              <div className="text-xs text-stone-500 mt-1">
-                {garage?.tps && <>TPS : {garage.tps} </>}
-                {garage?.tvq && <>· TVQ : {garage.tvq}</>}
+              <div className="text-xs text-stone-500 mt-1 leading-relaxed">
+                {garage?.tps && <div>TPS : {garage.tps}</div>}
+                {garage?.tvq && <div>TVQ : {garage.tvq}</div>}
               </div>
             )}
           </div>
-          <div className="text-right">
+          {/* shrink-0 : l'identité du garage prenait toute la place et la date
+              se coupait avant l'année. */}
+          <div className="text-right shrink-0 pl-6">
             <div className="text-xl font-bold uppercase tracking-wide text-stone-900">
               {facture.sans_taxe ? "Reçu de paiement" : "Facture"}
             </div>
             <div className="font-mono text-sm text-stone-500">{facture.numero}</div>
-            <div className="text-sm text-stone-500">Date de livraison : {formatDateLong(facture.date)}</div>
+            <div className="text-sm text-stone-500 whitespace-nowrap">Date de livraison : {formatDateLong(facture.date)}</div>
           </div>
         </div>
 
@@ -171,7 +177,7 @@ export default async function FacturePage({ params }: { params: { id: string } }
               <tr key={l.id} className="border-b border-stone-100">
                 <td className="py-1.5">{l.description}</td>
                 <td className="py-1.5">{LABEL_ETAT[l.etat_piece ?? ""] ?? "—"}</td>
-                <td className="py-1.5 text-right">{l.quantite}</td>
+                <td className="py-1.5 text-right">{formatQuantite(l.quantite)}</td>
                 <td className="py-1.5 text-right">{formatMoney(l.prix_unitaire)}</td>
                 <td className="py-1.5 text-right">{formatMoney(l.quantite * l.prix_unitaire)}</td>
               </tr>
@@ -180,7 +186,7 @@ export default async function FacturePage({ params }: { params: { id: string } }
               <tr key={l.id} className="border-b border-stone-100">
                 <td className="py-1.5">{l.description}</td>
                 <td className="py-1.5 text-stone-500">Main-d'œuvre</td>
-                <td className="py-1.5 text-right">{l.quantite} h</td>
+                <td className="py-1.5 text-right">{formatQuantite(l.quantite)} h</td>
                 <td className="py-1.5 text-right">{formatMoney(l.prix_unitaire)}</td>
                 <td className="py-1.5 text-right">{formatMoney(l.quantite * l.prix_unitaire)}</td>
               </tr>
@@ -199,8 +205,8 @@ export default async function FacturePage({ params }: { params: { id: string } }
               <Row label="Sans taxe" value={formatMoney(0)} muted />
             ) : (
               <>
-                <Row label={`TPS (${(facture.taux_tps * 100).toFixed(3)} %)`} value={formatMoney(facture.montant_tps)} />
-                <Row label={`TVQ (${(facture.taux_tvq * 100).toFixed(3)} %)`} value={formatMoney(facture.montant_tvq)} />
+                <Row label={`TPS (${formatTaux(facture.taux_tps)})`} value={formatMoney(facture.montant_tps)} />
+                <Row label={`TVQ (${formatTaux(facture.taux_tvq)})`} value={formatMoney(facture.montant_tvq)} />
               </>
             )}
             <div className="border-t border-stone-300 mt-1 pt-1">

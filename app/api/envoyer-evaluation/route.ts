@@ -1,3 +1,5 @@
+import { montantTaxe, formatTaux } from "@/lib/taxes";
+import { formatQuantite } from "@/lib/nombres";
 import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
 import { formatDateLong } from "@/lib/dates";
@@ -106,7 +108,23 @@ function construireHtml({
 }) {
   const piecesLignes = lignes.filter((l) => l.type === "piece");
   const mainOeuvreLignes = lignes.filter((l) => l.type === "main_oeuvre");
-  const totalHt = lignes.reduce((s, l) => s + l.quantite * l.prix_unitaire, 0);
+  // Le montant figé à l'acceptation, pas le total recalculé. Cette route
+  // n'envoie rien tant qu'aucune évaluation n'est acceptée : elle part donc
+  // toujours à un moment où le seul montant engageant est
+  // bon.montant_evaluation (D13). Elle affichait pourtant la somme des lignes
+  // courantes — si un mécanicien ajoutait une ligne après l'acceptation, le
+  // client recevait un « devis » à un montant qu'il n'avait jamais accepté.
+  // Même règle que la page imprimable ; on ne retombe sur la somme des
+  // lignes qu'en cas de renonciation écrite, où aucun montant n'a été figé.
+  const totalLignes = lignes.reduce((s, l) => s + l.quantite * l.prix_unitaire, 0);
+  const totalHt = bon.montant_evaluation != null ? Number(bon.montant_evaluation) : totalLignes;
+  // Taxes estimées, au cent près comme creer_facture() — voir lib/taxes.ts
+  // et la page imprimable pour la raison.
+  const tauxTps: number | null = garage?.taux_tps ?? null;
+  const tauxTvq: number | null = garage?.taux_tvq ?? null;
+  const tpsEstimee = tauxTps != null ? montantTaxe(totalHt, tauxTps) : 0;
+  const tvqEstimee = tauxTvq != null ? montantTaxe(totalHt, tauxTvq) : 0;
+  const totalEstime = Math.round((totalHt + tpsEstimee + tvqEstimee) * 100) / 100;
 
   const ligneHtml = (l: any) => `
     <tr>
@@ -114,7 +132,7 @@ function construireHtml({
       <td style="padding:6px 8px;border-bottom:1px solid #e5e5e5;">${
         l.type === "piece" ? LABEL_ETAT[l.etat_piece ?? ""] ?? "" : "Main-d'œuvre"
       }</td>
-      <td style="padding:6px 8px;border-bottom:1px solid #e5e5e5;text-align:right;">${l.quantite}</td>
+      <td style="padding:6px 8px;border-bottom:1px solid #e5e5e5;text-align:right;">${formatQuantite(l.quantite)}</td>
       <td style="padding:6px 8px;border-bottom:1px solid #e5e5e5;text-align:right;">${formatMoney(l.prix_unitaire)}</td>
       <td style="padding:6px 8px;border-bottom:1px solid #e5e5e5;text-align:right;">${formatMoney(l.quantite * l.prix_unitaire)}</td>
     </tr>`;
@@ -155,8 +173,15 @@ function construireHtml({
       </tbody>
     </table>
 
-    <table style="width:260px;margin-left:auto;font-size:13px;">
-      <tr><td style="padding:6px 0;font-weight:bold;border-top:1px solid #ccc;">Prix total (avant taxes)</td><td style="padding:6px 0;text-align:right;font-weight:bold;border-top:1px solid #ccc;">${formatMoney(totalHt)}</td></tr>
+    <table style="width:320px;margin-left:auto;font-size:13px;">
+      <tr><td style="padding:6px 0;font-weight:bold;border-top:1px solid #ccc;white-space:nowrap;">Prix total (avant taxes)</td><td style="padding:6px 0;text-align:right;font-weight:bold;border-top:1px solid #ccc;">${formatMoney(totalHt)}</td></tr>
+      ${
+        tauxTps != null && tauxTvq != null
+          ? `<tr><td style="padding:2px 0;color:#666;">TPS estimée (${formatTaux(tauxTps)})</td><td style="padding:2px 0;text-align:right;color:#666;">${formatMoney(tpsEstimee)}</td></tr>
+      <tr><td style="padding:2px 0;color:#666;">TVQ estimée (${formatTaux(tauxTvq)})</td><td style="padding:2px 0;text-align:right;color:#666;">${formatMoney(tvqEstimee)}</td></tr>
+      <tr><td style="padding:6px 0;color:#333;border-top:1px solid #e5e5e5;">Total estimé avec taxes</td><td style="padding:6px 0;text-align:right;color:#333;border-top:1px solid #e5e5e5;">${formatMoney(totalEstime)}</td></tr>`
+          : ""
+      }
     </table>
 
     ${

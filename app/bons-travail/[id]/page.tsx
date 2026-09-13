@@ -1,4 +1,5 @@
 "use client";
+import { formatQuantite } from "@/lib/nombres";
 
 import { useCallback, useEffect, useState } from "react";
 import Link from "next/link";
@@ -449,7 +450,7 @@ export default function BonTravailDetailPage() {
           onAjouter={() => setShowLigne({ type: "main_oeuvre" })}
           onModifier={(l) => setShowLigne({ type: "main_oeuvre", ligne: l })}
           onSupprimer={supprimerLigne}
-          renduLigne={(l) => `${l.quantite} h`}
+          renduLigne={(l) => `${formatQuantite(l.quantite)} h`}
         />
 
         <div className="p-4 flex justify-end">
@@ -799,7 +800,7 @@ function LignesSection({
                     ligne. */}
                 <div className="flex items-baseline justify-between gap-3 mt-0.5">
                   <span className="text-xs text-mf-text-3">
-                    {renduLigne(l)} · {l.quantite} × {formatMoney(l.prix_unitaire)}
+                    {renduLigne(l)} · {formatQuantite(l.quantite)} × {formatMoney(l.prix_unitaire)}
                   </span>
                   <span className="text-sm font-mono tabular-nums shrink-0 text-mf-text">
                     {formatMoney(l.quantite * l.prix_unitaire)}

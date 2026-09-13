@@ -1,3 +1,4 @@
+import { formatQuantite } from "@/lib/nombres";
 import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
 import { formatDateLong } from "@/lib/dates";
@@ -118,7 +119,7 @@ function construireHtml({
       <td style="padding:6px 8px;border-bottom:1px solid #e5e5e5;">${
         l.type === "piece" ? LABEL_ETAT[l.etat_piece ?? ""] ?? "" : "Main-d'œuvre"
       }</td>
-      <td style="padding:6px 8px;border-bottom:1px solid #e5e5e5;text-align:right;">${l.quantite}</td>
+      <td style="padding:6px 8px;border-bottom:1px solid #e5e5e5;text-align:right;">${formatQuantite(l.quantite)}</td>
       <td style="padding:6px 8px;border-bottom:1px solid #e5e5e5;text-align:right;">${formatMoney(l.prix_unitaire)}</td>
       <td style="padding:6px 8px;border-bottom:1px solid #e5e5e5;text-align:right;">${formatMoney(l.quantite * l.prix_unitaire)}</td>
     </tr>`;
