@@ -4,13 +4,10 @@ import { useEffect, useState } from "react";
 import { CheckCircle2, AlertTriangle, ScanSearch } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
 import { useFormulaire } from "@/lib/useFormulaire";
-import { useMarques, useModeles, useAnnees } from "@/lib/useMarquesModeles";
 import Champ from "@/components/ui/Champ";
-import Selecteur from "@/components/ui/Selecteur";
+import ChampsVehicule from "@/components/forms/ChampsVehicule";
 import Bouton from "@/components/ui/Bouton";
 import MessageErreur from "@/components/ui/MessageErreur";
-
-const AUTRE = "__autre__";
 
 type Valeurs = {
   nom: string;
@@ -51,18 +48,13 @@ type GaragePublic = { id: string; nom: string };
 export default function PageAccueil({ params }: { params: { slug: string } }) {
   const supabase = createClient();
   const { valeurs, definir, soumettre, erreur, enEnvoi } = useFormulaire<Valeurs>(VALEURS_VIDES);
-  const [marqueLibre, setMarqueLibre] = useState(false);
-  const [modeleLibre, setModeleLibre] = useState(false);
-  const [anneeLibre, setAnneeLibre] = useState(false);
+  const [vinDecode, setVinDecode] = useState(false);
   const [envoye, setEnvoye] = useState(false);
   const [garage, setGarage] = useState<GaragePublic | null | undefined>(undefined);
   const [decodage, setDecodage] = useState<{ enCours: boolean; erreur: string | null }>({
     enCours: false,
     erreur: null,
   });
-  const marques = useMarques();
-  const modeles = useModeles(marqueLibre ? "" : valeurs.marque);
-  const annees = useAnnees(marqueLibre ? "" : valeurs.marque, modeleLibre ? "" : valeurs.modele);
 
   // Passe en saisie libre pour marque/modèle/année : le NIV peut décoder
   // une valeur absente du catalogue de référence (voir FormulaireVehicule).
@@ -79,9 +71,7 @@ export default function PageAccueil({ params }: { params: { slug: string } }) {
         setDecodage({ enCours: false, erreur: resultat.error ?? "Décodage impossible." });
         return;
       }
-      setMarqueLibre(true);
-      setModeleLibre(true);
-      setAnneeLibre(true);
+      setVinDecode(true);
       definir("marque", resultat.marque ?? "");
       definir("modele", resultat.modele ?? "");
       definir("annee", resultat.annee ?? "");
@@ -208,92 +198,11 @@ export default function PageAccueil({ params }: { params: { slug: string } }) {
           />
         </div>
 
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-          {marqueLibre ? (
-            <Champ label="Marque" value={valeurs.marque} onChange={(e) => definir("marque", e.target.value)} />
-          ) : (
-            <Selecteur
-              label="Marque"
-              value={valeurs.marque}
-              onChange={(e) => {
-                if (e.target.value === AUTRE) {
-                  setMarqueLibre(true);
-                  definir("marque", "");
-                } else {
-                  definir("marque", e.target.value);
-                  definir("modele", "");
-                  definir("annee", "");
-                }
-              }}
-            >
-              <option value="">— Choisir —</option>
-              {marques.map((m) => (
-                <option key={m} value={m}>
-                  {m}
-                </option>
-              ))}
-              <option value={AUTRE}>Autre (préciser)…</option>
-            </Selecteur>
-          )}
-
-          {marqueLibre || modeleLibre ? (
-            <Champ label="Modèle" value={valeurs.modele} onChange={(e) => definir("modele", e.target.value)} />
-          ) : (
-            <Selecteur
-              label="Modèle"
-              value={valeurs.modele}
-              disabled={!valeurs.marque}
-              onChange={(e) => {
-                if (e.target.value === AUTRE) {
-                  setModeleLibre(true);
-                  definir("modele", "");
-                } else {
-                  definir("modele", e.target.value);
-                  definir("annee", "");
-                }
-              }}
-            >
-              <option value="">{valeurs.marque ? "— Choisir —" : "— Choisir une marque d'abord —"}</option>
-              {modeles.map((m) => (
-                <option key={m} value={m}>
-                  {m}
-                </option>
-              ))}
-              <option value={AUTRE}>Autre (préciser)…</option>
-            </Selecteur>
-          )}
-        </div>
-
-        {marqueLibre || modeleLibre || anneeLibre ? (
-          <Champ
-            label="Année"
-            type="number"
-            value={valeurs.annee}
-            onChange={(e) => definir("annee", e.target.value)}
-          />
-        ) : (
-          <Selecteur
-            label="Année"
-            value={valeurs.annee}
-            disabled={!valeurs.modele}
-            onChange={(e) => {
-              if (e.target.value === AUTRE) {
-                setAnneeLibre(true);
-                definir("annee", "");
-              } else {
-                definir("annee", e.target.value);
-              }
-            }}
-          >
-            <option value="">{valeurs.modele ? "— Choisir —" : "— Choisir un modèle d'abord —"}</option>
-            {annees.map((a) => (
-              <option key={a} value={a}>
-                {a}
-              </option>
-            ))}
-            <option value={AUTRE}>Autre (préciser)…</option>
-          </Selecteur>
-        )}
+        <ChampsVehicule
+          valeurs={{ marque: valeurs.marque, modele: valeurs.modele, annee: valeurs.annee }}
+          definir={(champ, valeur) => definir(champ, valeur)}
+          saisieLibre={vinDecode}
+        />
 
         <div>
           <Champ

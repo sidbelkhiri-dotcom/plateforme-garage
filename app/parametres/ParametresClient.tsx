@@ -1,9 +1,10 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
-import { Building2, ShieldQuestion, Wrench as WrenchIcon, UserCog, Star } from "lucide-react";
+import { Building2, ShieldQuestion, Wrench as WrenchIcon, UserCog, Star, Globe, Copy, ExternalLink } from "lucide-react";
+import { useToast } from "@/components/ui/ToastProvider";
 import Champ from "@/components/ui/Champ";
 import Selecteur from "@/components/ui/Selecteur";
 import Bouton from "@/components/ui/Bouton";
@@ -47,13 +48,30 @@ export default function ParametresClient({
   parametresInitial,
   profilsInitial,
   monId,
+  slug,
 }: {
   parametresInitial: Parametres | null;
   profilsInitial: Profil[];
   monId: string;
+  slug: string | null;
 }) {
   const supabase = createClient();
   const router = useRouter();
+  const { afficher } = useToast();
+  // L'origine n'est connue que dans le navigateur : la lire au rendu
+  // serveur casserait l'hydratation. Même adresse en développement et en
+  // production, sans variable de configuration à tenir à jour.
+  const [origine, setOrigine] = useState("");
+  useEffect(() => setOrigine(window.location.origin), []);
+
+  async function copier(adresse: string) {
+    try {
+      await navigator.clipboard.writeText(adresse);
+      afficher({ titre: "Adresse copiée", severite: "success" });
+    } catch {
+      afficher({ titre: "Copie impossible", description: "Sélectionnez l'adresse et copiez-la à la main.", severite: "danger" });
+    }
+  }
 
   const [valeurs, setValeurs] = useState<Parametres>(
     parametresInitial ?? {
@@ -221,6 +239,58 @@ export default function ParametresClient({
         </Bouton>
       </form>
 
+      {slug && (
+        <div className="bg-mf-surface rounded-mf-md border border-mf-border p-5">
+          <h2 className="font-display font-bold text-sm uppercase tracking-wide flex items-center gap-2 mb-1 text-mf-text">
+            <Globe className="w-4 h-4 text-mf-signal-fg" /> Pages publiques de votre garage
+          </h2>
+          <p className="text-xs text-mf-text-3 mb-4">
+            À partager avec vos clients. Ils n'ont besoin d'aucun compte : ce qu'ils envoient arrive dans vos écrans
+            « Nouvelles arrivées » et « Demandes de RDV ».
+          </p>
+          <div className="divide-y divide-mf-border">
+            {[
+              {
+                titre: "Arrivée au comptoir",
+                aide: "À afficher en code QR au comptoir : le client remplit sa fiche sur son téléphone en attendant.",
+                chemin: `/accueil/${slug}`,
+              },
+              {
+                titre: "Demande de rendez-vous",
+                aide: "À mettre sur votre site, votre page Facebook ou votre fiche Google. Vous confirmez chaque demande.",
+                chemin: `/accueil/${slug}/rendez-vous`,
+              },
+            ].map(({ titre, aide, chemin }) => {
+              const adresse = `${origine}${chemin}`;
+              return (
+                <div key={chemin} className="py-3 first:pt-0 last:pb-0">
+                  <div className="text-sm font-semibold text-mf-text">{titre}</div>
+                  <div className="text-xs text-mf-text-3 mt-0.5">{aide}</div>
+                  <div className="mt-2 flex flex-col sm:flex-row sm:items-center gap-2">
+                    <code className="flex-1 min-w-0 truncate select-all bg-mf-surface-3 border border-mf-border px-3 py-2 text-xs text-mf-text">
+                      {adresse}
+                    </code>
+                    <div className="flex gap-2 shrink-0">
+                      <Bouton variante="secondaire" onClick={() => copier(adresse)} className="flex-1 sm:flex-none">
+                        <Copy className="w-4 h-4" /> Copier
+                      </Bouton>
+                      <a
+                        href={chemin}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="flex-1 sm:flex-none inline-flex items-center justify-center gap-2 min-h-[44px] px-4 border border-mf-border-strong text-sm font-semibold text-mf-text hover:bg-mf-surface-2"
+                      >
+                        <ExternalLink className="w-4 h-4" /> Ouvrir
+                      </a>
+                    </div>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+      )}
+
       <div className="bg-mf-surface rounded-mf-md border border-mf-border p-5">
         <h2 className="font-display font-bold text-sm uppercase tracking-wide flex items-center gap-2 mb-1 text-mf-text">
           <UserCog className="w-4 h-4 text-mf-signal-fg" /> Utilisateurs et rôles
@@ -245,7 +315,9 @@ export default function ParametresClient({
                 {p.id === monId && <span className="text-xs text-mf-text-3">(vous)</span>}
                 {!p.actif && <Badge tone="rouge">Inactif</Badge>}
               </div>
-              <div className="flex items-center gap-2">
+              {/* flex-wrap : sur téléphone, le bouton « Désactiver » sortait de la
+                  carte, la rangée refusant de passer à la ligne. */}
+              <div className="flex items-center flex-wrap gap-2">
                 <Selecteur
                   label=""
                   value={p.role}

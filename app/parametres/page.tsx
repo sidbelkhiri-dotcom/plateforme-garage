@@ -15,13 +15,26 @@ export default async function ParametresPage() {
 
   if (!user) redirect("/login");
 
-  const { data: profil } = await supabase.from("profiles").select("role").eq("id", user.id).single();
+  const { data: profil } = await supabase.from("profiles").select("role, garage_id").eq("id", user.id).single();
   if (profil?.role !== "admin") redirect("/");
 
-  const [{ data: parametres }, { data: profils }] = await Promise.all([
+  const [{ data: parametres }, { data: profils }, { data: garage }] = await Promise.all([
     supabase.from("parametres").select("*").single(),
     supabase.from("profiles").select("*").order("nom"),
+    // Le slug des pages publiques. Il n'était lu nulle part dans
+    // l'application du personnel : un garage n'avait aucun moyen de
+    // connaître l'adresse de sa propre page d'arrivée au comptoir.
+    profil.garage_id
+      ? supabase.from("garages").select("slug").eq("id", profil.garage_id).single()
+      : Promise.resolve({ data: null }),
   ]);
 
-  return <ParametresClient parametresInitial={parametres} profilsInitial={profils ?? []} monId={user.id} />;
+  return (
+    <ParametresClient
+      parametresInitial={parametres}
+      profilsInitial={profils ?? []}
+      monId={user.id}
+      slug={garage?.slug ?? null}
+    />
+  );
 }
