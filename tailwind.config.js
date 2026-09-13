@@ -3,7 +3,7 @@ module.exports = {
   content: ["./app/**/*.{ts,tsx}", "./components/**/*.{ts,tsx}"],
   theme: {
     extend: {
-      // Tokens de marque MECAFORCE — voir app/globals.css (:root) et
+      // Tokens de marque Garagenda — voir app/globals.css (:root) et
       // BRAND.md. Chaque valeur lit une variable CSS, donc bascule
       // automatiquement entre mode sombre (défaut) et mode clair
       // ([data-theme="light"]) sans qu'aucun composant n'ait à savoir

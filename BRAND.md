@@ -1,6 +1,6 @@
-# MECAFORCE — Système de marque
+# Système de marque (identité d'origine)
 
-Refonte visuelle vers l'identité MECAFORCE (bleu / navy / rouge, trois barres
+Refonte visuelle vers l'identité d'origine (bleu / navy / rouge, trois barres
 inclinées). Ce document est la source de vérité — toute la Phase 2 et
 suivantes s'y réfèrent. Voir `DESIGN_AUDIT.md` pour l'audit qui a précédé ce
 document (Phase 0).

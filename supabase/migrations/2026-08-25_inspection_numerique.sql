@@ -14,7 +14,7 @@
 -- plutôt qu'une policy RLS anon directe, pourquoi expire_le/revoque sont
 -- des colonnes explicites plutôt que dérivées du statut du bon, etc.).
 -- À exécuter une fois dans le SQL Editor du projet Supabase de la
--- Plateforme (JAMAIS sur le projet Supabase de production MECAFORCE).
+-- Plateforme (JAMAIS sur le projet Supabase de production d'origine).
 -- ============================================================
 
 -- ------------------------------------------------------------
@@ -192,7 +192,7 @@ $$ language plpgsql security definer set search_path = public, pg_temp;
 -- Par défaut Supabase donne EXECUTE à anon/authenticated sur toute
 -- nouvelle fonction du schéma public — le revoke/grant explicite n'est
 -- pas optionnel (même oubli déjà corrigé pour reevaluer_bon() le 25
--- août sur le projet MECAFORCE).
+-- août sur le projet d'origine).
 revoke all on function obtenir_inspection_publique(uuid) from public;
 grant execute on function obtenir_inspection_publique(uuid) to anon, authenticated;
 

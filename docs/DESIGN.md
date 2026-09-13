@@ -1,4 +1,4 @@
-# MECAFORCE — DESIGN (conception technique)
+# DESIGN de l'application d'origine (conception technique)
 
 **Version :** 1.0 — 12 août 2026
 **Statut :** proposition, en attente de validation
@@ -67,7 +67,7 @@ redécouvrir.
 ## 3. Arborescence
 
 ```
-mecaforce/
+plateforme-garage/
 ├── docs/
 │   ├── PRD.md               Quoi et pourquoi
 │   ├── PLAN.md              Dans quel ordre
@@ -248,9 +248,9 @@ chargement complet de la table.
 | Colonne | Type | Défaut |
 |---|---|---|
 | `id` | `int` | PK, `1` |
-| `nom` | `text` | `'MECAFORCE'` |
+| `nom` | `text` | nom du garage, sans valeur par défaut |
 | `adresse`, `telephone`, `courriel` | `text` | |
-| `tps`, `tvq` | `text` | numéros d'inscription (`'713585354RT0001'`, `'1231905380TQ0001'`) |
+| `tps`, `tvq` | `text` | numéros d'inscription du garage, sans valeur par défaut |
 | **`taux_tps`** | `numeric(6,5)` | `0.05000` — *nouveau* |
 | **`taux_tvq`** | `numeric(6,5)` | `0.09975` — *nouveau* |
 | **`taux_horaire`** | `numeric(10,2)` | `0` — *nouveau* |
@@ -455,7 +455,7 @@ sans fuseau — ce sont des heures d'atelier locales, pas des instants.
 
 ```bash
 git clone <dépôt>
-cd mecaforce
+cd plateforme-garage
 npm install
 cp .env.local.example .env.local   # remplir les 2 variables
 npm run dev

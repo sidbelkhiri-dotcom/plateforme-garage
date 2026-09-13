@@ -1,5 +1,5 @@
 -- ============================================================
--- MECAFORCE — Schéma Supabase (PostgreSQL)
+-- Garagenda — Schéma Supabase (PostgreSQL)
 -- Voir docs/DESIGN.md §5 pour la justification de chaque choix.
 -- À exécuter une seule fois, dans l'éditeur SQL d'un projet Supabase neuf.
 -- Toute évolution ultérieure passe par un fichier daté dans migrations/,
@@ -149,12 +149,12 @@ create trigger inventaire_set_updated_at
 -- ------------------------------------------------------------
 create table parametres (
   id int primary key default 1 check (id = 1),
-  nom text not null default 'MECAFORCE',
+  nom text not null,
   adresse text,
   telephone text,
   courriel text,
-  tps text default '713585354RT0001',
-  tvq text default '1231905380TQ0001',
+  tps text,
+  tvq text,
   taux_tps numeric(6,5) not null default 0.05000,
   taux_tvq numeric(6,5) not null default 0.09975,
   taux_horaire numeric(10,2) not null default 0,
@@ -162,7 +162,7 @@ create table parametres (
   garantie_mois int not null default 3,
   garantie_km int not null default 5000
 );
-insert into parametres (id) values (1);
+insert into parametres (id, nom) values (1, 'Mon garage');
 
 -- ------------------------------------------------------------
 -- bons_travail — le document central de la V1

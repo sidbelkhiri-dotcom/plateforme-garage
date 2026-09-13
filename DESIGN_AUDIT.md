@@ -1,4 +1,4 @@
-# Audit design — refonte identité MECAFORCE
+# Audit design — refonte de l'identité d'origine
 
 Phase 0 uniquement. Aucun fichier de l'application n'a été modifié pour produire ce rapport.
 
@@ -108,7 +108,7 @@ Racine `components/` (3) :
 1. **Contraste à recalculer, pas à deviner.** Le projet a déjà été corrigé une fois pour de vrais échecs de contraste WCAG (D28 : `amber-500` sur blanc = 2.15:1, corrigé à `amber-700` = 5.02:1 ; D29 : `stone-400` = 2.52:1, corrigé à `stone-500`). La nouvelle palette bleu/navy sur fond très sombre (`--mf-bg: #060B16`) devra être vérifiée avec les mêmes calculs de luminance réelle, pas une lecture visuelle — en particulier `--mf-text-3` (`#6B7890`) sur `--mf-surface-3` (`#18243A`), qui est la combinaison la plus à risque de tout le système proposé.
 2. **44px de cible tactile est déjà acquis** (D17) — la refonte doit le préserver partout, c'est un des seuls invariants non négociables du projet actuel.
 3. **`America/Toronto` et le calcul de dates n'a rien à voir avec cette refonte** — aucun risque de ce côté, simple note pour confirmer le périmètre.
-4. **Le mot "MECAFORCE" existe déjà en toutes lettres** dans `components/Sidebar.tsx`, `app/login/page.tsx`, et les métadonnées de `app/layout.tsx` (`title: "MECAFORCE — Gestion d'atelier"`) — pas de renommage, juste un habillage.
+4. **Le nom du garage existe déjà en toutes lettres** dans `components/Sidebar.tsx`, `app/login/page.tsx`, et les métadonnées de `app/layout.tsx` (`title: "… — Gestion d'atelier"`) — pas de renommage, juste un habillage.
 
 ---
 

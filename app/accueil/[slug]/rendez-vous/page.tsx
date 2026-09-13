@@ -66,7 +66,7 @@ type GaragePublic = { id: string; nom: string; adresse: string | null; telephone
 //
 // Jusqu'au 2026-09-13, rien dans Garagenda ne créait de demande de
 // rendez-vous : l'écran « Demandes de RDV » du personnel les lisait, mais
-// seules celles de MECAFORCE arrivaient, depuis son site web à part. Un
+// seules celles d'un garage doté de son propre site web arrivaient. Un
 // nouveau garage avait une boîte vide par construction. Cette page lui en
 // donne une dès son inscription, sans site web à lui.
 //

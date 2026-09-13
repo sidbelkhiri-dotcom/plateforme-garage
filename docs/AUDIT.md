@@ -1,8 +1,8 @@
-# MECAFORCE — Audit de code
+# Audit de code de l'application d'origine
 
 **Date :** 18 août 2026
 **Périmètre :** `schema.sql` + 18 migrations, `app/`, `components/`, `lib/`, `middleware.ts` — 97 fichiers, ~10 100 lignes
-**Production :** https://mecaforce-site.vercel.app
+**Production :** déploiement de l'application d'origine
 **Méthode :** trois passes indépendantes (sécurité/RLS, conformité OPC, justesse du code), puis une passe **adverse** chargée de réfuter chaque constat grave. Les constats ci-dessous ont survécu à cette réfutation ; ceux qui n'y ont pas survécu sont listés en fin de document.
 
 ---

@@ -732,6 +732,30 @@ try {
     garageAccents.slug === slugAttendu, `obtenu « ${garageAccents.slug} », attendu « ${slugAttendu} »`);
   console.log(`Slug d'un nom accentué : ${garageAccents.slug}`);
 
+  // Un nouveau garage ne doit hériter de l'identité de personne. Le schéma
+  // d'origine, écrit pour un seul garage, mettait son nom et ses numéros de
+  // TPS et de TVQ en valeurs par défaut de `parametres` : chaque inscription
+  // recevait ceux du garage d'origine, et ses factures sortaient sous
+  // l'inscription fiscale d'une autre entreprise.
+  const garageFiscal = await creer("garages", { nom: `${marque}-fiscal`, statut: "actif" });
+  aCreer.garages.push(garageFiscal.id);
+  // Comme handle_new_user() : le nom, et rien d'autre.
+  const parametresNeufs = await creer("parametres", { garage_id: garageFiscal.id, nom: `${marque}-fiscal` });
+  verifier("parametres", "un nouveau garage hérite de numéros de TPS ou TVQ",
+    parametresNeufs.tps === null && parametresNeufs.tvq === null,
+    `TPS « ${parametresNeufs.tps} », TVQ « ${parametresNeufs.tvq} »`);
+
+  const garageSansNom = await creer("garages", { nom: `${marque}-sans-nom`, statut: "actif" });
+  aCreer.garages.push(garageSansNom.id);
+  const sansNom = await fetch(`${URL_SUPABASE}/rest/v1/parametres`, {
+    method: "POST", headers: { ...admin, Prefer: "return=representation" },
+    body: JSON.stringify({ garage_id: garageSansNom.id }),
+  });
+  const corpsSansNom = await sansNom.json().catch(() => null);
+  verifier("parametres", "un paramétrage sans nom prend un nom par défaut au lieu d'être refusé",
+    !sansNom.ok, `nom obtenu : « ${Array.isArray(corpsSansNom) ? corpsSansNom[0]?.nom : "?"} »`);
+  console.log(`Identité par défaut d'un garage neuf : TPS ${parametresNeufs.tps ?? "aucune"}, TVQ ${parametresNeufs.tvq ?? "aucune"}, nom ${sansNom.ok ? "hérité" : "exigé"}.`);
+
   // ------------------------------------------------------------
   // 8. Cycle de vie. Suspendre un garage doit l'empêcher de travailler
   //    sans lui cacher ses propres données : ses factures sont des

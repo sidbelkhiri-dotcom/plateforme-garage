@@ -11,7 +11,7 @@
 -- cette migration) — pas de backfill nécessaire.
 --
 -- En profite pour poser garages.slug, nécessaire pour qu'un formulaire
--- public sache à quel garage il s'adresse (ex. /accueil/mecaforce-service)
+-- public sache à quel garage il s'adresse (ex. /accueil/garage-tremblay)
 -- — première brique du site public par garage à venir.
 -- ============================================================
 

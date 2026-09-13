@@ -1,15 +1,15 @@
-# Plateforme (nom de marque à venir)
+# Garagenda
 
-**Ceci n'est pas MECAFORCE SERVICE.** Ce dépôt est le point de départ de la future
-plateforme multi-garages, forkée depuis le code de MECAFORCE (application interne
-d'un seul garage) le 25 août 2026. MECAFORCE SERVICE continue de vivre dans son
+Plateforme de gestion d'atelier pour les garages du Québec, conçue pour accueillir
+plusieurs garages. Elle est issue du code d'une application interne à un seul garage,
+reprise le 25 août 2026 dans ce dépôt séparé. L'application d'origine vit dans son
 propre dépôt et sa propre base Supabase — rien ici ne doit jamais y toucher.
 
 **À lire en premier :** [`docs/ARCHITECTURE-MULTI-TENANT.md`](docs/ARCHITECTURE-MULTI-TENANT.md)
 — le plan d'architecture multi-tenant, l'ordre de migration recommandé, et ce qu'il
 reste à faire avant d'onboarder un premier vrai garage client.
 
-## Documentation héritée de MECAFORCE
+## Documentation héritée de l'application d'origine
 
 Ces documents décrivent le produit mono-garage d'origine — toujours utiles comme
 référence des règles métier (facturation, conformité OPC, sécurité) qui doivent
@@ -20,7 +20,7 @@ survivre au passage multi-tenant, mais ne décrivent pas la Plateforme elle-mêm
 | [`docs/PRD.md`](docs/PRD.md) | **Ce que fait l'app d'origine** — problème, périmètre V1, contraintes réglementaires OPC, parcours utilisateurs |
 | [`docs/DESIGN.md`](docs/DESIGN.md) | **L'interface et la technique** — écrans, schéma de données, journal de décisions |
 | [`docs/PLAN.md`](docs/PLAN.md) | **Le plan de construction d'origine** — 10 lots, du socle à la mise en production |
-| [`docs/AUDIT.md`](docs/AUDIT.md) | **Audit de sécurité du 18 août** — tous les points sont fermés côté MECAFORCE ; les patrons (RLS, fonctions `security definer`) sont la base du plan multi-tenant |
+| [`docs/AUDIT.md`](docs/AUDIT.md) | **Audit de sécurité du 18 août** — tous les points sont fermés dans l'application d'origine ; les patrons (RLS, fonctions `security definer`) sont la base du plan multi-tenant |
 
 ## Pile technique
 

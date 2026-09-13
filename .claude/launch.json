@@ -2,13 +2,13 @@
   "version": "0.0.1",
   "configurations": [
     {
-      "name": "mecaforce-dev",
+      "name": "garagenda-dev",
       "runtimeExecutable": "npm",
       "runtimeArgs": ["run", "dev"],
       "port": 3000
     },
     {
-      "name": "mecaforce-prod",
+      "name": "garagenda-prod",
       "runtimeExecutable": "npm",
       "runtimeArgs": ["run", "start"],
       "port": 3000

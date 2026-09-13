@@ -1,4 +1,4 @@
-# MECAFORCE — PLAN d'exécution
+# PLAN d'exécution de l'application d'origine
 
 **Version :** 1.0 — 12 août 2026
 **Statut :** proposition, en attente de validation
@@ -24,14 +24,14 @@ que le problème du 11 août ne se reproduit jamais.
 
 *Rien d'autre ne commence avant que ce lot soit terminé.*
 
-- [x] **0.1** Créer le dossier du projet sur le Bureau : `~/Desktop/mecaforce/`
+- [x] **0.1** Créer le dossier du projet sur le Bureau
 - [ ] **0.2** Vérifier l'état du projet Supabase précédent — *non vérifié,
       décision prise directement (voir 0.3)*
 - [x] **0.3** Selon 0.2 : réutiliser la base existante, ou créer un projet
       neuf → **décidé le 12 août : projet neuf**, sans réutiliser l'ancien
 - [x] **0.4** `git init` + premier commit
 - [x] **0.5** Dépôt **GitHub privé** + `git push` →
-      [`sidbelkhiri-dotcom/mecaforce`](https://github.com/sidbelkhiri-dotcom/mecaforce)
+      le dépôt GitHub d'origine
 - [x] **0.6** `.gitignore` vérifié : `.env.local`, `node_modules`, `.next` exclus
 - [x] **0.7** Poser `docs/PRD.md`, `docs/PLAN.md`, `docs/DESIGN.md` dans le dépôt et committer
 - [x] **0.8** `README.md` — porte d'entrée du dépôt
@@ -56,7 +56,7 @@ peut plus disparaître.
   - [x] Fonction `est_role()` + **RLS par rôle** `admin` / `reception` / `mecanicien` (D22)
   - [x] Fonction `accepter_evaluation()` en `security definer` (D23)
   - [x] `profiles` en lecture ouverte, avec trigger anti-auto-promotion (D24)
-  - [x] **Exécuté sur `giabayiwjxrghitzmrfl.supabase.co`** — vérifié par requête REST
+  - [x] **Exécuté sur le projet Supabase d'origine** — vérifié par requête REST
 - [x] **1.6** `lib/database.types.ts` (D14) — écrit à la main depuis
       `schema.sql`/`migrations/` faute d'accès CLI (mot de passe DB ou
       `supabase login` non disponibles dans cet environnement) ; à
@@ -244,7 +244,7 @@ fois plus rapide à écrire.
       — **D28/D29** (contrastes calculés, pas devinés) + lignes de tableau
       rendues focusables/opérables au clavier, vérifié à la main (Tab, Entrée)
 - [x] **9.4** Déploiement Vercel + variables d'environnement — en production sur
-      `mecaforce.vercel.app`, vérifié (connexion, dernière version déployée)
+      l'adresse de production d'origine, vérifié (connexion, dernière version déployée)
 - [x] **9.5** Sauvegarde — workflow GitHub Actions (`sauvegarde-supabase.yml`)
       qui exporte la base chaque dimanche 8h UTC sur la branche `backups`.
       Trois vrais bugs distincts trouvés et corrigés en testant en direct

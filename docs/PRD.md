@@ -1,4 +1,4 @@
-# MECAFORCE — PRD (Product Requirements Document)
+# PRD de l'application d'origine (Product Requirements Document)
 
 **Version :** 1.0 — 12 août 2026
 **Statut :** proposition, en attente de validation
@@ -8,8 +8,8 @@
 
 ## 1. Contexte
 
-MECAFORCE est un garage mécanique au Québec. La gestion se fait aujourd'hui
-avec un classeur Excel (`FACTURE_MECAFORCE_V2.xlsb`) pour les factures, et
+Le garage d'origine est un garage mécanique au Québec. La gestion se fait aujourd'hui
+avec un classeur Excel pour les factures, et
 **des bons de travail papier remplis à la main** pour l'atelier.
 
 L'application est un **outil interne**. Aucun accès client, aucune inscription

@@ -90,7 +90,7 @@ const horodatage = `${d.getFullYear()}-${p(d.getMonth() + 1)}-${p(d.getDate())}_
 const dossier = join(racine, "sauvegardes", horodatage);
 mkdirSync(dossier, { recursive: true });
 
-console.log(`\n  Sauvegarde MECAFORCE — ${horodatage}\n`);
+console.log(`\n  Sauvegarde Garagenda — ${horodatage}\n`);
 
 let total = 0;
 let echecs = 0;

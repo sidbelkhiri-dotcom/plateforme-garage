@@ -1,6 +1,6 @@
 import { Loader2 } from "lucide-react";
 
-// Couleurs de marque MECAFORCE — voir BRAND.md. Contrastes vérifiés par
+// Couleurs de marque Garagenda — voir BRAND.md. Contrastes vérifiés par
 // calcul de luminance réelle : blanc sur mf-blue = 5.71:1, blanc sur
 // mf-red = 4.83:1 (AA texte normal, seuil 4.5).
 const VARIANTES = {

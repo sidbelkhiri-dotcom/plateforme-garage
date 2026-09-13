@@ -16,7 +16,7 @@
 -- Un garage qui se renommait envoyait donc, pour une même visite, des SMS
 -- et un lien d'inspection sous son ancien nom, et une évaluation et une
 -- facture sous le nouveau. L'atelier pilote en était là le 2026-09-12 :
--- « Atelier pilote (développement) » d'un côté, « MECAFORCE » de l'autre.
+-- « Atelier pilote (développement) » d'un côté, le nom du garage d'origine de l'autre.
 --
 -- Et le téléphone ajouté à la page d'inspection le 2026-10-06 lisait
 -- garages.telephone, que rien ne renseigne : il serait resté vide pour

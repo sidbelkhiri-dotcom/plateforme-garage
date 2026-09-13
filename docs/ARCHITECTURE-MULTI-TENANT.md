@@ -1,10 +1,10 @@
-# Fondations multi-locataire pour la future plateforme (à partir de MECAFORCE)
+# Fondations multi-locataire pour la future plateforme (à partir de l'application d'origine)
 
 ## Contexte
 
-MECAFORCE SERVICE est aujourd'hui l'outil de gestion d'**un seul garage**, qui lance en production le 1er septembre. Le propriétaire veut ensuite transformer ce produit en plateforme SaaS multi-garages pour le Québec (un concurrent francophone de Tekmetric), en réutilisant le travail déjà fait — le modèle de données, la conformité fiscale/légale (Loi 25, TPS/TVQ, obligation d'évaluation écrite), et le patron de sécurité RLS déjà éprouvé par un audit complet.
+L'application d'origine est aujourd'hui l'outil de gestion d'**un seul garage**, qui lance en production le 1er septembre. Le propriétaire veut ensuite transformer ce produit en plateforme SaaS multi-garages pour le Québec (un concurrent francophone de Tekmetric), en réutilisant le travail déjà fait — le modèle de données, la conformité fiscale/légale (Loi 25, TPS/TVQ, obligation d'évaluation écrite), et le patron de sécurité RLS déjà éprouvé par un audit complet.
 
-**Ce document est un plan d'architecture, pas du code.** Rien n'est touché sur le système de production actuel (`mecaforce`, `mecaforce-site`, projet Supabase `giabayiwjxrghitzmrfl`). Le futur produit vivra dans **un dépôt Git et un projet Supabase entièrement séparés**, initialisés à partir d'une copie de la base de code actuelle. La marque du futur produit n'est pas encore choisie — ce document l'appelle « la Plateforme ».
+**Ce document est un plan d'architecture, pas du code.** Rien n'est touché sur le système de production actuel (dépôts et projet Supabase de l'application d'origine). Le futur produit vivra dans **un dépôt Git et un projet Supabase entièrement séparés**, initialisés à partir d'une copie de la base de code actuelle. La marque du futur produit n'est pas encore choisie — ce document l'appelle « la Plateforme ».
 
 Ce plan a été relu et corrigé par un second passage d'architecture qui a exploré le schéma réel (`supabase/schema.sql` + 30 migrations) — les angles morts qu'il a trouvés sont intégrés ci-dessous, pas juste l'intention de départ.
 
@@ -56,7 +56,7 @@ Ne pas le mélanger dans `profiles.role`/`est_role()` (qui reste `admin|receptio
 ## Ordre de migration recommandé
 
 1. **Fondation isolée** — `garages`, `profiles.garage_id` (nullable au départ), `garage_actuel()` avec `search_path` fixé, testée seule (un utilisateur sans profil renvoie `null`, jamais une erreur).
-2. **Un seul tenant pilote d'abord** — backfiller `garage_id` sur toutes les tables (y compris les tables filles) avec l'ID du garage MECAFORCE de test, poser les FK composites, valider que rien ne casse à un seul tenant avant `not null`.
+2. **Un seul tenant pilote d'abord** — backfiller `garage_id` sur toutes les tables (y compris les tables filles) avec l'ID du garage pilote de test, poser les FK composites, valider que rien ne casse à un seul tenant avant `not null`.
 3. **Réécrire d'abord les 14 policies `SELECT` ouvertes** (`profiles`, `clients`, `vehicules`, etc.) — pas les policies d'écriture déjà scopées par `est_role()`, qui sont un risque moindre.
 4. **Fonctions `security definer` critiques** (`creer_facture`, `annuler_facture`, `accepter_evaluation`, `reevaluer_bon`, `enregistrer_paiement`) — ajouter `garage_id = garage_actuel()` sur la ligne ciblée, après l'étape 3.
 5. **Deuxième tenant de test + suite d'isolation** — données de test avec collisions volontaires (mêmes plaques, mêmes numéros). Suite explicite : connecté comme utilisateur du garage A, tenter `select`/`update`/`delete`/`insert` sur des IDs connus du garage B pour chaque table et fonction, zéro ligne/exception attendue. Faire tourner le Database Linter Supabase (`rls_disabled_in_public`, `security_definer_view`, `function_search_path_mutable`) comme étape automatisée de cette suite.
@@ -70,21 +70,21 @@ Ne pas le mélanger dans `profiles.role`/`est_role()` (qui reste `admin|receptio
 
 Deux choses doivent néanmoins être posées dans le **schéma** dès le MVP, même sans être utilisées, parce qu'elles sont coûteuses à corriger rétroactivement une fois des vrais garages en production : la dénormalisation `garage_id` sur les tables filles (point 2) et le compteur de numérotation par garage (point 3) — corriger l'un ou l'autre après coup impliquerait de renuméroter ou de réécrire des factures déjà figées par la règle d'immuabilité.
 
-## Pendant que MECAFORCE SERVICE se stabilise
+## Pendant que l'application d'origine se stabilise
 
 Attendre avant d'**onboarder de vrais garages clients payants** ne veut pas dire attendre pour travailler. Comme la Plateforme vit dans un dépôt et une base séparés dès le départ, tout ce qui suit peut avancer en parallèle, sans aucun risque pour la production :
 
-- Mettre en place la fondation (étapes 1 à 4 ci-dessus) et la valider avec le garage MECAFORCE lui-même comme unique tenant de test
+- Mettre en place la fondation (étapes 1 à 4 ci-dessus) et la valider avec le garage d'origine lui-même comme unique tenant de test
 - Construire et faire tourner la suite d'isolation (étape 5) avec des tenants synthétiques
 - Corriger les angles morts identifiés (numérotation, index uniques, Storage, `search_path`) pendant qu'ils sont encore isolés d'un vrai deuxième client
-- Observer MECAFORCE SERVICE en usage réel pour repérer les bugs et les angles morts qu'un audit seul ne trouve pas — ce sont exactement les choses à corriger dans la Plateforme avant d'y faire confiance avec les données d'un étranger
+- Observer l'application d'origine en usage réel pour repérer les bugs et les angles morts qu'un audit seul ne trouve pas — ce sont exactement les choses à corriger dans la Plateforme avant d'y faire confiance avec les données d'un étranger
 
-Le seul jalon à ne pas brûler, c'est le premier vrai garage client payant — celui-là attend que MECAFORCE SERVICE ait fait ses preuves.
+Le seul jalon à ne pas brûler, c'est le premier vrai garage client payant — celui-là attend que l'application d'origine ait fait ses preuves.
 
 ## Mise en place (une fois ce plan approuvé)
 
-- Nouveau dépôt Git, copié depuis `mecaforce` comme point de départ
-- Nouveau projet Supabase de développement, distinct de `giabayiwjxrghitzmrfl`
+- Nouveau dépôt Git, copié depuis le dépôt d'origine comme point de départ
+- Nouveau projet Supabase de développement, distinct du projet de production d'origine
 - Aucune modification aux dépôts ou à la base de production actuels
 
 ## Vérification
