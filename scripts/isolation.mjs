@@ -606,6 +606,100 @@ try {
   console.log(`  ${TABLES.length} lectures, ${ECRITURES.length} écritures et 1 déclencheur sur ses propres données.`);
 
   // ------------------------------------------------------------
+  // 7 bis. Liens entre garages. La RLS protège la lecture et l'écriture
+  //   d'une table, pas la cohérence d'une clé étrangère vers une autre :
+  //   rien dans une politique n'empêche une ligne du garage A de pointer
+  //   vers un identifiant du garage B. Ce sont les clés étrangères
+  //   composites (id, garage_id) de la migration du 2026-09-03 qui le
+  //   font. Elles existaient ; rien ne prouvait qu'elles tiennent.
+  //
+  //   Tout s'insère avec la CLÉ SERVICE, qui contourne entièrement la RLS.
+  //   C'est délibéré : si la base refuse, c'est la clé étrangère et rien
+  //   d'autre — pas une politique voisine qui protégerait par accident.
+  //   Et c'est leur vrai terrain : le dernier rempart quand la RLS ne joue
+  //   pas, dans les tâches planifiées, les webhooks, les fonctions
+  //   security definer.
+  //
+  //   Chaque sonde a un témoin identique qui pointe vers le BON garage et
+  //   doit réussir : sans lui, un refus pourrait venir d'une donnée mal
+  //   formée. Et le refus doit porter le code 23503 (violation de clé
+  //   étrangère), sinon il ne prouve pas ce qu'on croit.
+  // ------------------------------------------------------------
+  console.log("\nLiens vers une ligne d'un autre garage (insérés avec la clé service) :");
+
+  const inserer = async (table, donnees) => {
+    const r = await fetch(`${URL_SUPABASE}/rest/v1/${table}`, {
+      method: "POST",
+      headers: { ...admin, Prefer: "return=representation" },
+      body: JSON.stringify(donnees),
+    });
+    const texte = await r.text();
+    let corps = null;
+    try { corps = texte ? JSON.parse(texte) : null; } catch { corps = texte; }
+    return { statut: r.status, code: corps?.code, message: corps?.message };
+  };
+
+  // Un bon neuf du garage A pour les témoins : celui du semis porte déjà
+  // une facture et une inspection, et une contrainte d'unicité ferait
+  // échouer le témoin pour une raison qui n'a rien à voir.
+  const bonTemoin = await creer("bons_travail", {
+    garage_id: A.garage_id, client_id: A.clients, vehicule_id: A.vehicules,
+    kilometrage: 2000, plainte_client: `${marque} témoin FK`, taux_horaire: 100,
+    ouvert_le: new Date().toISOString().slice(0, 10),
+  });
+
+  // Et un bon neuf du garage B pour les sondes qui visent un bon. Le
+  // premier passage visait celui du semis, qui porte déjà une facture : la
+  // sonde « facture → bon » a été refusée, mais par l'unicité « une facture
+  // par bon » (23505), avant même que la clé étrangère soit consultée. Le
+  // contrôle du code d'erreur l'a attrapé — sans lui, on aurait conclu que
+  // la clé tenait sans rien en savoir.
+  const bonSondeB = await creer("bons_travail", {
+    garage_id: B.garage_id, client_id: B.clients, vehicule_id: B.vehicules,
+    kilometrage: 2000, plainte_client: `${marque} sonde FK`, taux_horaire: 100,
+    ouvert_le: new Date().toISOString().slice(0, 10),
+  });
+
+  const LIENS = [
+    ["véhicule → client", "vehicules", "client_id", A.clients, B.clients,
+      (v) => ({ garage_id: A.garage_id, client_id: v, marque: "Testo", modele: "FK" })],
+    ["rendez-vous → client", "rendez_vous", "client_id", A.clients, B.clients,
+      (v) => ({ garage_id: A.garage_id, client_id: v, vehicule_id: A.vehicules,
+                date: new Date().toISOString().slice(0, 10), heure: "10:00", description: `${marque} FK` })],
+    ["bon de travail → client", "bons_travail", "client_id", A.clients, B.clients,
+      (v) => ({ garage_id: A.garage_id, client_id: v, vehicule_id: A.vehicules, kilometrage: 1,
+                plainte_client: `${marque} FK`, taux_horaire: 100, ouvert_le: new Date().toISOString().slice(0, 10) })],
+    ["bon de travail → véhicule", "bons_travail", "vehicule_id", A.vehicules, B.vehicules,
+      (v) => ({ garage_id: A.garage_id, client_id: A.clients, vehicule_id: v, kilometrage: 1,
+                plainte_client: `${marque} FK`, taux_horaire: 100, ouvert_le: new Date().toISOString().slice(0, 10) })],
+    // Le plus grave : decrementer_stock_bon(), security definer, décrémente
+    // l'inventaire quand le bon passe en « terminé ». Une pièce du voisin
+    // glissée ici ferait baisser SON stock le jour où l'atelier clôt le bon.
+    ["ligne de bon → pièce d'inventaire", "bon_travail_lignes", "piece_id", A.inventaire, B.inventaire,
+      (v) => ({ bon_travail_id: bonTemoin.id, type: "piece", description: `${marque} FK`,
+                quantite: 1, prix_unitaire: 1, etat_piece: "neuve", piece_id: v })],
+    ["inspection → bon de travail", "inspections", "bon_travail_id", bonTemoin.id, bonSondeB.id,
+      (v) => ({ garage_id: A.garage_id, bon_travail_id: v })],
+    ["facture → bon de travail", "factures", "bon_travail_id", bonTemoin.id, bonSondeB.id,
+      (v) => ({ garage_id: A.garage_id, bon_travail_id: v, client_id: A.clients,
+                vehicule_id: A.vehicules, total_ht: 1, total_ttc: 1.15 })],
+  ];
+
+  for (const [lien, table, champ, valeurA, valeurB, donnees] of LIENS) {
+    const temoin = await inserer(table, donnees(valeurA));
+    const temoinOk = verifier(table, `témoin « ${lien} » refusé — la sonde ne prouverait rien`,
+      temoin.statut < 400, `${temoin.statut} ${temoin.code ?? ""} ${temoin.message ?? ""}`.trim());
+
+    const sonde = await inserer(table, donnees(valeurB));
+    const refuseParLaCle = sonde.statut >= 400 && sonde.code === "23503";
+    verifier(table, `${champ} accepte une ligne d'un autre garage (« ${lien} »)`, refuseParLaCle,
+      sonde.statut < 400 ? "insertion acceptée" : `refusée, mais pas par la clé étrangère : ${sonde.code} ${sonde.message ?? ""}`);
+
+    const etiquette = !temoinOk ? "TÉMOIN EN ÉCHEC" : refuseParLaCle ? "refusé (23503)" : sonde.statut < 400 ? "ACCEPTÉ — FUITE" : `refusé, autre cause (${sonde.code})`;
+    console.log(`  ${lien.padEnd(38)} ${etiquette}`);
+  }
+
+  // ------------------------------------------------------------
   // 8. Cycle de vie. Suspendre un garage doit l'empêcher de travailler
   //    sans lui cacher ses propres données : ses factures sont des
   //    pièces comptables qu'il doit pouvoir produire. Le 2026-09-11, la
