@@ -18,7 +18,7 @@ export default async function ParametresPage() {
   const { data: profil } = await supabase.from("profiles").select("role, garage_id").eq("id", user.id).single();
   if (profil?.role !== "admin") redirect("/");
 
-  const [{ data: parametres }, { data: profils }, { data: garage }] = await Promise.all([
+  const [{ data: parametres }, { data: profils }, { data: garage }, { data: invitations }] = await Promise.all([
     supabase.from("parametres").select("*").single(),
     supabase.from("profiles").select("*").order("nom"),
     // Le slug des pages publiques. Il n'était lu nulle part dans
@@ -27,6 +27,11 @@ export default async function ParametresPage() {
     profil.garage_id
       ? supabase.from("garages").select("slug").eq("id", profil.garage_id).single()
       : Promise.resolve({ data: null }),
+    supabase
+      .from("invitations_employes")
+      .select("id, courriel, nom, role, cree_le, utilisateur_id")
+      .is("acceptee_le", null)
+      .order("cree_le", { ascending: false }),
   ]);
 
   return (
@@ -35,6 +40,7 @@ export default async function ParametresPage() {
       profilsInitial={profils ?? []}
       monId={user.id}
       slug={garage?.slug ?? null}
+      invitationsInitiales={invitations ?? []}
     />
   );
 }

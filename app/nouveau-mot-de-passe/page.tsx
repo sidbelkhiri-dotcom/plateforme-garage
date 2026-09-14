@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
 import Bouton from "@/components/ui/Bouton";
@@ -16,6 +16,12 @@ export default function NouveauMotDePassePage() {
   const [confirmation, setConfirmation] = useState("");
   const [erreur, setErreur] = useState("");
   const [loading, setLoading] = useState(false);
+  // ?bienvenue=1 : lien d'invitation d'un employé. Même écran, mais il ne
+  // « change » pas un mot de passe, il en choisit un pour la première fois.
+  const [bienvenue, setBienvenue] = useState(false);
+  useEffect(() => {
+    setBienvenue(new URLSearchParams(window.location.search).get("bienvenue") === "1");
+  }, []);
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -44,7 +50,14 @@ export default function NouveauMotDePassePage() {
   }
 
   return (
-    <CadreAuth titre="Nouveau mot de passe" sousTitre="Choisissez le mot de passe que vous utiliserez désormais.">
+    <CadreAuth
+      titre={bienvenue ? "Bienvenue dans l'équipe" : "Nouveau mot de passe"}
+      sousTitre={
+        bienvenue
+          ? "Choisissez le mot de passe de votre compte. Vous l'utiliserez pour vous connecter à Garagenda."
+          : "Choisissez le mot de passe que vous utiliserez désormais."
+      }
+    >
       {erreur && <MessageAuth ton="erreur">{erreur}</MessageAuth>}
       <form onSubmit={handleSubmit} className="flex flex-col gap-4">
         <ChampMotDePasse
@@ -66,7 +79,7 @@ export default function NouveauMotDePassePage() {
           onChange={(e) => setConfirmation(e.target.value)}
         />
         <Bouton type="submit" enEnvoi={loading} className="w-full">
-          {loading ? "Enregistrement…" : "Enregistrer le mot de passe"}
+          {loading ? "Enregistrement…" : bienvenue ? "Activer mon compte" : "Enregistrer le mot de passe"}
         </Bouton>
       </form>
     </CadreAuth>

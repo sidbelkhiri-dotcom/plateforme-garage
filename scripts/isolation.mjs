@@ -222,6 +222,9 @@ async function semerGarage(suffixe) {
   const stock = await creer("vehicules_stock", { garage_id: g, marque: "Testo", modele: "Stock" });
   const accueil = await creer("demandes_accueil", { garage_id: g, nom: `${marque} arrivee` });
   const demandeRdv = await creer("demandes_rendez_vous", { garage_id: g, nom: `${marque} demande` });
+  const invitation = await creer("invitations_employes", {
+    garage_id: g, courriel: `${marque}-invite-${suffixe}@example.com`, nom: `${marque} invité`, role: "mecanicien",
+  });
 
   Object.assign(donnees, {
     numero_bon: bon.numero,
@@ -241,6 +244,7 @@ async function semerGarage(suffixe) {
     vehicules_stock: stock.id,
     demandes_accueil: accueil.id,
     demandes_rendez_vous: demandeRdv.id,
+    invitations_employes: invitation.id,
   });
   return donnees;
 }
@@ -286,6 +290,7 @@ async function commeUtilisateur(entetes, chemin, options = {}) {
 // ménage doit donc remonter la chaîne des dépendances, des feuilles vers
 // la racine, sinon la base se remplit de garages de test à chaque essai.
 const ORDRE_MENAGE = [
+  "invitations_employes",
   "inspection_photos", "inspection_points", "inspections",
   "facture_lignes", "factures",
   "bon_travail_evaluations", "bon_travail_lignes", "bons_travail",
@@ -755,6 +760,102 @@ try {
   verifier("parametres", "un paramétrage sans nom prend un nom par défaut au lieu d'être refusé",
     !sansNom.ok, `nom obtenu : « ${Array.isArray(corpsSansNom) ? corpsSansNom[0]?.nom : "?"} »`);
   console.log(`Identité par défaut d'un garage neuf : TPS ${parametresNeufs.tps ?? "aucune"}, TVQ ${parametresNeufs.tvq ?? "aucune"}, nom ${sansNom.ok ? "hérité" : "exigé"}.`);
+
+  // ------------------------------------------------------------
+  // 7 quater. Invitations d'employés. Un compte ne rejoint un garage que
+  //   par une invitation de SON admin, et seulement si le compte a été créé
+  //   par l'API d'invitation : les métadonnées d'une inscription ordinaire
+  //   sont écrites par le navigateur, s'y fier ouvrirait n'importe quel
+  //   garage à n'importe qui. Le lien lui-même n'est jamais envoyé : la clé
+  //   service le génère, comme le fait la route, sans courriel.
+  // ------------------------------------------------------------
+  console.log("\nInvitations d'employés :");
+  const inviterCommeA = (courriel, role = "reception") =>
+    commeUtilisateur(sessionA, "rpc/preparer_invitation", {
+      method: "POST", body: JSON.stringify({ p_courriel: courriel, p_nom: `${marque} employé`, p_role: role }),
+    });
+  const genererInvitation = async (courriel, type = "invite") => {
+    const r = await fetch(`${URL_SUPABASE}/auth/v1/admin/generate_link`, {
+      method: "POST", headers: admin, body: JSON.stringify({ type, email: courriel }),
+    });
+    const corps = await r.json();
+    if (corps.id) aCreer.utilisateurs.push(corps.id);
+    return corps;
+  };
+
+  const courrielInvite = `${marque}-recu@example.com`;
+  const preparation = await inviterCommeA(courrielInvite);
+  verifier("invitations", "l'admin ne peut pas inviter un employé", preparation.statut < 400,
+    `statut ${preparation.statut} ${JSON.stringify(preparation.corps).slice(0, 120)}`);
+  const compteInvite = await genererInvitation(courrielInvite);
+  const [profilInvite] = compteInvite.id ? await srv(`profiles?select=garage_id,role&id=eq.${compteInvite.id}`) : [];
+  verifier("invitations", "l'invité n'est pas rattaché au garage qui l'invite, avec le rôle prévu",
+    profilInvite?.garage_id === A.garage_id && profilInvite?.role === "reception",
+    `garage ${profilInvite?.garage_id ?? "aucun"}, rôle ${profilInvite?.role ?? "?"}`);
+
+  // Un compte créé autrement que par invitation, avec un courriel invité :
+  // c'est ce que ferait un inconnu qui connaît l'adresse. Créé ici par
+  // l'API d'administration sans invitation — même effet qu'une inscription
+  // ordinaire, sans envoyer de courriel de confirmation.
+  const courrielUsurpe = `${marque}-usurpe@example.com`;
+  await inviterCommeA(courrielUsurpe, "admin");
+  const usurpation = await fetch(`${URL_SUPABASE}/auth/v1/admin/users`, {
+    method: "POST", headers: admin,
+    body: JSON.stringify({ email: courrielUsurpe, password: `Usurpe${Date.now()}!`, email_confirm: true }),
+  }).then((r) => r.json());
+  if (usurpation.id) aCreer.utilisateurs.push(usurpation.id);
+  const [profilUsurpe] = usurpation.id ? await srv(`profiles?select=garage_id,role&id=eq.${usurpation.id}`) : [];
+  verifier("invitations", "une inscription ordinaire avec un courriel invité rejoint le garage",
+    profilUsurpe && profilUsurpe.garage_id === null, `garage ${profilUsurpe?.garage_id}, rôle ${profilUsurpe?.role}`);
+
+  // Un employé, même activé, n'invite personne. Sa première connexion
+  // marque au passage l'invitation acceptée.
+  const motDePasseInvite = `Invite${Date.now()}!`;
+  await fetch(`${URL_SUPABASE}/auth/v1/admin/users/${compteInvite.id}`, {
+    method: "PUT", headers: admin, body: JSON.stringify({ password: motDePasseInvite }),
+  });
+  const sessionEmploye = await ouvrirSession(courrielInvite, motDePasseInvite);
+  const [invitationRecue] = await srv(`invitations_employes?select=acceptee_le&utilisateur_id=eq.${compteInvite.id}`);
+  verifier("invitations", "la première connexion ne marque pas l'invitation acceptée",
+    Boolean(invitationRecue?.acceptee_le), `acceptee_le ${invitationRecue?.acceptee_le}`);
+  const parEmploye = await commeUtilisateur(sessionEmploye, "rpc/preparer_invitation", {
+    method: "POST", body: JSON.stringify({ p_courriel: `${marque}-pirate@example.com`, p_nom: "x", p_role: "admin" }),
+  });
+  verifier("invitations", "un employé de la réception peut inviter (et se choisir des admins)",
+    parEmploye.statut >= 400, `statut ${parEmploye.statut}`);
+
+  // Un compte existant, d'un autre garage : refusé, sans dire lequel.
+  const dejaInscrit = await inviterCommeA(courrielB);
+  verifier("invitations", "on peut inviter le compte d'un autre garage (et le lui prendre)",
+    dejaInscrit.statut >= 400, `statut ${dejaInscrit.statut}`);
+
+  // Renvoi puis annulation d'une invitation jamais utilisée : le compte
+  // créé doit disparaître avec elle, sinon le lien déjà parti l'activerait.
+  const courrielAnnule = `${marque}-annule@example.com`;
+  await inviterCommeA(courrielAnnule, "mecanicien");
+  const compteAnnule = await genererInvitation(courrielAnnule);
+  const renvoiInvitation = await inviterCommeA(courrielAnnule, "reception");
+  verifier("invitations", "le renvoi d'une invitation jamais utilisée est refusé",
+    renvoiInvitation.statut < 400 && renvoiInvitation.corps?.renvoi === true,
+    `statut ${renvoiInvitation.statut} ${JSON.stringify(renvoiInvitation.corps).slice(0, 100)}`);
+  const idAnnule = renvoiInvitation.corps?.id;
+
+  const sessionB = await ouvrirSession(courrielB, motDePasse);
+  const annulationParB = await commeUtilisateur(sessionB, "rpc/annuler_invitation", {
+    method: "POST", body: JSON.stringify({ p_invitation_id: idAnnule }),
+  });
+  const [toujoursLa] = await srv(`invitations_employes?select=id&id=eq.${idAnnule}`);
+  verifier("invitations", "un autre garage peut annuler l'invitation", annulationParB.statut >= 400 && Boolean(toujoursLa),
+    `statut ${annulationParB.statut}`);
+
+  const annulation = await commeUtilisateur(sessionA, "rpc/annuler_invitation", {
+    method: "POST", body: JSON.stringify({ p_invitation_id: idAnnule }),
+  });
+  const compteRestant = await fetch(`${URL_SUPABASE}/auth/v1/admin/users/${compteAnnule.id}`, { headers: admin });
+  verifier("invitations", "annuler une invitation laisse le compte créé, prêt à s'activer",
+    annulation.statut < 400 && compteRestant.status === 404,
+    `annulation ${annulation.statut}, compte ${compteRestant.status}`);
+  console.log(`  rattachement ${profilInvite?.garage_id === A.garage_id ? "ok" : "ÉCHEC"} · inscription ordinaire ${profilUsurpe?.garage_id === null ? "ignorée" : "RATTACHÉE"} · employé ${parEmploye.statut >= 400 ? "ne peut pas inviter" : "PEUT INVITER"} · annulation ${compteRestant.status === 404 ? "supprime le compte" : "LAISSE LE COMPTE"}`);
 
   // ------------------------------------------------------------
   // 8. Cycle de vie. Suspendre un garage doit l'empêcher de travailler

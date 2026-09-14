@@ -3,7 +3,8 @@
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
-import { Building2, ShieldQuestion, Wrench as WrenchIcon, UserCog, Star, Globe, Copy, ExternalLink } from "lucide-react";
+import { Building2, ShieldQuestion, Wrench as WrenchIcon, UserCog, Star, Globe, Copy, ExternalLink, Send, Mail } from "lucide-react";
+import { formatDateHeure } from "@/lib/dates";
 import { useToast } from "@/components/ui/ToastProvider";
 import Champ from "@/components/ui/Champ";
 import Selecteur from "@/components/ui/Selecteur";
@@ -23,6 +24,15 @@ type Parametres = {
   garantie_mois: number;
   garantie_km: number;
   lien_avis_google: string | null;
+};
+
+type Invitation = {
+  id: string;
+  courriel: string;
+  nom: string;
+  role: Profil["role"];
+  cree_le: string;
+  utilisateur_id: string | null;
 };
 
 type Profil = {
@@ -49,11 +59,13 @@ export default function ParametresClient({
   profilsInitial,
   monId,
   slug,
+  invitationsInitiales,
 }: {
   parametresInitial: Parametres | null;
   profilsInitial: Profil[];
   monId: string;
   slug: string | null;
+  invitationsInitiales: Invitation[];
 }) {
   const supabase = createClient();
   const router = useRouter();
@@ -93,6 +105,64 @@ export default function ParametresClient({
   const [erreur, setErreur] = useState<string | null>(null);
 
   const [profils, setProfils] = useState(profilsInitial);
+  const [invitations, setInvitations] = useState(invitationsInitiales);
+  const [invite, setInvite] = useState<{ nom: string; courriel: string; role: Profil["role"] }>({
+    nom: "",
+    courriel: "",
+    role: "mecanicien",
+  });
+  const [envoiInvitation, setEnvoiInvitation] = useState<string | null>(null);
+  const [erreurInvitation, setErreurInvitation] = useState<string | null>(null);
+
+  // Envoi et renvoi passent par la même route : la base reconnaît une
+  // invitation déjà faite dont le lien n'a jamais servi.
+  async function inviter(donnees: { nom: string; courriel: string; role: Profil["role"] }, cle: string) {
+    setEnvoiInvitation(cle);
+    setErreurInvitation(null);
+    let message: string | null = null;
+    try {
+      const reponse = await fetch("/api/inviter-employe", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(donnees),
+      });
+      const corps = await reponse.json().catch(() => ({}));
+      if (!reponse.ok) message = corps.error ?? "L'invitation n'a pas pu être envoyée.";
+    } catch {
+      message = "Le serveur ne répond pas. Vérifiez votre connexion et réessayez.";
+    }
+    setEnvoiInvitation(null);
+    if (message) {
+      setErreurInvitation(message);
+      return false;
+    }
+    afficher({ titre: `Invitation envoyée à ${donnees.courriel.trim()}`, severite: "success" });
+    const { data } = await supabase
+      .from("invitations_employes")
+      .select("id, courriel, nom, role, cree_le, utilisateur_id")
+      .is("acceptee_le", null)
+      .order("cree_le", { ascending: false });
+    setInvitations((data as Invitation[]) ?? []);
+    router.refresh();
+    return true;
+  }
+
+  async function soumettreInvitation(e: React.FormEvent) {
+    e.preventDefault();
+    if (await inviter(invite, "nouvelle")) setInvite({ nom: "", courriel: "", role: "mecanicien" });
+  }
+
+  async function annulerInvitation(invitation: Invitation) {
+    setErreurInvitation(null);
+    const { error } = await supabase.rpc("annuler_invitation", { p_invitation_id: invitation.id });
+    if (error) {
+      setErreurInvitation(error.message);
+      return;
+    }
+    setInvitations((liste) => liste.filter((i) => i.id !== invitation.id));
+    setProfils((liste) => liste.filter((p) => p.id !== invitation.utilisateur_id));
+    afficher({ titre: "Invitation annulée", severite: "success" });
+  }
   const [erreurRoles, setErreurRoles] = useState<string | null>(null);
 
   function definir<K extends keyof Parametres>(champ: K, val: Parametres[K]) {
@@ -315,12 +385,104 @@ export default function ParametresClient({
           <UserCog className="w-4 h-4 text-mf-signal-fg" /> Utilisateurs et rôles
         </h2>
         <p className="text-xs text-mf-text-3 mb-4">
-          Pour ajouter un nouvel employé, créez son compte dans Supabase (Authentication → Users → Add user) — il
-          apparaîtra ici avec le rôle « Mécanicien » par défaut.
+          Chaque employé reçoit un lien par courriel pour choisir son mot de passe. Le rôle décide de ce qu&apos;il
+          peut faire : la réception gère clients, rendez-vous et factures ; le mécanicien travaille sur les bons.
         </p>
+
+        <form
+          onSubmit={soumettreInvitation}
+          id="inviter"
+          className="scroll-mt-6 border border-mf-border bg-mf-surface-3 p-4 mb-5 flex flex-col gap-3"
+        >
+          <div className="text-sm font-semibold text-mf-text">Inviter un employé</div>
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            <Champ
+              label="Nom"
+              required
+              marquerRequis={false}
+              autoComplete="off"
+              value={invite.nom}
+              onChange={(e) => setInvite((v) => ({ ...v, nom: e.target.value }))}
+            />
+            <Champ
+              label="Courriel"
+              type="email"
+              required
+              marquerRequis={false}
+              autoComplete="off"
+              inputMode="email"
+              autoCapitalize="none"
+              spellCheck={false}
+              value={invite.courriel}
+              onChange={(e) => setInvite((v) => ({ ...v, courriel: e.target.value }))}
+            />
+          </div>
+          <div className="flex flex-col sm:flex-row sm:items-end gap-3">
+            <div className="sm:w-56">
+              <Selecteur
+                label="Rôle"
+                value={invite.role}
+                onChange={(e) => setInvite((v) => ({ ...v, role: e.target.value as Profil["role"] }))}
+              >
+                <option value="mecanicien">Mécanicien</option>
+                <option value="reception">Réception</option>
+                <option value="admin">Administrateur</option>
+              </Selecteur>
+            </div>
+            <Bouton type="submit" enEnvoi={envoiInvitation === "nouvelle"} className="sm:w-fit">
+              <Send className="w-4 h-4" /> Envoyer l&apos;invitation
+            </Bouton>
+          </div>
+          {erreurInvitation && <MessageErreur>{erreurInvitation}</MessageErreur>}
+        </form>
+
+        {invitations.length > 0 && (
+          <div className="mb-5">
+            <div className="text-[11px] uppercase tracking-[0.08em] font-semibold text-mf-text-3 mb-1">
+              En attente d&apos;activation
+            </div>
+            <div className="divide-y divide-mf-border border-y border-mf-border">
+              {invitations.map((i) => (
+                <div key={i.id} className="py-3 flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-3">
+                  <div className="min-w-0 flex-1 flex items-start gap-2">
+                    <Mail className="w-4 h-4 mt-0.5 shrink-0 text-mf-text-3" aria-hidden />
+                    <div className="min-w-0">
+                      <div className="text-sm font-medium text-mf-text truncate">
+                        {i.nom} <span className="text-mf-text-3 font-normal">· {LABEL_ROLE[i.role]}</span>
+                      </div>
+                      <div className="text-xs text-mf-text-3 truncate">
+                        {i.courriel} · invitée le {formatDateHeure(i.cree_le)}
+                      </div>
+                    </div>
+                  </div>
+                  <div className="flex gap-1 shrink-0 -ml-2 sm:ml-0 sm:-mr-2">
+                    <button
+                      type="button"
+                      onClick={() => inviter({ nom: i.nom, courriel: i.courriel, role: i.role }, i.id)}
+                      disabled={envoiInvitation !== null}
+                      className="text-xs font-semibold text-mf-blue-hover hover:text-mf-blue min-h-[44px] px-2 disabled:opacity-50"
+                    >
+                      {envoiInvitation === i.id ? "Envoi…" : "Renvoyer"}
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => annulerInvitation(i)}
+                      className="text-xs font-semibold text-mf-text-3 hover:text-mf-red min-h-[44px] px-2"
+                    >
+                      Annuler
+                    </button>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+
         {erreurRoles && <MessageErreur className="mb-3">{erreurRoles}</MessageErreur>}
         <div className="divide-y divide-mf-border">
-          {profils.map((p) => (
+          {profils
+            .filter((p) => !invitations.some((i) => i.utilisateur_id === p.id))
+            .map((p) => (
             <div key={p.id} className="py-3 flex items-center justify-between gap-3 flex-wrap">
               <div className="flex items-center gap-2 min-w-0">
                 <input
