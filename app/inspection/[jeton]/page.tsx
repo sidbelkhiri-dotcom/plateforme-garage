@@ -60,6 +60,7 @@ export default function InspectionPubliquePage({ params }: { params: { jeton: st
   const [nomGarage, setNomGarage] = useState<string | null>(null);
   const [vehicule, setVehicule] = useState<string | null>(null);
   const [telephoneGarage, setTelephoneGarage] = useState<string | null>(null);
+  const [slugGarage, setSlugGarage] = useState<string | null>(null);
   const [points, setPoints] = useState<Point[] | null>(null);
   const [erreurChargement, setErreurChargement] = useState<string | null>(null);
   const [erreurAction, setErreurAction] = useState<string | null>(null);
@@ -83,6 +84,8 @@ export default function InspectionPubliquePage({ params }: { params: { jeton: st
     // qu'elle soit appliquée, la page s'affiche simplement sans eux.
     setVehicule(data.vehicule ?? null);
     setTelephoneGarage(data.telephone_garage ?? null);
+    // Migration 2026-10-15 : sans elle, la page s'affiche sans le lien.
+    setSlugGarage(data.slug_garage ?? null);
     setPoints(data.points);
   }
 
@@ -226,6 +229,23 @@ export default function InspectionPubliquePage({ params }: { params: { jeton: st
             );
           })}
         </div>
+
+        {/* Loi 25 : le client voit des photos de son véhicule et décide de
+            réparations ; il doit pouvoir savoir qui détient ces
+            renseignements et comment exercer ses droits. */}
+        {slugGarage && (
+          <p className="mt-8 text-xs text-mf-text-3 leading-relaxed">
+            Vos réponses et les photos de votre véhicule sont conservées par {nomGarage ?? "le garage"}.{" "}
+            <a
+              href={`/accueil/${slugGarage}/confidentialite`}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="font-semibold text-mf-blue underline underline-offset-2"
+            >
+              Vos renseignements personnels
+            </a>
+          </p>
+        )}
       </div>
 
       {/* Le total reste sous les yeux. On demande au client de dépenser de

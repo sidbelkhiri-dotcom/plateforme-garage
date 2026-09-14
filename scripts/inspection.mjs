@@ -141,7 +141,7 @@ async function semerInspection(suffixe) {
     inspection_point_id: points[0].id, chemin: `${g}/${marque}.jpg`, type: "photo",
   });
 
-  return { garage: g, bon: bon.id, inspection: inspection.id, jeton: inspection.jeton_acces, points, photo, plaque, vin };
+  return { garage: g, slug: garage.slug, bon: bon.id, inspection: inspection.id, jeton: inspection.jeton_acces, points, photo, plaque, vin };
 }
 
 async function nettoyer() {
@@ -194,6 +194,12 @@ try {
   const fuites = [charge.includes(A.plaque) && "la plaque", charge.includes(A.vin) && "le NIV"].filter(Boolean);
   verifier("la réponse publique n'expose ni plaque ni NIV", fuites.length === 0,
     `${fuites.join(" et ")} figure${fuites.length > 1 ? "nt" : ""} dans la charge publique`);
+
+  // Loi 25 : la page doit pouvoir mener à l'avis de confidentialité DE CE
+  // garage — un slug absent ou celui d'un autre garage enverrait le client
+  // lire les engagements de quelqu'un d'autre.
+  verifier("la réponse publique donne le slug du garage, pour son avis de confidentialité",
+    vueA.corps?.slug_garage === A.slug, `obtenu « ${vueA.corps?.slug_garage} », attendu « ${A.slug} »`);
 
   // Observation, pas défaut. La réponse expose le garage_id, parce que
   // les photos sont servies par leur chemin Storage, lequel est préfixé
