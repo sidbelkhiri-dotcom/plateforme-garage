@@ -401,7 +401,7 @@ try {
     JSON.stringify(factureConservee));
 
   const purgeParEmploye = await rpc("purger_demandes_publiques", {});
-  verifier("un compte du garage peut déclencher la purge de toutes les demandes", !purgeParEmploye.ok,
+  verifier("un compte du garage ne peut pas déclencher la purge de toutes les demandes", !purgeParEmploye.ok,
     `statut ${purgeParEmploye.statut}`);
 
   // La purge efface ce qui a fait son temps, et seulement ça.
