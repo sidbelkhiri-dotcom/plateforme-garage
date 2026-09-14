@@ -2,8 +2,16 @@ import { createServerClient, type CookieOptions } from "@supabase/ssr";
 import { NextResponse, type NextRequest } from "next/server";
 import { garageOperationnel } from "@/lib/abonnement";
 
+// En-tête interne qui dit à la mise en page racine d'afficher la vitrine
+// sans la coquille de l'application (barre latérale). Posé ici seulement :
+// retiré de toute requête entrante pour qu'un visiteur ne puisse pas
+// l'imposer lui-même — sans conséquence de sécurité, mais sans raison d'être.
+const ENTETE_VITRINE = "x-garagenda-vitrine";
+
 export async function middleware(request: NextRequest) {
-  let response = NextResponse.next({ request: { headers: request.headers } });
+  const entetes = new Headers(request.headers);
+  entetes.delete(ENTETE_VITRINE);
+  let response = NextResponse.next({ request: { headers: entetes } });
 
   const supabase = createServerClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -26,6 +34,27 @@ export async function middleware(request: NextRequest) {
   const {
     data: { user },
   } = await supabase.auth.getUser();
+
+  // Site vitrine. Un visiteur non connecté qui arrive à la racine voit la
+  // présentation de Garagenda plutôt qu'un écran de connexion ; un garage
+  // connecté arrive toujours sur son tableau de bord. /decouvrir reste
+  // accessible à tous, connecté ou non, pour pouvoir la montrer.
+  const chemin = request.nextUrl.pathname;
+  if (chemin === "/decouvrir" || (!user && chemin === "/")) {
+    const entetesVitrine = new Headers(entetes);
+    entetesVitrine.set(ENTETE_VITRINE, "1");
+    let reponseVitrine: NextResponse;
+    if (chemin === "/") {
+      const url = request.nextUrl.clone();
+      url.pathname = "/decouvrir";
+      reponseVitrine = NextResponse.rewrite(url, { request: { headers: entetesVitrine } });
+    } else {
+      reponseVitrine = NextResponse.next({ request: { headers: entetesVitrine } });
+    }
+    // Garde les témoins de session rafraîchis par Supabase plus haut.
+    response.cookies.getAll().forEach((c) => reponseVitrine.cookies.set(c));
+    return reponseVitrine;
+  }
 
   const isLoginPage = request.nextUrl.pathname.startsWith("/login");
   // /accueil : borne d'enregistrement client, accessible sans connexion

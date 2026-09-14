@@ -1,4 +1,5 @@
 import type { Metadata, Viewport } from "next";
+import { headers } from "next/headers";
 import { Archivo, IBM_Plex_Mono, IBM_Plex_Sans } from "next/font/google";
 import "./globals.css";
 import Sidebar from "@/components/Sidebar";
@@ -68,6 +69,11 @@ export default function RootLayout({
       </head>
       <body className="font-sans text-mf-text bg-mf-bg">
         <ToastProvider>
+          {/* Site vitrine (middleware.ts) : la page occupe tout l'écran, sans
+              la coquille de l'application. */}
+          {headers().get("x-garagenda-vitrine") === "1" ? (
+            children
+          ) : (
           <div className="flex flex-col md:flex-row min-h-screen">
             <Sidebar />
             {/* Pas d'overflow ici. `overflow-y-auto` faisait de <main>
@@ -79,6 +85,7 @@ export default function RootLayout({
                 ancêtre de défilement, et celui-ci ne bougeait pas. */}
             <main className="flex-1">{children}</main>
           </div>
+          )}
         </ToastProvider>
       </body>
     </html>
