@@ -175,31 +175,50 @@ export default function ParametresClient({
       <p className="text-sm text-mf-text-2 mb-6">Réservé à l'administrateur.</p>
 
       <form onSubmit={enregistrer} className="bg-mf-surface rounded-mf-md border border-mf-border p-5 mb-6 flex flex-col gap-3">
-        <h2 className="font-display font-bold text-sm uppercase tracking-wide flex items-center gap-2 mb-1 text-mf-text">
+        <h2 id="coordonnees" className="scroll-mt-6 font-display font-bold text-sm uppercase tracking-wide flex items-center gap-2 mb-1 text-mf-text">
           <Building2 className="w-4 h-4 text-mf-signal-fg" /> Coordonnées du garage
         </h2>
         <Champ label="Nom" required value={valeurs.nom} onChange={(e) => definir("nom", e.target.value)} />
-        <Champ label="Adresse" value={valeurs.adresse ?? ""} onChange={(e) => definir("adresse", e.target.value)} />
-        <div className="grid grid-cols-2 gap-3">
-          <Champ label="Téléphone" value={valeurs.telephone ?? ""} onChange={(e) => definir("telephone", e.target.value)} />
-          <Champ label="Courriel" type="email" value={valeurs.courriel ?? ""} onChange={(e) => definir("courriel", e.target.value)} />
+        <Champ
+          label="Adresse"
+          autoComplete="street-address"
+          placeholder="1240 rue Fleury Est, Montréal (Québec) H2C 1R2"
+          value={valeurs.adresse ?? ""}
+          onChange={(e) => definir("adresse", e.target.value)}
+        />
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+          <Champ label="Téléphone" type="tel" autoComplete="tel" value={valeurs.telephone ?? ""} onChange={(e) => definir("telephone", e.target.value)} />
+          <Champ label="Courriel" type="email" autoComplete="email" value={valeurs.courriel ?? ""} onChange={(e) => definir("courriel", e.target.value)} />
         </div>
-        <div className="grid grid-cols-2 gap-3">
-          <Champ label="Numéro TPS" value={valeurs.tps ?? ""} onChange={(e) => definir("tps", e.target.value)} />
-          <Champ label="Numéro TVQ" value={valeurs.tvq ?? ""} onChange={(e) => definir("tvq", e.target.value)} />
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+          <Champ label="Numéro TPS" placeholder="123456789 RT0001" value={valeurs.tps ?? ""} onChange={(e) => definir("tps", e.target.value)} />
+          <Champ label="Numéro TVQ" placeholder="1234567890 TQ0001" value={valeurs.tvq ?? ""} onChange={(e) => definir("tvq", e.target.value)} />
         </div>
+        <p className="text-xs text-mf-text-3 -mt-1">
+          Imprimés sur chaque facture. Obligatoires dès que vous êtes inscrit aux fichiers de la TPS et de la TVQ ;
+          un petit fournisseur non inscrit peut les laisser vides.
+        </p>
 
-        <h2 className="font-display font-bold text-sm uppercase tracking-wide flex items-center gap-2 mt-3 mb-1 text-mf-text">
+        <h2 id="atelier" className="scroll-mt-6 font-display font-bold text-sm uppercase tracking-wide flex items-center gap-2 mt-3 mb-1 text-mf-text">
           <WrenchIcon className="w-4 h-4 text-mf-signal-fg" /> Atelier
         </h2>
         <Champ
           label="Taux horaire de main-d'œuvre ($/h)"
           type="number"
           step="0.01"
+          min="0"
+          inputMode="decimal"
           value={String(valeurs.taux_horaire)}
           onChange={(e) => definir("taux_horaire", Number(e.target.value) as any)}
+          erreur={
+            Number(valeurs.taux_horaire) > 0
+              ? undefined
+              : "À 0 $, chaque heure de main-d'œuvre des nouveaux bons serait facturée gratuitement."
+          }
         />
-        <div className="grid grid-cols-3 gap-3">
+        {/* items-end : « Validité évaluation (jours) » passe sur deux lignes
+            et décalait son champ vers le bas par rapport aux deux autres. */}
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 items-end">
           <Champ
             label="Validité évaluation (jours)"
             type="number"

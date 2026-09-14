@@ -3,6 +3,7 @@ import { createClient } from "@/lib/supabase/server";
 import { todayLocal, formatTimeShort } from "@/lib/dates";
 import Badge from "@/components/ui/Badge";
 import { statutBon } from "@/lib/statuts";
+import PremiersPas, { type EtapePremiersPas } from "@/components/PremiersPas";
 import { Calendar, Wrench, ClipboardList, AlertTriangle, Clock, Receipt } from "lucide-react";
 
 export const dynamic = "force-dynamic";
@@ -47,6 +48,65 @@ export default async function DashboardPage() {
         .in("statut", ["impayee", "partielle"])
         .order("date"),
     ]);
+
+  // Guide de mise en route : réservé à l'administrateur (il est le seul à
+  // pouvoir remplir les paramètres), calculé sur les données réelles.
+  let etapes: EtapePremiersPas[] | null = null;
+  let nomGarage = "";
+  if (profil?.role === "admin") {
+    const [{ data: p }, { count: nbClients }, { count: nbBons }, { count: nbFactures }] = await Promise.all([
+      supabase.from("parametres").select("nom, adresse, telephone, tps, tvq, taux_horaire").single(),
+      supabase.from("clients").select("id", { count: "exact", head: true }),
+      supabase.from("bons_travail").select("id", { count: "exact", head: true }),
+      supabase.from("factures").select("id", { count: "exact", head: true }),
+    ]);
+    nomGarage = p?.nom ?? "votre garage";
+    etapes = [
+      {
+        cle: "coordonnees",
+        titre: "Compléter l'adresse et le téléphone du garage",
+        aide: "Ils figurent en tête de chaque évaluation et de chaque facture remise au client.",
+        href: "/parametres#coordonnees",
+        faite: !!(p?.adresse?.trim() && p?.telephone?.trim()),
+      },
+      {
+        cle: "taux",
+        titre: "Fixer votre taux horaire",
+        aide: "Il est à 0 $ : chaque heure de main-d'œuvre serait facturée gratuitement.",
+        href: "/parametres#atelier",
+        faite: Number(p?.taux_horaire ?? 0) > 0,
+      },
+      {
+        cle: "taxes",
+        titre: "Inscrire vos numéros de TPS et de TVQ",
+        aide: "Si vous êtes inscrit aux taxes, ils doivent figurer sur vos factures. Sinon, passez cette étape.",
+        href: "/parametres#coordonnees",
+        faite: !!(p?.tps?.trim() && p?.tvq?.trim()),
+        facultative: true,
+      },
+      {
+        cle: "client",
+        titre: "Ajouter votre premier client",
+        aide: "Son nom, son téléphone, puis son véhicule.",
+        href: "/clients?nouveau=1",
+        faite: (nbClients ?? 0) > 0,
+      },
+      {
+        cle: "bon",
+        titre: "Ouvrir un bon de travail",
+        aide: "La plainte du client, les pièces et la main-d'œuvre, puis l'évaluation à faire accepter.",
+        href: "/bons-travail/nouveau",
+        faite: (nbBons ?? 0) > 0,
+      },
+      {
+        cle: "facture",
+        titre: "Émettre votre première facture",
+        aide: "Quand le bon est terminé : TPS et TVQ calculées, numérotation automatique.",
+        href: "/bons-travail",
+        faite: (nbFactures ?? 0) > 0,
+      },
+    ];
+  }
 
   const { data: totauxEnAttente } = enAttenteBruts?.length
     ? await supabase
@@ -106,6 +166,8 @@ export default async function DashboardPage() {
       <p className="text-sm text-mf-text-2 mb-6">
         Bonjour {profil?.nom ?? user?.email} — voici l'atelier aujourd'hui.
       </p>
+
+      {etapes && <PremiersPas etapes={etapes} nomGarage={nomGarage} />}
 
       {/* Un seul objet, divisé par des filets d'un pixel, plutôt que cinq
           cartes au contour identique à celles du contenu en dessous : le

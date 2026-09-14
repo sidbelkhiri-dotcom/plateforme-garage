@@ -36,6 +36,15 @@ export default function ClientsPage() {
   const [showAdd, setShowAdd] = useState(false);
   const [rechercheActive, setRechercheActive] = useState(false);
 
+  // Lien « Ajouter votre premier client » du guide de mise en route :
+  // /clients?nouveau=1 ouvre directement le formulaire.
+  useEffect(() => {
+    if (new URLSearchParams(window.location.search).get("nouveau") === "1" && peutGererClients) {
+      setShowAdd(true);
+      window.history.replaceState(null, "", "/clients");
+    }
+  }, [peutGererClients]);
+
   const charger = useCallback(
     async (terme: string) => {
       setChargement(true);
