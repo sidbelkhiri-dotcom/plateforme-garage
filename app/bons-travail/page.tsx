@@ -5,12 +5,16 @@ import Link from "next/link";
 import { createClient } from "@/lib/supabase/client";
 import { Plus, Wrench, AlertTriangle } from "lucide-react";
 import Selecteur from "@/components/ui/Selecteur";
-import Badge, { type ToneBadge } from "@/components/ui/Badge";
+import Badge from "@/components/ui/Badge";
+import Pastilles from "@/components/ui/Pastilles";
+import { STATUT_BON, type StatutBon } from "@/lib/statuts";
+import { formatDateCourte } from "@/lib/dates";
+import { pluriel } from "@/lib/texte";
 import Chargement from "@/components/ui/Chargement";
 import EtatVide from "@/components/ui/EtatVide";
 import { useProfil } from "@/lib/useProfil";
 
-type Statut = "evaluation" | "autorise" | "en_cours" | "attente_piece" | "termine" | "facture" | "annule";
+type Statut = StatutBon;
 
 // Format monétaire canadien-français, comme sur le tableau de bord.
 const argent = (n: number) =>
@@ -45,26 +49,6 @@ const STATUTS: { value: Statut | "ouverts" | "tous"; label: string }[] = [
   { value: "termine", label: "Terminé" },
   { value: "annule", label: "Annulé" },
 ];
-
-const TON_STATUT: Record<Statut, ToneBadge> = {
-  evaluation: "ardoise",
-  autorise: "ambre",
-  en_cours: "ambre",
-  attente_piece: "rouge",
-  termine: "emeraude",
-  facture: "emeraude",
-  annule: "rouge",
-};
-
-const LABEL_STATUT: Record<Statut, string> = {
-  evaluation: "Évaluation",
-  autorise: "Autorisé",
-  en_cours: "En cours",
-  attente_piece: "Attente pièce",
-  termine: "Terminé",
-  facture: "Facturé",
-  annule: "Annulé",
-};
 
 export default function BonsTravailPage() {
   const supabase = createClient();
@@ -113,7 +97,7 @@ export default function BonsTravailPage() {
       <div className="flex items-center justify-between mb-4 flex-wrap gap-3">
         <div>
           <h1 className="text-[1.625rem] font-display font-bold uppercase tracking-[0.01em] text-mf-text">Bons de travail</h1>
-          <p className="text-sm text-mf-text-2">{filtres.length} bon(s)</p>
+          <p className="text-sm text-mf-text-2">{pluriel(filtres.length, "bon")}</p>
         </div>
         {peutAutoriser && (
           <Link
@@ -126,22 +110,10 @@ export default function BonsTravailPage() {
       </div>
 
       <div className="flex flex-wrap items-end gap-3 mb-4">
-        <div className="flex flex-wrap gap-1">
-          {STATUTS.map((s) => (
-            <button
-              key={s.value}
-              onClick={() => setFiltreStatut(s.value)}
-              className={`px-3 min-h-[40px] rounded-mf-pill text-xs font-semibold border transition-colors ${
-                filtreStatut === s.value
-                  ? "bg-mf-blue text-white border-mf-blue"
-                  : "bg-mf-surface text-mf-text-2 border-mf-border hover:bg-mf-surface-2"
-              }`}
-            >
-              {s.label}
-            </button>
-          ))}
+        <div className="w-full lg:w-auto lg:flex-1 min-w-0">
+          <Pastilles libelle="Filtrer par statut" options={STATUTS} valeur={filtreStatut} onChange={setFiltreStatut} />
         </div>
-        <div className="w-56">
+        <div className="w-full sm:w-56">
           <Selecteur label="" value={filtreEmploye} onChange={(e) => setFiltreEmploye(e.target.value)}>
             <option value="">Tous les mécaniciens</option>
             {mecaniciens.map((m) => (
@@ -166,40 +138,36 @@ export default function BonsTravailPage() {
               <Link
                 key={b.id}
                 href={`/bons-travail/${b.id}`}
-                className="px-4 py-3 flex items-center justify-between gap-3 flex-wrap hover:bg-mf-surface-2 min-h-[44px]"
+                className="px-4 py-3 grid grid-cols-[1fr_auto] items-center gap-x-3 gap-y-0.5 sm:flex sm:gap-4 hover:bg-mf-surface-2 min-h-[44px]"
               >
-                <div className="flex items-center gap-4 min-w-0">
-                  <span className="font-mono text-sm font-semibold w-20 shrink-0 text-mf-text">{b.numero}</span>
-                  <div className="min-w-0">
-                    <div className="text-sm font-medium truncate text-mf-text">
-                      {b.client_id ? clients[b.client_id] : "—"}
-                      {b.vehicule_id && ` · ${vehicules[b.vehicule_id]}`}
-                    </div>
-                    <div className="text-xs text-mf-text-3 truncate">
-                      {nomMecanicien ?? "Non assigné"} · ouvert le {b.ouvert_le}
-                    </div>
-                  </div>
-                </div>
-                {/* Le montant courant occupe le vide entre le véhicule et
-                    l'état. Il était déjà chargé — la vue des totaux est lue
-                    plus haut pour détecter les dépassements — mais n'était
-                    montré nulle part dans la liste, alors que c'est le premier
-                    chiffre qu'un patron d'atelier cherche en balayant l'écran.
-                    Chasse tabulaire et largeur fixe pour que la colonne des
-                    montants s'aligne d'une ligne à l'autre. */}
-                <div className="flex items-center gap-4 shrink-0">
-                  <span className="hidden sm:block text-sm font-mono tabular-nums text-right w-24 text-mf-text-2">
-                    {t ? argent(t.total_ht) : ""}
-                  </span>
+                {/* Deux étages sur téléphone (numéro et état, puis client et
+                    montant), une seule ligne dès la tablette : sur 375 px, la
+                    ligne unique réduisait le client à « Marc-Andr… ». */}
+                <span className="font-mono text-sm font-semibold sm:w-20 shrink-0 text-mf-text">{b.numero}</span>
+                <span className="flex items-center justify-end gap-2 shrink-0 sm:order-4 sm:w-[128px]">
                   {t?.depasse_evaluation && (
                     <span title="Dépasse l'évaluation acceptée">
-                      <AlertTriangle className="w-4 h-4 text-mf-red" />
+                      <AlertTriangle className="w-4 h-4 text-mf-red" aria-label="Dépasse l'évaluation acceptée" />
                     </span>
                   )}
-                  <span className="w-[104px] flex justify-end">
-                    <Badge tone={TON_STATUT[b.statut]}>{LABEL_STATUT[b.statut]}</Badge>
-                  </span>
+                  <Badge tone={STATUT_BON[b.statut].ton}>{STATUT_BON[b.statut].label}</Badge>
+                </span>
+                <div className="min-w-0 sm:flex-1 sm:order-2">
+                  <div className="text-sm font-medium truncate text-mf-text">
+                    {b.client_id ? clients[b.client_id] : "—"}
+                    {b.vehicule_id && ` · ${vehicules[b.vehicule_id]}`}
+                  </div>
+                  <div className="text-xs text-mf-text-3 truncate">
+                    {nomMecanicien ?? "Non assigné"} · {formatDateCourte(b.ouvert_le)}
+                  </div>
                 </div>
+                {/* Le montant courant : le premier chiffre qu'un patron
+                    d'atelier cherche en balayant la liste. Chasse tabulaire et
+                    largeur fixe pour que la colonne s'aligne d'une ligne à
+                    l'autre. */}
+                <span className="text-sm font-mono tabular-nums text-right text-mf-text-2 self-start sm:self-auto sm:order-3 sm:w-28">
+                  {t ? argent(t.total_ht) : ""}
+                </span>
               </Link>
             );
           })}

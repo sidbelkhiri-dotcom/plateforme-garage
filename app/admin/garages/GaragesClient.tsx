@@ -8,6 +8,7 @@ import Selecteur from "@/components/ui/Selecteur";
 import Badge, { type ToneBadge } from "@/components/ui/Badge";
 import Tableau, { type ColonneTableau } from "@/components/ui/Tableau";
 import { formatDateHeure } from "@/lib/dates";
+import { pluriel } from "@/lib/texte";
 
 type Statut = "actif" | "suspendu" | "resilie";
 
@@ -102,7 +103,7 @@ export default function GaragesClient({ garagesInitial }: { garagesInitial: Gara
         <h1 className="flex items-center gap-2 text-[1.625rem] font-display font-bold uppercase tracking-[0.01em] text-mf-text">
           <Building2 className="w-5 h-5" /> Garages
         </h1>
-        <p className="text-sm text-mf-text-2">{garages.length} garage(s) sur la plateforme</p>
+        <p className="text-sm text-mf-text-2">{pluriel(garages.length, "garage")} sur la plateforme</p>
       </div>
 
       <Tableau colonnes={colonnes} lignes={garages} />

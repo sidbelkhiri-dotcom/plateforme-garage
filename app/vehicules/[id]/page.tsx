@@ -9,6 +9,7 @@ import Modale from "@/components/ui/Modale";
 import ModaleConfirmation from "@/components/ui/ModaleConfirmation";
 import Bouton from "@/components/ui/Bouton";
 import Badge from "@/components/ui/Badge";
+import { statutBon } from "@/lib/statuts";
 import Chargement from "@/components/ui/Chargement";
 import EtatVide from "@/components/ui/EtatVide";
 import MessageErreur from "@/components/ui/MessageErreur";
@@ -39,16 +40,6 @@ type Bon = {
   diagnostic: string | null;
   ouvert_le: string;
   ferme_le: string | null;
-};
-
-const LABEL_STATUT: Record<string, string> = {
-  evaluation: "Évaluation",
-  autorise: "Autorisé",
-  en_cours: "En cours",
-  attente_piece: "Attente pièce",
-  termine: "Terminé",
-  facture: "Facturé",
-  annule: "Annulé",
 };
 
 export default function VehiculeDetailPage() {
@@ -125,7 +116,7 @@ export default function VehiculeDetailPage() {
                 <ArrowRightLeft className="w-3.5 h-3.5" /> Transférer
               </Bouton>
               {estAdmin && (
-                <Bouton variante="danger" onClick={() => setShowSupprimer(true)}>
+                <Bouton variante="danger-discret" onClick={() => setShowSupprimer(true)}>
                   <Trash2 className="w-3.5 h-3.5" /> Supprimer
                 </Bouton>
               )}
@@ -206,9 +197,7 @@ export default function VehiculeDetailPage() {
                           {garantie.couverte ? "Sous garantie" : "Garantie expirée"}
                         </span>
                       )}
-                      <Badge tone={b.statut === "termine" ? "emeraude" : b.statut === "annule" ? "rouge" : "ardoise"}>
-                        {LABEL_STATUT[b.statut] ?? b.statut}
-                      </Badge>
+                      <Badge tone={statutBon(b.statut).ton}>{statutBon(b.statut).label}</Badge>
                     </div>
                   </div>
                   <div className="text-sm text-mf-text">{b.diagnostic || b.plainte_client}</div>

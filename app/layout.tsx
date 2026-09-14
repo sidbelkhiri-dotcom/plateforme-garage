@@ -1,5 +1,5 @@
 import type { Metadata, Viewport } from "next";
-import { Archivo, IBM_Plex_Sans } from "next/font/google";
+import { Archivo, IBM_Plex_Mono, IBM_Plex_Sans } from "next/font/google";
 import "./globals.css";
 import Sidebar from "@/components/Sidebar";
 import ToastProvider from "@/components/ui/ToastProvider";
@@ -10,6 +10,16 @@ const plex = IBM_Plex_Sans({
   subsets: ["latin"],
   weight: ["400", "500", "600"],
   variable: "--font-plex",
+  display: "swap",
+});
+// Chiffres (numéros de bon, montants, heures) : la même famille que le
+// corps de texte. `font-mono` tombait jusqu'ici sur la police à chasse fixe
+// du système — Menlo, Courier, Consolas selon l'appareil — dont le dessin
+// n'avait rien à voir avec Plex et changeait d'un poste à l'autre.
+const plexMono = IBM_Plex_Mono({
+  subsets: ["latin"],
+  weight: ["400", "500", "600"],
+  variable: "--font-plex-mono",
   display: "swap",
 });
 const archivo = Archivo({
@@ -52,7 +62,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <html lang="fr" className={`${plex.variable} ${archivo.variable}`}>
+    <html lang="fr" className={`${plex.variable} ${plexMono.variable} ${archivo.variable}`}>
       <head>
         <script dangerouslySetInnerHTML={{ __html: scriptTheme }} />
       </head>

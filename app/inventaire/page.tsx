@@ -12,6 +12,7 @@ import Chargement from "@/components/ui/Chargement";
 import EtatVide from "@/components/ui/EtatVide";
 import FormulaireInventaire from "@/components/forms/FormulaireInventaire";
 import { useProfil } from "@/lib/useProfil";
+import { pluriel } from "@/lib/texte";
 
 type Item = {
   id: string;
@@ -125,7 +126,7 @@ export default function InventairePage() {
         <div>
           <h1 className="text-[1.625rem] font-display font-bold uppercase tracking-[0.01em] text-mf-text">Inventaire</h1>
           <p className="text-sm text-mf-text-2">
-            {items.length} pièce(s)
+            {pluriel(items.length, "pièce")}
             {stockBasCount > 0 && <span className="text-mf-warning font-semibold"> · {stockBasCount} en stock bas</span>}
           </p>
         </div>

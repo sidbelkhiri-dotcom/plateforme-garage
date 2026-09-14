@@ -209,8 +209,8 @@ export default function FormulaireLigneBon({
           </Selecteur>
           <p className="text-xs text-mf-text-3 mt-1">
             {pieceId
-              ? "Reliée à ton stock — la quantité sera déduite automatiquement à la fin des travaux."
-              : "Choisis-la ici si elle vient de ton stock : la quantité en sera déduite. Sinon, laisse « hors inventaire »."}
+              ? "Reliée à votre stock — la quantité sera déduite automatiquement à la fin des travaux."
+              : "Choisissez-la ici si elle vient de votre stock : la quantité en sera déduite. Sinon, laissez « hors inventaire »."}
           </p>
         </div>
       )}

@@ -452,7 +452,7 @@ function FormulaireAjoutPoint({
             <span className="font-semibold text-mf-text-3 text-[11px] uppercase tracking-[0.08em]">Recommandation</span>
             <textarea
               rows={2}
-              placeholder="Ce que tu recommandes au client..."
+              placeholder="Ce que vous recommandez au client…"
               value={recommandation}
               onChange={(e) => setRecommandation(e.target.value)}
               className="bg-mf-surface-3 border border-mf-border-strong rounded-mf-sm px-3 py-2 text-sm text-mf-text focus:outline-none focus:border-mf-blue focus:ring-2 focus:ring-mf-blue-soft"

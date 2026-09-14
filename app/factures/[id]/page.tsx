@@ -8,6 +8,7 @@ import BoutonImprimer from "@/components/BoutonImprimer";
 import BoutonEnvoyerCourriel from "@/components/BoutonEnvoyerCourriel";
 import BoutonDemanderAvis from "@/components/BoutonDemanderAvis";
 import { formatTaux } from "@/lib/taxes";
+import { formatTelephone } from "@/lib/texte";
 
 const LABEL_ETAT: Record<string, string> = {
   neuve: "Neuve",
@@ -115,7 +116,7 @@ export default async function FacturePage({ params }: { params: { id: string } }
               {garage?.nom ?? "Votre garage"}
             </div>
             {garage?.adresse && <div className="text-sm text-stone-600">{garage.adresse}</div>}
-            {garage?.telephone && <div className="text-sm text-stone-600">{garage.telephone}</div>}
+            {garage?.telephone && <div className="text-sm text-stone-600">{formatTelephone(garage.telephone)}</div>}
             {garage?.courriel && <div className="text-sm text-stone-600">{garage.courriel}</div>}
             {/* Un numéro par ligne. Sur une seule ligne séparée par « · », la
                 paire se coupait au hasard de la largeur. */}
@@ -145,7 +146,7 @@ export default async function FacturePage({ params }: { params: { id: string } }
               {(client?.adresse || client?.code_postal) && (
                 <div>{[client?.adresse, client?.code_postal].filter(Boolean).join(", ")}</div>
               )}
-              {client?.telephone && <div>{client.telephone}</div>}
+              {client?.telephone && <div>{formatTelephone(client.telephone)}</div>}
               {client?.email && <div>{client.email}</div>}
             </div>
           </div>

@@ -2,6 +2,7 @@ import Link from "next/link";
 import { createClient } from "@/lib/supabase/server";
 import { todayLocal, formatTimeShort } from "@/lib/dates";
 import Badge from "@/components/ui/Badge";
+import { statutBon } from "@/lib/statuts";
 import { Calendar, Wrench, ClipboardList, AlertTriangle, Clock, Receipt } from "lucide-react";
 
 export const dynamic = "force-dynamic";
@@ -162,9 +163,7 @@ export default async function DashboardPage() {
                   <Link href={`/bons-travail/${b.id}`} className="py-2 flex items-center justify-between gap-2 text-mf-text hover:text-mf-blue-hover">
                     <span className="font-mono text-sm">{b.numero}</span>
                     <span className="text-sm flex-1 min-w-0 truncate text-right">{nomClient(b.client_id)}</span>
-                    <Badge tone={b.statut === "attente_piece" ? "rouge" : "ambre"}>
-                      {b.statut === "en_cours" ? "En cours" : b.statut === "attente_piece" ? "Attente pièce" : "Autorisé"}
-                    </Badge>
+                    <Badge tone={statutBon(b.statut).ton}>{statutBon(b.statut).label}</Badge>
                   </Link>
                 </li>
               ))}

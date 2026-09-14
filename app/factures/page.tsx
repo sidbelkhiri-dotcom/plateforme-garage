@@ -4,7 +4,11 @@ import { useCallback, useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import { createClient } from "@/lib/supabase/client";
 import { Receipt, DollarSign, Ban, FileText } from "lucide-react";
-import Badge, { type ToneBadge } from "@/components/ui/Badge";
+import Badge from "@/components/ui/Badge";
+import Pastilles from "@/components/ui/Pastilles";
+import { STATUT_FACTURE, type StatutFacture } from "@/lib/statuts";
+import { formatDateCourte } from "@/lib/dates";
+import { pluriel } from "@/lib/texte";
 import Chargement from "@/components/ui/Chargement";
 import EtatVide from "@/components/ui/EtatVide";
 import Modale from "@/components/ui/Modale";
@@ -13,7 +17,7 @@ import Champ from "@/components/ui/Champ";
 import MessageErreur from "@/components/ui/MessageErreur";
 import { useProfil } from "@/lib/useProfil";
 
-type Statut = "impayee" | "partielle" | "payee" | "annulee";
+type Statut = StatutFacture;
 
 type Facture = {
   id: string;
@@ -29,27 +33,13 @@ type Facture = {
 };
 
 const FILTRES: { value: Statut | "impayees" | "toutes"; label: string }[] = [
-  { value: "impayees", label: "Impayées + partielles" },
+  { value: "impayees", label: "À encaisser" },
   { value: "toutes", label: "Toutes" },
   { value: "impayee", label: "Impayées" },
   { value: "partielle", label: "Partielles" },
   { value: "payee", label: "Payées" },
   { value: "annulee", label: "Annulées" },
 ];
-
-const TON_STATUT: Record<Statut, ToneBadge> = {
-  impayee: "rouge",
-  partielle: "ambre",
-  payee: "emeraude",
-  annulee: "stone",
-};
-
-const LABEL_STATUT: Record<Statut, string> = {
-  impayee: "Impayée",
-  partielle: "Partielle",
-  payee: "Payée",
-  annulee: "Annulée",
-};
 
 function formatMoney(n: number) {
   return new Intl.NumberFormat("fr-CA", { style: "currency", currency: "CAD" }).format(n);
@@ -99,7 +89,7 @@ export default function FacturesPage() {
     <div className="p-6">
       <div className="mb-4">
         <h1 className="text-[1.625rem] font-display font-bold uppercase tracking-[0.01em] text-mf-text">Factures</h1>
-        <p className="text-sm text-mf-text-2">{filtrees.length} facture(s)</p>
+        <p className="text-sm text-mf-text-2">{pluriel(filtrees.length, "facture")}</p>
       </div>
 
       {estAdmin && (
@@ -113,36 +103,30 @@ export default function FacturesPage() {
             <FileText className="w-4 h-4" /> Rapport de facturation
           </a>
           <p className="text-xs text-mf-text-3">
-            Pour ton comptable : choisis l&apos;année ou le trimestre, puis imprime ou exporte en CSV.
+            Pour votre comptable : choisissez l&apos;année ou le trimestre, puis imprimez ou exportez en CSV.
             La TPS et la TVQ se déclarent le plus souvent par trimestre.
           </p>
         </div>
       )}
 
-      <div className="flex flex-wrap items-center gap-1 mb-4">
-        {FILTRES.map((f) => (
-          <button
-            key={f.value}
-            onClick={() => setFiltre(f.value)}
-            className={`px-3 min-h-[40px] rounded-mf-pill text-xs font-semibold border transition-colors ${
-              filtre === f.value
-                ? "bg-mf-blue text-white border-mf-blue"
-                : "bg-mf-surface text-mf-text-2 border-mf-border hover:bg-mf-surface-2"
-            }`}
-          >
-            {f.label}
-          </button>
-        ))}
+      <div className="flex flex-wrap items-center gap-2 mb-4">
+        <div className="w-full sm:w-auto min-w-0">
+          <Pastilles libelle="Filtrer par statut" options={FILTRES} valeur={filtre} onChange={setFiltre} />
+        </div>
+        {/* Un interrupteur, pas un filtre exclusif : il se combine avec le
+            statut. Contour et coche plutôt qu'un aplat ambre, qui le
+            faisait passer pour un statut de plus. */}
         <button
+          type="button"
           onClick={() => setAvecLibelleSeulement((v) => !v)}
           aria-pressed={avecLibelleSeulement}
-          className={`ml-2 px-3 min-h-[40px] rounded-mf-pill text-xs font-semibold border transition-colors ${
+          className={`shrink-0 px-3 min-h-[40px] rounded-mf-pill text-xs font-semibold border transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-mf-blue ${
             avecLibelleSeulement
-              ? "bg-mf-warning text-white border-mf-warning"
+              ? "bg-mf-blue-soft text-mf-text border-mf-blue"
               : "bg-mf-surface text-mf-text-2 border-mf-border hover:bg-mf-surface-2"
           }`}
         >
-          Avec libellé seulement
+          {avecLibelleSeulement ? "✓ " : ""}Avec libellé seulement
         </button>
       </div>
 
@@ -153,38 +137,54 @@ export default function FacturesPage() {
       ) : (
         <div className="bg-mf-surface rounded-mf-md border border-mf-border divide-y divide-mf-border">
           {filtrees.map((f) => (
-            <div key={f.id} className="px-4 py-3 flex items-center justify-between gap-3 flex-wrap">
-              <Link href={`/factures/${f.id}`} className="flex items-center gap-4 min-w-0 flex-1 text-mf-text hover:text-mf-blue-hover min-h-[44px]">
-                <span className="font-mono text-sm font-semibold w-20 shrink-0">{f.numero}</span>
-                <div className="min-w-0">
+            <div key={f.id} className="px-4 py-3 flex flex-col sm:flex-row sm:items-center gap-x-3 gap-y-1">
+              {/* Sur téléphone, les actions débordaient de l'écran à droite
+                  (« Annuler la facture » coupé) : la ligne s'empile — facture
+                  et montant d'abord, actions dessous. */}
+              <Link
+                href={`/factures/${f.id}`}
+                className="grid grid-cols-[1fr_auto] items-center gap-x-3 gap-y-0.5 sm:flex sm:gap-4 min-w-0 flex-1 text-mf-text hover:text-mf-blue-hover min-h-[44px]"
+              >
+                <span className="font-mono text-sm font-semibold sm:w-20 shrink-0">{f.numero}</span>
+                <span className="font-mono text-sm tabular-nums text-mf-text shrink-0 text-right sm:order-3 sm:w-28">
+                  {formatMoney(f.total_ttc)}
+                </span>
+                <div className="min-w-0 sm:flex-1 sm:order-2">
                   <div className="text-sm font-medium truncate">
                     {f.client_id ? clients[f.client_id] : "—"}
                     {f.vehicule_id && ` · ${vehicules[f.vehicule_id]}`}
                   </div>
-                  <div className="text-xs text-mf-text-3">Livré le {f.date}</div>
+                  <div className="text-xs text-mf-text-3 truncate">
+                    {formatDateCourte(f.date)}
+                    {f.libelle && ` · ${f.libelle}`}
+                  </div>
                 </div>
+                <span className="shrink-0 flex justify-end self-start sm:self-auto sm:order-4 sm:w-[92px]">
+                  <Badge tone={STATUT_FACTURE[f.statut].ton}>{STATUT_FACTURE[f.statut].label}</Badge>
+                </span>
               </Link>
-              <div className="flex items-center gap-2 shrink-0">
-                <span className="font-mono text-sm text-mf-text">{formatMoney(f.total_ttc)}</span>
-                {f.libelle && <Badge tone="ardoise">{f.libelle}</Badge>}
-                <Badge tone={TON_STATUT[f.statut]}>{LABEL_STATUT[f.statut]}</Badge>
-                {peutAutoriser && f.statut !== "payee" && f.statut !== "annulee" && (
-                  <button
-                    onClick={() => setFacturePaiement(f)}
-                    className="flex items-center gap-1 text-xs font-semibold text-mf-blue-hover hover:text-mf-blue min-h-[44px] px-2"
-                  >
-                    <DollarSign className="w-3.5 h-3.5" /> Paiement
-                  </button>
-                )}
-                {estAdmin && f.statut !== "annulee" && (
-                  <button
-                    onClick={() => setFactureAAnnuler(f)}
-                    className="flex items-center gap-1 text-xs font-semibold text-mf-text-3 hover:text-mf-red min-h-[44px] px-2"
-                  >
-                    <Ban className="w-3.5 h-3.5" /> Annuler la facture
-                  </button>
-                )}
-              </div>
+              {/* Toujours présent à partir de la tablette, même vide (facture
+                  annulée) : sinon les montants se décalent d'une ligne à l'autre. */}
+              {(peutAutoriser || estAdmin) && (
+                <div className={`items-center justify-end gap-1 shrink-0 sm:w-[228px] -mr-2 ${f.statut === "annulee" ? "hidden sm:flex" : "flex"}`}>
+                  {peutAutoriser && f.statut !== "payee" && f.statut !== "annulee" && (
+                    <button
+                      onClick={() => setFacturePaiement(f)}
+                      className="flex items-center gap-1 text-xs font-semibold text-mf-blue-hover hover:text-mf-blue min-h-[44px] px-2"
+                    >
+                      <DollarSign className="w-3.5 h-3.5" /> Paiement
+                    </button>
+                  )}
+                  {estAdmin && f.statut !== "annulee" && (
+                    <button
+                      onClick={() => setFactureAAnnuler(f)}
+                      className="flex items-center gap-1 text-xs font-semibold text-mf-text-3 hover:text-mf-red min-h-[44px] px-2"
+                    >
+                      <Ban className="w-3.5 h-3.5" /> Annuler la facture
+                    </button>
+                  )}
+                </div>
+              )}
             </div>
           ))}
         </div>

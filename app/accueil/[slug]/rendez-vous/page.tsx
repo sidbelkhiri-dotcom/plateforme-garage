@@ -10,6 +10,7 @@ import Selecteur from "@/components/ui/Selecteur";
 import Bouton from "@/components/ui/Bouton";
 import MessageErreur from "@/components/ui/MessageErreur";
 import ChampsVehicule from "@/components/forms/ChampsVehicule";
+import { formatTelephone } from "@/lib/texte";
 
 type Valeurs = {
   nom: string;
@@ -134,7 +135,7 @@ export default function PageDemandeRendezVous({ params }: { params: { slug: stri
         error: error
           ? {
               message: garage.telephone
-                ? `La demande n'a pas pu être envoyée. Appelez directement le garage au ${garage.telephone}.`
+                ? `La demande n'a pas pu être envoyée. Appelez directement le garage au ${formatTelephone(garage.telephone)}.`
                 : "La demande n'a pas pu être envoyée. Réessayez dans un instant.",
             }
           : null,
@@ -170,7 +171,7 @@ export default function PageDemandeRendezVous({ params }: { params: { slug: stri
           href={`tel:${garage.telephone.replace(/[^\d+]/g, "")}`}
           className="inline-flex items-center gap-1.5 font-semibold text-mf-blue-hover hover:text-mf-blue min-h-[44px] sm:min-h-0"
         >
-          <Phone className="w-4 h-4 shrink-0" /> {garage.telephone}
+          <Phone className="w-4 h-4 shrink-0" /> {formatTelephone(garage.telephone)}
         </a>
       )}
     </div>

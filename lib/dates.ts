@@ -35,6 +35,21 @@ export function formatDateLong(isoDate: string): string {
   }).format(new Date(Date.UTC(year, month - 1, day, 12)));
 }
 
+/**
+ * Date compacte pour les listes, ex. « 4 sept. 2026 ». Les listes
+ * affichaient la valeur brute de la base, « 2026-09-04 » : exacte, mais
+ * c'est un format de machine, pas celui qu'on lit au comptoir.
+ */
+export function formatDateCourte(isoDate: string): string {
+  const [year, month, day] = isoDate.slice(0, 10).split("-").map(Number);
+  return new Intl.DateTimeFormat("fr-CA", {
+    timeZone: TIME_ZONE,
+    year: "numeric",
+    month: "short",
+    day: "numeric",
+  }).format(new Date(Date.UTC(year, month - 1, day, 12)));
+}
+
 /** Affichage court d'une heure 'HH:mm:ss' ou 'HH:mm', ex. « 9 h 30 ». */
 export function formatTimeShort(time: string): string {
   const [h, m] = time.split(":");

@@ -46,6 +46,7 @@ module.exports = {
       fontFamily: {
         sans: ["var(--font-plex)", "system-ui", "sans-serif"],
         display: ["var(--font-archivo)", "var(--font-plex)", "system-ui", "sans-serif"],
+        mono: ["var(--font-plex-mono)", "ui-monospace", "SFMono-Regular", "Menlo", "monospace"],
       },
       // La charte prescrit un corps de texte entre 15 et 17 px. `text-sm`
       // est la taille dominante de l'application — plus de deux cents

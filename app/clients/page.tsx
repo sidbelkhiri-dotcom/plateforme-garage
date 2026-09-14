@@ -12,6 +12,7 @@ import EtatVide from "@/components/ui/EtatVide";
 import Chargement from "@/components/ui/Chargement";
 import FormulaireClient from "@/components/forms/FormulaireClient";
 import { useProfil } from "@/lib/useProfil";
+import { formatTelephone, pluriel } from "@/lib/texte";
 
 type ClientRow = {
   id: string;
@@ -107,7 +108,7 @@ export default function ClientsPage() {
       rendu: (c) =>
         c.telephone ? (
           <span className="flex items-center gap-1.5 justify-end md:justify-start">
-            <Phone className="w-3.5 h-3.5 text-mf-text-3" /> {c.telephone}
+            <Phone className="w-3.5 h-3.5 text-mf-text-3" /> {formatTelephone(c.telephone)}
           </span>
         ) : (
           "—"
@@ -143,7 +144,7 @@ export default function ClientsPage() {
       <div className="flex items-center justify-between mb-4 flex-wrap gap-3">
         <div>
           <h1 className="text-[1.625rem] font-display font-bold uppercase tracking-[0.01em] text-mf-text">Clients</h1>
-          <p className="text-sm text-mf-text-2">{clients.length} client(s)</p>
+          <p className="text-sm text-mf-text-2">{pluriel(clients.length, "client")}</p>
         </div>
         {peutGererClients && (
           <Bouton onClick={() => setShowAdd(true)}>

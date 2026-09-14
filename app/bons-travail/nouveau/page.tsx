@@ -8,9 +8,11 @@ import Champ from "@/components/ui/Champ";
 import Selecteur from "@/components/ui/Selecteur";
 import Bouton from "@/components/ui/Bouton";
 import Badge from "@/components/ui/Badge";
+import { statutBon } from "@/lib/statuts";
 import MessageErreur from "@/components/ui/MessageErreur";
 import Chargement from "@/components/ui/Chargement";
 import { todayLocal, formatDateLong } from "@/lib/dates";
+import { formatTelephone } from "@/lib/texte";
 
 type Client = { id: string; nom: string; telephone: string | null; taux_horaire: number | null };
 type Vehicule = { id: string; marque: string; modele: string | null; annee: number | null };
@@ -21,16 +23,6 @@ type BonHistorique = {
   vehicule_id: string | null;
   ouvert_le: string;
   plainte_client: string;
-};
-
-const LABEL_STATUT: Record<string, string> = {
-  evaluation: "Évaluation",
-  autorise: "Autorisé",
-  en_cours: "En cours",
-  attente_piece: "Attente pièce",
-  termine: "Terminé",
-  facture: "Facturé",
-  annule: "Annulé",
 };
 
 export default function NouveauBonTravailPage() {
@@ -211,7 +203,7 @@ function NouveauBonTravailContenu() {
                     onClick={() => setClientSelectionne(c)}
                     className="w-full text-left px-3 py-2.5 text-sm text-mf-text hover:bg-mf-surface-2 min-h-[44px]"
                   >
-                    {c.nom} {c.telephone && <span className="text-mf-text-3">· {c.telephone}</span>}
+                    {c.nom} {c.telephone && <span className="text-mf-text-3">· {formatTelephone(c.telephone)}</span>}
                   </button>
                 ))
               )}
@@ -242,9 +234,7 @@ function NouveauBonTravailContenu() {
                       {v && <span className="text-xs text-mf-text-3 ml-2">{v.marque} {v.modele}</span>}
                       <span className="text-xs text-mf-text-3 ml-2">{formatDateLong(b.ouvert_le)}</span>
                     </span>
-                    <Badge tone={b.statut === "termine" || b.statut === "facture" ? "emeraude" : b.statut === "annule" ? "rouge" : "ardoise"}>
-                      {LABEL_STATUT[b.statut] ?? b.statut}
-                    </Badge>
+                    <Badge tone={statutBon(b.statut).ton}>{statutBon(b.statut).label}</Badge>
                   </div>
                   <p className="text-xs text-mf-text-2 mt-0.5 truncate">{b.plainte_client}</p>
                 </a>

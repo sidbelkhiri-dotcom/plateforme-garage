@@ -18,6 +18,7 @@ import { useProfil } from "@/lib/useProfil";
 import { formatDateLong } from "@/lib/dates";
 import { BUCKET_VEHICULES_STOCK, urlPhotoVehiculeStock } from "@/lib/vehiculesStockPhotos";
 import Lightbox from "@/components/ui/Lightbox";
+import { pluriel } from "@/lib/texte";
 
 type Statut = "disponible" | "reserve" | "vendu";
 
@@ -114,7 +115,7 @@ export default function VehiculesStockPage() {
               setItemGalerie(v);
             }}
             className="block w-14 h-10 shrink-0"
-            aria-label={`Voir les ${v.photos.length} photo(s)`}
+            aria-label={`Voir ${pluriel(v.photos.length, "photo")}`}
           >
             <img
               src={urlPhotoVehiculeStock(supabase, v.photos[0])}
@@ -264,7 +265,7 @@ export default function VehiculesStockPage() {
       <div className="flex items-center justify-between mb-4 flex-wrap gap-3">
         <div>
           <h1 className="text-[1.625rem] font-display font-bold uppercase tracking-[0.01em] text-mf-text">Véhicules en stock</h1>
-          <p className="text-sm text-mf-text-2">{items.length} véhicule(s)</p>
+          <p className="text-sm text-mf-text-2">{pluriel(items.length, "véhicule")}</p>
         </div>
         {peutGererClients && (
           <Bouton onClick={() => setShowAdd(true)}>
@@ -339,7 +340,7 @@ export default function VehiculesStockPage() {
       {itemGalerie && (
         <Modale
           large
-          titre={`${itemGalerie.marque} ${itemGalerie.modele} — ${itemGalerie.photos.length} photo(s)`}
+          titre={`${itemGalerie.marque} ${itemGalerie.modele} — ${pluriel(itemGalerie.photos.length, "photo")}`}
           surFermeture={() => setItemGalerie(null)}
         >
           <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">

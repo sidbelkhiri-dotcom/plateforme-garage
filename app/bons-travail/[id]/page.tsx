@@ -26,7 +26,7 @@ import {
 } from "lucide-react";
 import Modale from "@/components/ui/Modale";
 import Bouton from "@/components/ui/Bouton";
-import Badge, { type ToneBadge } from "@/components/ui/Badge";
+import Badge from "@/components/ui/Badge";
 import Chargement from "@/components/ui/Chargement";
 import MessageErreur from "@/components/ui/MessageErreur";
 import Champ from "@/components/ui/Champ";
@@ -34,8 +34,9 @@ import FormulaireLigneBon, { ETATS_PIECE, type EtatPiece, type TypeLigne } from 
 import { useProfil } from "@/lib/useProfil";
 import { useToast } from "@/components/ui/ToastProvider";
 import { todayLocal, formatDateLong } from "@/lib/dates";
+import { STATUT_BON, type StatutBon } from "@/lib/statuts";
 
-type Statut = "evaluation" | "autorise" | "en_cours" | "attente_piece" | "termine" | "facture" | "annule";
+type Statut = StatutBon;
 
 type Bon = {
   id: string;
@@ -77,26 +78,6 @@ type Evaluation = {
   type: "initiale" | "complementaire";
   accepte_le: string;
   accepte_par: { nom: string } | null;
-};
-
-const LABEL_STATUT: Record<Statut, string> = {
-  evaluation: "Évaluation",
-  autorise: "Autorisé",
-  en_cours: "En cours",
-  attente_piece: "Attente pièce",
-  termine: "Terminé",
-  facture: "Facturé",
-  annule: "Annulé",
-};
-
-const TON_STATUT: Record<Statut, ToneBadge> = {
-  evaluation: "ardoise",
-  autorise: "ambre",
-  en_cours: "ambre",
-  attente_piece: "rouge",
-  termine: "emeraude",
-  facture: "emeraude",
-  annule: "rouge",
 };
 
 const LABEL_ETAT: Record<EtatPiece, string> = {
@@ -395,7 +376,7 @@ export default function BonTravailDetailPage() {
             >
               <Camera className="w-3.5 h-3.5" /> Inspection
             </Link>
-            <Badge tone={TON_STATUT[bon.statut]}>{LABEL_STATUT[bon.statut]}</Badge>
+            <Badge tone={STATUT_BON[bon.statut].ton}>{STATUT_BON[bon.statut].label}</Badge>
           </div>
         </div>
         <div className="flex flex-wrap gap-x-6 gap-y-1 mt-2 text-sm text-mf-text-2">
@@ -460,7 +441,7 @@ export default function BonTravailDetailPage() {
             <Row label="Pièces" value={formatMoney(totalPieces)} />
             <Row label="Main-d'œuvre" value={formatMoney(totalMainOeuvre)} />
             <div className="border-t border-mf-border mt-2 pt-2">
-              <Row label="Total HT" value={formatMoney(totalHt)} bold />
+              <Row label="Total avant taxes" value={formatMoney(totalHt)} bold />
             </div>
             {bon.montant_evaluation != null && (
               <div className="border-t border-mf-border mt-2 pt-2">
@@ -534,7 +515,7 @@ export default function BonTravailDetailPage() {
           empty:hidden : dans certains états et pour certains rôles aucun
           bouton ne s'affiche, et React rend alors un conteneur vide. Sans
           cette règle, une barre grise vide resterait collée en bas. */}
-      <div className="sticky bottom-0 z-10 -mx-6 mt-2 px-6 py-3 bg-mf-bg border-t border-mf-border flex flex-wrap gap-2 empty:hidden">
+      <div className="sticky bottom-0 z-10 -mx-6 mt-2 px-6 py-3 bg-mf-bg border-t border-mf-border flex flex-wrap gap-2 empty:hidden [&>*]:flex-1 [&>*]:basis-full sm:[&>*]:flex-none sm:[&>*]:basis-auto">
         {bon.statut === "evaluation" && peutAutoriser && (
           <>
             <Bouton onClick={accepterEvaluation} enEnvoi={busy}>
@@ -675,11 +656,11 @@ export default function BonTravailDetailPage() {
             onChange={(e) => setLibelleFacture(e.target.value)}
           />
           <p className="text-xs text-mf-text-3 mt-1 mb-3">
-            Juste pour identifier cette facture toi-même — n'affecte ni le calcul ni les taxes.
+            Pour retrouver cette facture vous-même — n'affecte ni le calcul ni les taxes.
           </p>
           <div className="bg-mf-surface-3 rounded-mf-sm p-3 text-sm">
             <div className="flex justify-between text-mf-text-2">
-              <span>Total HT</span>
+              <span>Total avant taxes</span>
               <span className="font-mono text-mf-text">{formatMoney(totalHt)}</span>
             </div>
             <p className="text-xs text-mf-text-3 mt-2">TPS et TVQ calculées aux taux courants (Paramètres).</p>

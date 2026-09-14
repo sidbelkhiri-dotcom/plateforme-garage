@@ -7,6 +7,7 @@ import BoutonEnvoyerEvaluation from "@/components/BoutonEnvoyerEvaluation";
 import Link from "next/link";
 import { ArrowLeft } from "lucide-react";
 import { montantTaxe, formatTaux } from "@/lib/taxes";
+import { formatTelephone } from "@/lib/texte";
 
 const LABEL_ETAT: Record<string, string> = {
   neuve: "Neuve",
@@ -107,7 +108,7 @@ export default async function EvaluationEcritePage({ params }: { params: { id: s
               {garage?.nom ?? "Votre garage"}
             </div>
             {garage?.adresse && <div className="text-sm text-stone-600">{garage.adresse}</div>}
-            {garage?.telephone && <div className="text-sm text-stone-600">{garage.telephone}</div>}
+            {garage?.telephone && <div className="text-sm text-stone-600">{formatTelephone(garage.telephone)}</div>}
             {garage?.courriel && <div className="text-sm text-stone-600">{garage.courriel}</div>}
             {/* Un numéro par ligne. Sur une seule ligne séparée par « · », la
                 paire se coupait au hasard de la largeur. */}
@@ -177,7 +178,7 @@ export default async function EvaluationEcritePage({ params }: { params: { id: s
             <div className="text-sm">
               <div className="font-semibold">{client?.nom ?? "—"}</div>
               {client?.adresse && <div>{client.adresse}</div>}
-              {client?.telephone && <div>{client.telephone}</div>}
+              {client?.telephone && <div>{formatTelephone(client.telephone)}</div>}
               {client?.email && <div>{client.email}</div>}
             </div>
           </div>

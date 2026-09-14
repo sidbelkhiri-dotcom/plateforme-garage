@@ -9,6 +9,7 @@ import Modale from "@/components/ui/Modale";
 import ModaleConfirmation from "@/components/ui/ModaleConfirmation";
 import Bouton from "@/components/ui/Bouton";
 import Badge from "@/components/ui/Badge";
+import { statutBon } from "@/lib/statuts";
 import Chargement from "@/components/ui/Chargement";
 import EtatVide from "@/components/ui/EtatVide";
 import FormulaireClient from "@/components/forms/FormulaireClient";
@@ -16,6 +17,7 @@ import FormulaireVehicule from "@/components/forms/FormulaireVehicule";
 import { useProfil } from "@/lib/useProfil";
 import { formatDateLong } from "@/lib/dates";
 import { urlSigneePhotoFacturePiece } from "@/lib/facturesPiecesPhotos";
+import { formatTelephone, pluriel } from "@/lib/texte";
 
 type Client = {
   id: string;
@@ -54,15 +56,6 @@ type PieceGarantie = {
   photos_facture: string[];
   bon_travail_id: string;
   bon_numero: string;
-};
-
-const LABEL_STATUT: Record<string, string> = {
-  evaluation: "Évaluation",
-  autorise: "Autorisé",
-  en_cours: "En cours",
-  termine: "Terminé",
-  facture: "Facturé",
-  annule: "Annulé",
 };
 
 export default function ClientDetailPage() {
@@ -161,7 +154,7 @@ export default function ClientDetailPage() {
                 <Pencil className="w-3.5 h-3.5" /> Modifier
               </Bouton>
               {estAdmin && (
-                <Bouton variante="danger" onClick={() => setShowSupprimerClient(true)}>
+                <Bouton variante="danger-discret" onClick={() => setShowSupprimerClient(true)}>
                   <Trash2 className="w-3.5 h-3.5" /> Supprimer
                 </Bouton>
               )}
@@ -171,7 +164,7 @@ export default function ClientDetailPage() {
         <div className="flex flex-wrap gap-x-6 gap-y-1 mt-3 text-sm text-mf-text-2">
           {client.telephone && (
             <span className="flex items-center gap-1.5">
-              <Phone className="w-3.5 h-3.5 text-mf-text-3" /> {client.telephone}
+              <Phone className="w-3.5 h-3.5 text-mf-text-3" /> {formatTelephone(client.telephone)}
             </span>
           )}
           {client.email && (
@@ -292,9 +285,7 @@ export default function ClientDetailPage() {
                     {v && <span className="text-xs text-mf-text-3 ml-2">{v.marque} {v.modele}</span>}
                     <div className="text-xs text-mf-text-3">{formatDateLong(b.ouvert_le)}</div>
                   </div>
-                  <Badge tone={b.statut === "termine" ? "emeraude" : b.statut === "annule" ? "rouge" : "ardoise"}>
-                    {LABEL_STATUT[b.statut] ?? b.statut}
-                  </Badge>
+                  <Badge tone={statutBon(b.statut).ton}>{statutBon(b.statut).label}</Badge>
                 </Link>
               );
             })}
@@ -406,7 +397,7 @@ export default function ClientDetailPage() {
       {showSupprimerClient && (
         <ModaleConfirmation
           titre="Supprimer ce client ?"
-          message={`${client.nom} et ${vehicules.length} véhicule(s) associé(s) seront supprimés définitivement.`}
+          message={vehicules.length ? `${client.nom} et ${pluriel(vehicules.length, "véhicule associé", "véhicules associés")} seront supprimés définitivement.` : `${client.nom} sera supprimé définitivement.`}
           surConfirmation={async () => {
             const { error } = await supabase.from("clients").delete().eq("id", client.id);
             if (!error) router.push("/clients");

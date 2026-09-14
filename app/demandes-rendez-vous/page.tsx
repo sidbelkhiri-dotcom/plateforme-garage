@@ -14,6 +14,7 @@ import MessageErreur from "@/components/ui/MessageErreur";
 import Chargement from "@/components/ui/Chargement";
 import EtatVide from "@/components/ui/EtatVide";
 import { formatDateLong, todayLocal } from "@/lib/dates";
+import { formatTelephone, pluriel } from "@/lib/texte";
 
 type Demande = {
   id: string;
@@ -83,7 +84,7 @@ export default function PageDemandesRendezVous() {
           Demandes de rendez-vous
         </h1>
         <p className="text-sm text-mf-text-2">
-          {demandes.length} demande(s) en attente · reçues depuis le site web
+          {pluriel(demandes.length, "demande")} en attente · reçues depuis le site web
         </p>
       </div>
 
@@ -107,7 +108,7 @@ export default function PageDemandesRendezVous() {
                 <div className="text-xs text-mf-text-3 flex items-center gap-3 flex-wrap mt-0.5">
                   {d.telephone && (
                     <span className="flex items-center gap-1">
-                      <Phone className="w-3 h-3" /> {d.telephone}
+                      <Phone className="w-3 h-3" /> {formatTelephone(d.telephone)}
                     </span>
                   )}
                   {d.courriel && (

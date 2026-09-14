@@ -1,8 +1,10 @@
-// Couleur sémantique — voir BRAND.md. rouge = impayé / stock bas /
-// dépassement d'évaluation · émeraude = sain / terminé · ambre = action ·
-// ardoise/stone = neutre.
+// Couleur sémantique — voir BRAND.md et lib/statuts.ts. rouge = problème
+// (impayé, stock bas, dépassement) · ambre = en attente de quelqu'un ·
+// bleu = à l'atelier, en cours · émeraude = terminé / payé ·
+// ardoise/stone = neutre, clos.
 const TONES = {
   rouge: "bg-mf-red-soft text-mf-red",
+  bleu: "bg-mf-blue-soft text-mf-blue",
   emeraude: "bg-mf-success-soft text-mf-success",
   ambre: "bg-mf-warning-soft text-mf-warning",
   ardoise: "bg-mf-surface-3 text-mf-text-2",

@@ -7,6 +7,11 @@ const VARIANTES = {
   primaire: "bg-mf-blue hover:bg-mf-blue-hover text-white hover:-translate-y-px",
   secondaire: "bg-transparent hover:bg-mf-surface-2 text-mf-text border border-mf-border-strong",
   danger: "bg-mf-red hover:bg-mf-red-hover text-white",
+  // Porte d'entrée d'une suppression (en-tête de fiche) : le rouge plein
+  // reste réservé au bouton de la confirmation, qui est le geste
+  // irréversible. En tête de page, un aplat rouge à côté de « Modifier »
+  // attirait l'œil sur l'action qu'on fait le moins souvent.
+  "danger-discret": "bg-transparent text-mf-red border border-mf-border-strong hover:border-mf-red hover:bg-mf-red-soft",
   discret: "text-mf-text-2 hover:text-mf-text hover:bg-mf-surface-2",
 } as const;
 

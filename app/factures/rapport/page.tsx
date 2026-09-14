@@ -4,6 +4,7 @@ import { createClient } from "@/lib/supabase/server";
 import { todayLocal, formatDateLong } from "@/lib/dates";
 import BoutonImprimer from "@/components/BoutonImprimer";
 import BoutonExportComptable from "@/components/BoutonExportComptable";
+import { formatTelephone, pluriel } from "@/lib/texte";
 
 // La TPS et la TVQ se déclarent le plus souvent par trimestre, rarement
 // par année civile. Un rapport uniquement annuel obligeait le comptable
@@ -181,7 +182,7 @@ export default async function RapportPage({
               {garage?.nom ?? "Votre garage"}
             </div>
             {garage?.adresse && <div className="text-sm text-stone-600">{garage.adresse}</div>}
-            {garage?.telephone && <div className="text-sm text-stone-600">{garage.telephone}</div>}
+            {garage?.telephone && <div className="text-sm text-stone-600">{formatTelephone(garage.telephone)}</div>}
             {(garage?.tps || garage?.tvq) && (
               <div className="text-xs text-stone-500 mt-1">
                 {garage?.tps && <>TPS : {garage.tps} </>}
@@ -201,41 +202,45 @@ export default async function RapportPage({
           <p className="text-sm text-stone-500 py-8 text-center">Aucune facture pour cette période ({intitule}).</p>
         ) : (
           <>
-            <table className="w-full text-sm mb-4">
+            {/* Neuf colonnes : sur un écran étroit, le tableau défile dans son
+                cadre plutôt que d'élargir toute la page. */}
+            <div className="overflow-x-auto mb-4">
+            <table className="w-full text-sm">
               <thead>
                 <tr className="border-b border-stone-300 text-left text-[11px] uppercase tracking-wide text-stone-500">
                   <th className="py-2">Numéro</th>
                   <th className="py-2">Date</th>
                   <th className="py-2">Client</th>
-                  <th className="py-2 text-right">Total HT</th>
-                  <th className="py-2 text-right">TPS</th>
-                  <th className="py-2 text-right">TVQ</th>
-                  <th className="py-2 text-right">Total TTC</th>
-                  <th className="py-2">Libellé</th>
-                  <th className="py-2 text-right">Statut</th>
+                  <th className="py-2 pl-3 text-right whitespace-nowrap">Avant taxes</th>
+                  <th className="py-2 pl-3 text-right">TPS</th>
+                  <th className="py-2 pl-3 text-right">TVQ</th>
+                  <th className="py-2 pl-3 text-right">Total</th>
+                  <th className="py-2 pl-4">Libellé</th>
+                  <th className="py-2 pl-3 text-right">Statut</th>
                 </tr>
               </thead>
               <tbody>
                 {toutes.map((f) => (
                   <tr key={f.id} className={`border-b border-stone-100 ${f.statut === "annulee" ? "text-stone-400" : ""}`}>
-                    <td className="py-1.5 font-mono">{f.numero}</td>
-                    <td className="py-1.5">{formatDateLong(f.date)}</td>
-                    <td className="py-1.5">{f.client_id ? nomsClients[f.client_id] ?? "—" : "—"}</td>
-                    <td className="py-1.5 text-right">{formatMoney(f.total_ht)}</td>
-                    <td className="py-1.5 text-right">{formatMoney(f.montant_tps)}</td>
-                    <td className="py-1.5 text-right">{formatMoney(f.montant_tvq)}</td>
-                    <td className="py-1.5 text-right">{formatMoney(f.total_ttc)}</td>
-                    <td className="py-1.5 text-stone-600">{f.libelle ?? ""}</td>
-                    <td className="py-1.5 text-right">{LABEL_STATUT[f.statut] ?? f.statut}</td>
+                    <td className="py-1.5 font-mono whitespace-nowrap">{f.numero}</td>
+                    <td className="py-1.5 pl-3 whitespace-nowrap">{formatDateLong(f.date)}</td>
+                    <td className="py-1.5 pl-3">{f.client_id ? nomsClients[f.client_id] ?? "—" : "—"}</td>
+                    <td className="py-1.5 pl-3 text-right font-mono tabular-nums whitespace-nowrap">{formatMoney(f.total_ht)}</td>
+                    <td className="py-1.5 pl-3 text-right font-mono tabular-nums whitespace-nowrap">{formatMoney(f.montant_tps)}</td>
+                    <td className="py-1.5 pl-3 text-right font-mono tabular-nums whitespace-nowrap">{formatMoney(f.montant_tvq)}</td>
+                    <td className="py-1.5 pl-3 text-right font-mono tabular-nums whitespace-nowrap">{formatMoney(f.total_ttc)}</td>
+                    <td className="py-1.5 pl-4 text-stone-600">{f.libelle ?? ""}</td>
+                    <td className="py-1.5 pl-3 text-right whitespace-nowrap">{LABEL_STATUT[f.statut] ?? f.statut}</td>
                   </tr>
                 ))}
               </tbody>
             </table>
+            </div>
 
             <div className="flex justify-end">
               <div className="w-72 text-sm">
                 <div className="flex justify-between py-0.5">
-                  <span className="text-stone-500">Total HT</span>
+                  <span className="text-stone-500">Avant taxes</span>
                   <span className="font-mono">{formatMoney(totaux.ht)}</span>
                 </div>
                 <div className="flex justify-between py-0.5">
@@ -247,7 +252,7 @@ export default async function RapportPage({
                   <span className="font-mono">{formatMoney(totaux.tvq)}</span>
                 </div>
                 <div className="flex justify-between font-bold text-base border-t border-stone-300 pt-2 mt-1">
-                  <span>Total TTC</span>
+                  <span>Total</span>
                   <span className="font-mono">{formatMoney(totaux.ttc)}</span>
                 </div>
                 <div className="flex justify-between py-0.5 mt-1">
@@ -262,8 +267,8 @@ export default async function RapportPage({
             </div>
 
             <p className="text-xs text-stone-400 mt-6 border-t border-stone-100 pt-4">
-              {toutes.length} facture(s) émise(s) · {intitule}
-              {toutes.length !== actives.length && <> · {toutes.length - actives.length} annulée(s), exclue(s) des totaux</>}.
+              {pluriel(toutes.length, "facture émise", "factures émises")} · {intitule}
+              {toutes.length !== actives.length && <> · {pluriel(toutes.length - actives.length, "annulée, exclue", "annulées, exclues")} des totaux</>}.
             </p>
           </>
         )}
