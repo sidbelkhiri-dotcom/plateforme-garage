@@ -300,13 +300,17 @@ try {
   // suffit donc pas — il faut comparer la liste entière à ce qu'on
   // attend, pour que l'ouverture d'une porte reste un geste conscient.
   //
-  // Les six attendues, et pourquoi chacune :
+  // Les neuf attendues, et pourquoi chacune :
   //   obtenir_inspection_publique, repondre_inspection_point
   //     Les deux portes de l'inspection — l'objet même de cette suite.
   //   obtenir_garage_public
   //     La fiche publique d'un garage par son slug, pour la prise de
   //     rendez-vous en ligne. Ne renvoie que nom, adresse, téléphone,
   //     et seulement pour un garage actif.
+  //   deposer_demande_accueil, deposer_demande_rendez_vous
+  //     Les deux seules portes d'écriture des formulaires publics depuis la
+  //     migration 2026-10-14 : garage résolu par slug, champs validés,
+  //     fréquence limitée. Éprouvées par npm run anti-spam.
   //   est_role, est_admin_plateforme, garage_actuel, garage_operationnel
   //     Appelées par les politiques RLS, lesquelles s'évaluent avec les
   //     privilèges de l'appelant : les révoquer ferait échouer en
@@ -315,6 +319,7 @@ try {
   //     l'appelant, et pour un anonyme c'est null et false.
   const ATTENDUES = [
     "est_admin_plateforme", "est_role", "garage_actuel", "garage_operationnel",
+    "deposer_demande_accueil", "deposer_demande_rendez_vous",
     "obtenir_garage_public", "obtenir_inspection_publique", "repondre_inspection_point",
   ];
   const inventaire = await srv("rpc/fonctions_publiques", { method: "POST", body: "{}" })

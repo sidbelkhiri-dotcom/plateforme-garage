@@ -119,30 +119,31 @@ export default function PageDemandeRendezVous({ params }: { params: { slug: stri
       return;
     }
 
+    // Voir deposer_demande_rendez_vous() (migration 2026-10-14) : garage
+    // résolu par le slug, champs validés, fréquence limitée.
     const donnees = {
-      garage_id: garage.id,
-      nom: valeurs.nom.trim(),
-      telephone: valeurs.telephone.trim() || null,
-      courriel: valeurs.courriel.trim() || null,
-      marque: valeurs.marque || null,
-      modele: valeurs.modele || null,
-      annee: valeurs.annee ? Number(valeurs.annee) : null,
-      service: valeurs.service || null,
-      date_souhaitee: valeurs.dateSouhaitee || null,
+      nom: valeurs.nom,
+      telephone: valeurs.telephone,
+      courriel: valeurs.courriel,
+      marque: valeurs.marque,
+      modele: valeurs.modele,
+      annee: valeurs.annee,
+      service: valeurs.service,
+      date_souhaitee: valeurs.dateSouhaitee,
       plage: valeurs.plage,
-      message: valeurs.message.trim() || null,
+      message: valeurs.message,
       consentement_communications: valeurs.consentement,
     };
     const reussi = await soumettre(async () => {
-      const { error } = await supabase.from("demandes_rendez_vous").insert(donnees);
+      const { error } = await supabase.rpc("deposer_demande_rendez_vous", { p_slug: params.slug, p_donnees: donnees });
+      if (!error) return { error: null };
+      if (error.code === "P0001") return { error: { message: error.message } };
       return {
-        error: error
-          ? {
-              message: garage.telephone
-                ? `La demande n'a pas pu être envoyée. Appelez directement le garage au ${formatTelephone(garage.telephone)}.`
-                : "La demande n'a pas pu être envoyée. Réessayez dans un instant.",
-            }
-          : null,
+        error: {
+          message: garage.telephone
+            ? `La demande n'a pas pu être envoyée. Appelez directement le garage au ${formatTelephone(garage.telephone)}.`
+            : "La demande n'a pas pu être envoyée. Réessayez dans un instant.",
+        },
       };
     });
     if (reussi) setEnvoye(true);
@@ -219,21 +220,21 @@ export default function PageDemandeRendezVous({ params }: { params: { slug: stri
           <div className="mt-2">{coordonnees}</div>
         </header>
 
-        <Champ label="Nom" required autoComplete="name" value={valeurs.nom} onChange={(e) => definir("nom", e.target.value)} />
+        <Champ label="Nom" required autoComplete="name" value={valeurs.nom} maxLength={120} onChange={(e) => definir("nom", e.target.value)} />
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
           <Champ
             label="Téléphone"
             type="tel"
             autoComplete="tel"
             value={valeurs.telephone}
-            onChange={(e) => definir("telephone", e.target.value)}
+            maxLength={30} onChange={(e) => definir("telephone", e.target.value)}
           />
           <Champ
             label="Courriel"
             type="email"
             autoComplete="email"
             value={valeurs.courriel}
-            onChange={(e) => definir("courriel", e.target.value)}
+            maxLength={200} onChange={(e) => definir("courriel", e.target.value)}
           />
         </div>
         {erreurContact && <MessageErreur>{erreurContact}</MessageErreur>}
@@ -296,7 +297,7 @@ export default function PageDemandeRendezVous({ params }: { params: { slug: stri
           <textarea
             rows={3}
             value={valeurs.message}
-            onChange={(e) => definir("message", e.target.value)}
+            maxLength={2000} onChange={(e) => definir("message", e.target.value)}
             placeholder="Ex. « bruit à l'avant en freinant depuis une semaine »"
             className="bg-mf-surface-3 border border-mf-border-strong px-3 py-2 text-sm text-mf-text focus:outline-none focus:border-mf-blue focus:ring-2 focus:ring-mf-blue-soft resize-none"
           />

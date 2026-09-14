@@ -12,7 +12,8 @@
     "fumee": "node scripts/fumee.mjs",
     "isolation": "node scripts/isolation.mjs",
     "inspection": "node scripts/inspection.mjs",
-    "conformite": "node scripts/conformite.mjs"
+    "conformite": "node scripts/conformite.mjs",
+    "anti-spam": "node scripts/anti-spam.mjs"
   },
   "dependencies": {
     "@supabase/ssr": "^0.5.1",

@@ -94,25 +94,35 @@ export default function PageAccueil({ params }: { params: { slug: string } }) {
   async function envoyer(e: React.FormEvent) {
     e.preventDefault();
     if (!garage) return;
+    // Le garage est désigné par son slug, jamais par un identifiant envoyé
+    // d'ici : deposer_demande_accueil() le résout, valide les champs et
+    // limite la fréquence (migration 2026-10-14).
     const donnees = {
-      garage_id: garage.id,
-      nom: valeurs.nom.trim(),
-      telephone: valeurs.telephone || null,
-      courriel: valeurs.courriel || null,
-      adresse: valeurs.adresse || null,
-      code_postal: valeurs.codePostal || null,
-      marque: valeurs.marque || null,
-      modele: valeurs.modele || null,
-      annee: valeurs.annee ? Number(valeurs.annee) : null,
-      plaque: null,
-      vin: valeurs.vin.trim() || null,
-      plainte: valeurs.plainte || null,
+      nom: valeurs.nom,
+      telephone: valeurs.telephone,
+      courriel: valeurs.courriel,
+      adresse: valeurs.adresse,
+      code_postal: valeurs.codePostal,
+      marque: valeurs.marque,
+      modele: valeurs.modele,
+      annee: valeurs.annee,
+      vin: valeurs.vin,
+      plainte: valeurs.plainte,
       consentement_communications: valeurs.consentement,
     };
     const reussi = await soumettre(async () => {
-      const { error } = await supabase.from("demandes_accueil").insert(donnees);
+      const { error } = await supabase.rpc("deposer_demande_accueil", { p_slug: params.slug, p_donnees: donnees });
       return {
-        error: error ? { message: "Une erreur est survenue. Adressez-vous directement au comptoir." } : null,
+        error: error
+          ? {
+              // P0001 : un refus rédigé pour le client (champ trop long,
+              // trop d'envois). Toute autre erreur reste générique.
+              message:
+                error.code === "P0001"
+                  ? error.message
+                  : "Une erreur est survenue. Adressez-vous directement au comptoir.",
+            }
+          : null,
       };
     });
     if (reussi) setEnvoye(true);
@@ -168,21 +178,21 @@ export default function PageAccueil({ params }: { params: { slug: string } }) {
           </p>
         </div>
 
-        <Champ label="Nom" required autoComplete="name" value={valeurs.nom} onChange={(e) => definir("nom", e.target.value)} />
+        <Champ label="Nom" required autoComplete="name" value={valeurs.nom} maxLength={120} onChange={(e) => definir("nom", e.target.value)} />
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
           <Champ
             label="Téléphone"
             type="tel"
             autoComplete="tel"
             value={valeurs.telephone}
-            onChange={(e) => definir("telephone", e.target.value)}
+            maxLength={30} onChange={(e) => definir("telephone", e.target.value)}
           />
           <Champ
             label="Courriel"
             type="email"
             autoComplete="email"
             value={valeurs.courriel}
-            onChange={(e) => definir("courriel", e.target.value)}
+            maxLength={200} onChange={(e) => definir("courriel", e.target.value)}
           />
         </div>
 
@@ -191,14 +201,14 @@ export default function PageAccueil({ params }: { params: { slug: string } }) {
             label="Adresse"
             autoComplete="street-address"
             value={valeurs.adresse}
-            onChange={(e) => definir("adresse", e.target.value)}
+            maxLength={200} onChange={(e) => definir("adresse", e.target.value)}
           />
           <Champ
             label="Code postal"
             autoComplete="postal-code"
             autoCapitalize="characters"
             value={valeurs.codePostal}
-            onChange={(e) => definir("codePostal", e.target.value)}
+            maxLength={10} onChange={(e) => definir("codePostal", e.target.value)}
           />
         </div>
 
@@ -242,7 +252,7 @@ export default function PageAccueil({ params }: { params: { slug: string } }) {
           <textarea
             rows={3}
             value={valeurs.plainte}
-            onChange={(e) => definir("plainte", e.target.value)}
+            maxLength={2000} onChange={(e) => definir("plainte", e.target.value)}
             placeholder="Ex. « ça fait un bruit au freinage »"
             className="bg-mf-surface-3 border border-mf-border-strong rounded-mf-sm px-3 py-2 text-sm text-mf-text focus:outline-none focus:border-mf-blue focus:ring-2 focus:ring-mf-blue-soft resize-none"
           />
