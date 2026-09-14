@@ -122,8 +122,9 @@ export default async function ConfidentialiteGarage({ params }: { params: { slug
                 renseignements pour le garage et ne les utilise pas pour son propre compte.
               </li>
               <li>
-                Les fournisseurs techniques de Garagenda (hébergement des données, envoi des courriels et des textos). <strong>Certains sont situés à l&apos;extérieur du Québec</strong> ; ils sont liés
-                par contrat à des mesures de sécurité.
+                Les fournisseurs techniques de Garagenda. Vos renseignements sont hébergés à Montréal ; l&apos;envoi
+                des courriels et des textos passe par des fournisseurs <strong>situés à l&apos;extérieur du Québec</strong>,
+                qui ne reçoivent que le message à transmettre et sont liés par contrat à des mesures de sécurité.
               </li>
             </Liste>
             <p>Vos renseignements ne sont ni vendus ni loués.</p>

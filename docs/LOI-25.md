@@ -45,10 +45,10 @@ Garagenda doit lui en donner les moyens, et tenir ses propres obligations.
 2. **Évaluation des facteurs relatifs à la vie privée (EFVP)** pour chaque
    prestataire hors Québec (section 4). Obligatoire avant de communiquer des
    renseignements hors du Québec.
-3. **Région d'hébergement Supabase** — vérifier dans le tableau de bord
-   (Settings → General). Une région canadienne (`ca-central-1`) simplifie
-   l'EFVP ; le projet de production est à créer dans la bonne région dès le
-   départ, une migration de région étant coûteuse.
+3. **Région d'hébergement Supabase** — vérifié le 2026-09-14 : le projet de
+   développement est en `ca-central-1` (AWS Canada Centre, Montréal). **Créer le
+   projet de production dans la même région** : une migration de région est
+   coûteuse, et c'est ce qui garde la base au Québec.
 4. **Contrats avec les garages** — conditions d'utilisation qui décrivent
    Garagenda comme prestataire : finalités, confidentialité, sécurité, avis
    d'incident au garage, restitution et destruction à la fin du contrat.
@@ -68,7 +68,7 @@ contractuelles), et le régime juridique de l'État de destination.
 
 | Prestataire | Renseignements | Finalité | Lieu | Mesures | Évaluation |
 |---|---|---|---|---|---|
-| Supabase | Toutes les données (base, fichiers, comptes) | Hébergement | À vérifier | Chiffrement, RLS, DPA | À faire |
+| Supabase | Toutes les données (base, fichiers, comptes) | Hébergement | Montréal, Québec (AWS `ca-central-1`) ; entreprise et support hors Québec | Chiffrement, RLS, DPA | Données au Québec ; évaluer l'accès du support |
 | Vercel | Transit des requêtes, journaux | Hébergement de l'application | États-Unis (probable) | DPA | À faire |
 | Resend | Courriel et nom du destinataire, contenu des évaluations et factures | Envoi de courriels | États-Unis | DPA | À faire |
 | Twilio | Numéro de téléphone, texte du rappel | Envoi de textos | États-Unis | DPA | À faire |

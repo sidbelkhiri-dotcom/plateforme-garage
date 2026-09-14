@@ -93,8 +93,10 @@ export default function PolitiqueConfidentialite() {
               ))}
             </Liste>
             <p>
-              <strong>Certains de ces prestataires sont situés à l&apos;extérieur du Québec</strong>, notamment aux
-              États-Unis. Ces communications font l&apos;objet d&apos;une évaluation des facteurs relatifs à la vie
+              La base de données, qui contient l&apos;essentiel des renseignements, est hébergée à Montréal.{" "}
+              <strong>Les autres prestataires sont situés à l&apos;extérieur du Québec</strong>, notamment aux
+              États-Unis, et ne reçoivent que ce qu&apos;exige leur tâche (par exemple l&apos;adresse et le contenu
+              d&apos;un courriel à envoyer). Ces communications font l&apos;objet d&apos;une évaluation des facteurs relatifs à la vie
               privée, et chaque prestataire est lié par ses conditions contractuelles à des mesures de sécurité.
             </p>
           </Section>

@@ -25,7 +25,7 @@ export const ENTREPRISE = {
  * (voir docs/LOI-25.md).
  */
 export const PRESTATAIRES = [
-  { nom: "Supabase", role: "base de données, authentification et fichiers (photos)" },
+  { nom: "Supabase", role: "base de données, authentification et fichiers (photos), hébergés au Canada (région AWS Canada Centre, Montréal)" },
   { nom: "Vercel", role: "hébergement de l'application" },
   { nom: "Resend", role: "envoi des courriels (évaluations, factures, invitations)" },
   { nom: "Twilio", role: "envoi des textos (rappels de rendez-vous)" },
