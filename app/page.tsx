@@ -55,7 +55,7 @@ export default async function DashboardPage() {
   let nomGarage = "";
   if (profil?.role === "admin") {
     const [{ data: p }, { count: nbClients }, { count: nbBons }, { count: nbFactures }] = await Promise.all([
-      supabase.from("parametres").select("nom, adresse, telephone, tps, tvq, taux_horaire").single(),
+      supabase.from("parametres").select("nom, adresse, telephone, tps, tvq, taux_horaire, rprp_nom, rprp_courriel").single(),
       supabase.from("clients").select("id", { count: "exact", head: true }),
       supabase.from("bons_travail").select("id", { count: "exact", head: true }),
       supabase.from("factures").select("id", { count: "exact", head: true }),
@@ -83,6 +83,13 @@ export default async function DashboardPage() {
         href: "/parametres#coordonnees",
         faite: !!(p?.tps?.trim() && p?.tvq?.trim()),
         facultative: true,
+      },
+      {
+        cle: "rprp",
+        titre: "Désigner votre responsable des renseignements personnels",
+        aide: "Exigé par la Loi 25 : son nom et son courriel figurent sur l'avis de confidentialité de vos formulaires.",
+        href: "/parametres#confidentialite",
+        faite: !!(p?.rprp_nom?.trim() && p?.rprp_courriel?.trim()),
       },
       {
         cle: "client",

@@ -4,7 +4,7 @@ import { useCallback, useEffect, useState } from "react";
 import Link from "next/link";
 import { useParams, useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
-import { ArrowLeft, Plus, Car, Phone, Mail, MapPin, Pencil, Trash2, History, Camera, ShieldCheck, DollarSign } from "lucide-react";
+import { ArrowLeft, Plus, Car, Phone, Mail, MapPin, Pencil, Trash2, History, Camera, ShieldCheck, DollarSign, Download, BellRing, BellOff } from "lucide-react";
 import Modale from "@/components/ui/Modale";
 import ModaleConfirmation from "@/components/ui/ModaleConfirmation";
 import Bouton from "@/components/ui/Bouton";
@@ -15,7 +15,7 @@ import EtatVide from "@/components/ui/EtatVide";
 import FormulaireClient from "@/components/forms/FormulaireClient";
 import FormulaireVehicule from "@/components/forms/FormulaireVehicule";
 import { useProfil } from "@/lib/useProfil";
-import { formatDateLong } from "@/lib/dates";
+import { formatDateLong, formatDateHeure } from "@/lib/dates";
 import { urlSigneePhotoFacturePiece } from "@/lib/facturesPiecesPhotos";
 import { formatTelephone, pluriel } from "@/lib/texte";
 
@@ -28,6 +28,9 @@ type Client = {
   code_postal: string | null;
   taux_horaire: number | null;
   notes: string | null;
+  consentement_communications: boolean;
+  consentement_communications_le: string | null;
+  anonymise_le: string | null;
 };
 
 type Vehicule = {
@@ -75,6 +78,29 @@ export default function ClientDetailPage() {
   const [showAddVehicule, setShowAddVehicule] = useState(false);
   const [vehiculeEnEdition, setVehiculeEnEdition] = useState<Vehicule | null>(null);
   const [showSupprimerClient, setShowSupprimerClient] = useState(false);
+  const [nbFactures, setNbFactures] = useState(0);
+  const [exportEnCours, setExportEnCours] = useState(false);
+
+  // Réponse à une demande d'accès ou de portabilité (Loi 25) : tout ce que
+  // le garage détient sur ce client, en JSON — un format structuré et
+  // couramment utilisé, que le client peut ouvrir ou transmettre ailleurs.
+  async function exporterRenseignements() {
+    if (!client) return;
+    setExportEnCours(true);
+    const { data, error } = await supabase.rpc("exporter_client", { p_client_id: client.id });
+    setExportEnCours(false);
+    if (error || !data) {
+      window.alert(error?.message ?? "L'export a échoué.");
+      return;
+    }
+    const nomFichier = `renseignements-${client.nom.normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/[^a-z0-9]+/gi, "-").toLowerCase()}.json`;
+    const url = URL.createObjectURL(new Blob([JSON.stringify(data, null, 2)], { type: "application/json" }));
+    const lien = document.createElement("a");
+    lien.href = url;
+    lien.download = nomFichier;
+    lien.click();
+    URL.revokeObjectURL(url);
+  }
 
   const charger = useCallback(async () => {
     setChargement(true);
@@ -89,6 +115,8 @@ export default function ClientDetailPage() {
         .limit(10),
       supabase.from("cartes_fidelite").select("progression, offerts").eq("client_id", id).maybeSingle(),
     ]);
+    const { count } = await supabase.from("factures").select("id", { count: "exact", head: true }).eq("client_id", id);
+    setNbFactures(count ?? 0);
     setClient(c);
     setVehicules(v ?? []);
     setBons(b ?? []);
@@ -149,13 +177,16 @@ export default function ClientDetailPage() {
         <div className="flex items-start justify-between gap-3 flex-wrap">
           <h1 className="text-[1.625rem] font-display font-bold uppercase tracking-[0.01em] text-mf-text">{client.nom}</h1>
           {peutGererClients && (
-            <div className="flex gap-2">
+            <div className="flex flex-wrap gap-2">
               <Bouton variante="secondaire" onClick={() => setShowEditClient(true)}>
                 <Pencil className="w-3.5 h-3.5" /> Modifier
               </Bouton>
-              {estAdmin && (
+              <Bouton variante="secondaire" onClick={exporterRenseignements} enEnvoi={exportEnCours} title="Copie de tout ce que le garage détient sur ce client (Loi 25)">
+                <Download className="w-3.5 h-3.5" /> Exporter
+              </Bouton>
+              {estAdmin && !client.anonymise_le && (
                 <Bouton variante="danger-discret" onClick={() => setShowSupprimerClient(true)}>
-                  <Trash2 className="w-3.5 h-3.5" /> Supprimer
+                  <Trash2 className="w-3.5 h-3.5" /> Effacer
                 </Bouton>
               )}
             </div>
@@ -189,6 +220,24 @@ export default function ClientDetailPage() {
           )}
         </div>
         {client.notes && <p className="text-sm text-mf-text-2 mt-3 border-t border-mf-border pt-3">{client.notes}</p>}
+
+        {/* Loi 25 : l'état du consentement se voit avant d'écrire au client. */}
+        <p className="mt-3 border-t border-mf-border pt-3 text-xs text-mf-text-2 flex items-center gap-1.5">
+          {client.anonymise_le ? (
+            <>Renseignements personnels effacés le {formatDateHeure(client.anonymise_le)}, à la demande du client.</>
+          ) : client.consentement_communications ? (
+            <>
+              <BellRing className="w-3.5 h-3.5 text-mf-success" aria-hidden />
+              Accepte les rappels, demandes d&apos;avis et offres
+              {client.consentement_communications_le && ` depuis le ${formatDateHeure(client.consentement_communications_le)}`}.
+            </>
+          ) : (
+            <>
+              <BellOff className="w-3.5 h-3.5 text-mf-text-3" aria-hidden />
+              N&apos;a pas accepté les rappels, demandes d&apos;avis et offres.
+            </>
+          )}
+        </p>
 
         {carte && (carte.progression > 0 || carte.offerts > 0) && (
           <div className="mt-3 border-t border-mf-border pt-3 flex items-center gap-3 flex-wrap">
@@ -349,6 +398,7 @@ export default function ClientDetailPage() {
               codePostal: client.code_postal ?? "",
               tauxHoraire: client.taux_horaire != null ? String(client.taux_horaire) : "",
               notes: client.notes ?? "",
+              consentement: client.consentement_communications,
             }}
             onSucces={() => {
               setShowEditClient(false);
@@ -395,10 +445,28 @@ export default function ClientDetailPage() {
       )}
 
       {showSupprimerClient && (
+        // Deux effacements selon le dossier. Sans facture, rien n'oblige à
+        // conserver quoi que ce soit : la fiche et ses véhicules disparaissent.
+        // Avec factures, la loi fiscale impose de les garder six ans : la fiche
+        // est anonymisée, les factures conservent l'identité figée à leur émission.
         <ModaleConfirmation
-          titre="Supprimer ce client ?"
-          message={vehicules.length ? `${client.nom} et ${pluriel(vehicules.length, "véhicule associé", "véhicules associés")} seront supprimés définitivement.` : `${client.nom} sera supprimé définitivement.`}
+          titre={nbFactures > 0 ? "Effacer les renseignements de ce client ?" : "Supprimer ce client ?"}
+          message={
+            nbFactures > 0
+              ? `Nom, coordonnées, notes, plaques et NIV seront effacés, et ses rendez-vous à venir annulés. Ses ${pluriel(nbFactures, "facture")} ${nbFactures > 1 ? "restent conservées" : "reste conservée"}, comme l'exige la loi fiscale. Irréversible.`
+              : vehicules.length
+                ? `${client.nom} et ${pluriel(vehicules.length, "véhicule associé", "véhicules associés")} seront supprimés définitivement.`
+                : `${client.nom} sera supprimé définitivement.`
+          }
           surConfirmation={async () => {
+            if (nbFactures > 0) {
+              const { error } = await supabase.rpc("anonymiser_client", { p_client_id: client.id });
+              if (!error) {
+                setShowSupprimerClient(false);
+                charger();
+              }
+              return { error: error?.message ?? null };
+            }
             const { error } = await supabase.from("clients").delete().eq("id", client.id);
             if (!error) router.push("/clients");
             return { error: error?.message ?? null };

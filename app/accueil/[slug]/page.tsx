@@ -8,6 +8,7 @@ import Champ from "@/components/ui/Champ";
 import ChampsVehicule from "@/components/forms/ChampsVehicule";
 import Bouton from "@/components/ui/Bouton";
 import MessageErreur from "@/components/ui/MessageErreur";
+import { AvisCollecte, ConsentementCommunications } from "@/components/ConfidentialitePublique";
 
 type Valeurs = {
   nom: string;
@@ -20,6 +21,7 @@ type Valeurs = {
   annee: string;
   vin: string;
   plainte: string;
+  consentement: boolean;
 };
 
 const VALEURS_VIDES: Valeurs = {
@@ -33,6 +35,7 @@ const VALEURS_VIDES: Valeurs = {
   annee: "",
   vin: "",
   plainte: "",
+  consentement: false,
 };
 
 type GaragePublic = { id: string; nom: string };
@@ -104,6 +107,7 @@ export default function PageAccueil({ params }: { params: { slug: string } }) {
       plaque: null,
       vin: valeurs.vin.trim() || null,
       plainte: valeurs.plainte || null,
+      consentement_communications: valeurs.consentement,
     };
     const reussi = await soumettre(async () => {
       const { error } = await supabase.from("demandes_accueil").insert(donnees);
@@ -246,10 +250,13 @@ export default function PageAccueil({ params }: { params: { slug: string } }) {
 
         {erreur && <MessageErreur>{erreur}</MessageErreur>}
 
-        <p className="text-xs text-mf-text-3">
-          Ces renseignements sont transmis à notre équipe pour votre dossier client. Ils ne sont
-          utilisés que dans le cadre de votre visite au garage.
-        </p>
+        <ConsentementCommunications
+          nomGarage={garage.nom}
+          coche={valeurs.consentement}
+          surChangement={(v) => definir("consentement", v)}
+        />
+
+        <AvisCollecte nomGarage={garage.nom} slug={params.slug} finalite="ouvrir votre dossier et traiter votre véhicule" />
 
         <Bouton type="submit" enEnvoi={enEnvoi} className="w-full mt-1">
           Envoyer

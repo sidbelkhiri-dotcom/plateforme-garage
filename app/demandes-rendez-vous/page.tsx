@@ -29,6 +29,7 @@ type Demande = {
   date_souhaitee: string | null;
   plage: string | null;
   message: string | null;
+  consentement_communications: boolean;
 };
 
 type ValeursValidation = {
@@ -224,6 +225,16 @@ function ModaleValidation({
       let clientId: string;
       if (clientExistant && lierClientExistant) {
         clientId = clientExistant.id;
+        // Consentement donné dans le formulaire public : il s'ajoute à la
+        // fiche existante, mais un refus (case non cochée) n'efface jamais
+        // un consentement déjà enregistré.
+        if (demande.consentement_communications) {
+          const { error: erreurConsentement } = await supabase
+            .from("clients")
+            .update({ consentement_communications: true })
+            .eq("id", clientId);
+          if (erreurConsentement) return { error: { message: erreurConsentement.message } };
+        }
       } else {
         const { data: client, error: erreurClient } = await supabase
           .from("clients")
@@ -231,6 +242,7 @@ function ModaleValidation({
             nom: valeurs.nom.trim(),
             telephone: valeurs.telephone || null,
             email: valeurs.courriel || null,
+            consentement_communications: demande.consentement_communications,
           })
           .select("id")
           .single();

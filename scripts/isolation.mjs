@@ -861,6 +861,21 @@ try {
     `annulation ${annulation.statut}, compte ${compteRestant.status}`);
   console.log(`  rattachement ${profilInvite?.garage_id === A.garage_id ? "ok" : "ÉCHEC"} · inscription ordinaire ${profilUsurpe?.garage_id === null ? "ignorée" : "RATTACHÉE"} · employé ${parEmploye.statut >= 400 ? "ne peut pas inviter" : "PEUT INVITER"} · annulation ${compteRestant.status === 404 ? "supprime le compte" : "LAISSE LE COMPTE"}`);
 
+  // Loi 25 : l'export et l'effacement d'un client passent par des fonctions
+  // qui contournent la RLS — elles doivent refuser un client d'un autre garage.
+  const exportVoisin = await commeUtilisateur(sessionA, "rpc/exporter_client", {
+    method: "POST", body: JSON.stringify({ p_client_id: B.clients }),
+  });
+  verifier("clients", "export des renseignements d'un client de l'autre garage", exportVoisin.statut >= 400,
+    `statut ${exportVoisin.statut}`);
+  const effacementVoisin = await commeUtilisateur(sessionA, "rpc/anonymiser_client", {
+    method: "POST", body: JSON.stringify({ p_client_id: B.clients }),
+  });
+  const [clientBIntact] = await srv(`clients?select=nom&id=eq.${B.clients}`);
+  verifier("clients", "anonymisation d'un client de l'autre garage",
+    effacementVoisin.statut >= 400 && clientBIntact?.nom !== "Client anonymisé", `statut ${effacementVoisin.statut}`);
+  console.log(`  export et effacement d'un client voisin : ${exportVoisin.statut >= 400 && effacementVoisin.statut >= 400 ? "refusés" : "POSSIBLES"}`);
+
   // ------------------------------------------------------------
   // 8. Cycle de vie. Suspendre un garage doit l'empêcher de travailler
   //    sans lui cacher ses propres données : ses factures sont des

@@ -56,6 +56,27 @@ export default async function FacturePage({ params }: { params: { id: string } }
     supabase.from("parametres").select("*").single(),
   ]);
 
+  // L'identité de l'acheteur est figée sur la facture depuis la migration
+  // 2026-10-13 (Loi 25) : renommer, anonymiser ou supprimer le client ne
+  // réécrit plus une pièce comptable. La fiche client ne sert qu'aux
+  // factures antérieures, restées sans copie.
+  const figee = facture.client_nom != null;
+  const acheteur = figee
+    ? { nom: facture.client_nom, adresse: facture.client_adresse, telephone: facture.client_telephone, courriel: facture.client_courriel }
+    : {
+        nom: client?.nom ?? null,
+        adresse: [client?.adresse, client?.code_postal].filter(Boolean).join(", ") || null,
+        telephone: client?.telephone ?? null,
+        courriel: client?.email ?? null,
+      };
+  const vehiculeFacture = facture.vehicule_description != null
+    ? { description: facture.vehicule_description, plaque: facture.vehicule_plaque, vin: facture.vehicule_vin }
+    : {
+        description: vehicule ? `${vehicule.marque} ${vehicule.modele ?? ""} ${vehicule.annee ? `(${vehicule.annee})` : ""}`.trim() : null,
+        plaque: vehicule?.plaque ?? null,
+        vin: vehicule?.vin ?? null,
+      };
+
   const piecesLignes = (lignes ?? []).filter((l) => l.type === "piece");
   const mainOeuvreLignes = (lignes ?? []).filter((l) => l.type === "main_oeuvre");
   const solde = facture.total_ttc - facture.montant_paye;
@@ -142,22 +163,18 @@ export default async function FacturePage({ params }: { params: { id: string } }
           <div>
             <div className="text-[11px] uppercase tracking-wide text-stone-500 mb-1">Client</div>
             <div className="text-sm">
-              <div className="font-semibold">{client?.nom ?? "—"}</div>
-              {(client?.adresse || client?.code_postal) && (
-                <div>{[client?.adresse, client?.code_postal].filter(Boolean).join(", ")}</div>
-              )}
-              {client?.telephone && <div>{formatTelephone(client.telephone)}</div>}
-              {client?.email && <div>{client.email}</div>}
+              <div className="font-semibold">{acheteur.nom ?? "—"}</div>
+              {acheteur.adresse && <div>{acheteur.adresse}</div>}
+              {acheteur.telephone && <div>{formatTelephone(acheteur.telephone)}</div>}
+              {acheteur.courriel && <div>{acheteur.courriel}</div>}
             </div>
           </div>
           <div>
             <div className="text-[11px] uppercase tracking-wide text-stone-500 mb-1">Véhicule</div>
             <div className="text-sm">
-              <div className="font-semibold">
-                {vehicule ? `${vehicule.marque} ${vehicule.modele ?? ""} ${vehicule.annee ? `(${vehicule.annee})` : ""}` : "—"}
-              </div>
-              {vehicule?.plaque && <div>Immatriculation : {vehicule.plaque}</div>}
-              {vehicule?.vin && <div>NIV : {vehicule.vin}</div>}
+              <div className="font-semibold">{vehiculeFacture.description ?? "—"}</div>
+              {vehiculeFacture.plaque && <div>Immatriculation : {vehiculeFacture.plaque}</div>}
+              {vehiculeFacture.vin && <div>NIV : {vehiculeFacture.vin}</div>}
               {facture.kilometrage != null && <div>Kilométrage : {facture.kilometrage.toLocaleString("fr-CA")} km</div>}
             </div>
           </div>

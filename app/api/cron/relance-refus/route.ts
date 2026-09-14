@@ -64,6 +64,7 @@ export async function GET(request: Request) {
   let clientsContactes = 0;
   let pointsRelances = 0;
   let ignoresGarageBloque = 0;
+  let ignoresSansConsentement = 0;
   const echecs: string[] = [];
 
   for (const [inspectionId, groupe] of Array.from(parInspection)) {
@@ -85,11 +86,18 @@ export async function GET(request: Request) {
 
     const [{ data: client }, { data: garage }] = await Promise.all([
       bon.client_id
-        ? supabase.from("clients").select("nom, email, telephone").eq("id", bon.client_id).single()
+        ? supabase.from("clients").select("nom, email, telephone, consentement_communications").eq("id", bon.client_id).single()
         : Promise.resolve({ data: null }),
       supabase.from("garages").select("nom, statut, abonnement_statut").eq("id", inspection.garage_id).single(),
     ]);
     if (!client) continue;
+    // Loi 25 : relancer sur des réparations refusées sert à vendre, pas à
+    // faire le travail demandé. Seulement avec le consentement du client,
+    // donné à part (formulaire public ou fiche client).
+    if (!client.consentement_communications) {
+      ignoresSansConsentement += groupe.length;
+      continue;
+    }
 
     const etatGarage = garage as (EtatGarage & { nom: string }) | null;
 
@@ -164,5 +172,5 @@ export async function GET(request: Request) {
     }
   }
 
-  return NextResponse.json({ ok: true, clientsContactes, pointsRelances, ignoresGarageBloque, echecs });
+  return NextResponse.json({ ok: true, clientsContactes, pointsRelances, ignoresGarageBloque, ignoresSansConsentement, echecs });
 }

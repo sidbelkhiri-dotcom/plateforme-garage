@@ -14,6 +14,7 @@ export type ClientValeurs = {
   codePostal: string;
   tauxHoraire: string;
   notes: string;
+  consentement: boolean;
 };
 
 const VALEURS_VIDES: ClientValeurs = {
@@ -24,6 +25,7 @@ const VALEURS_VIDES: ClientValeurs = {
   codePostal: "",
   tauxHoraire: "",
   notes: "",
+  consentement: false,
 };
 
 // Sert à la fois pour créer (clientId absent) et modifier (clientId fourni).
@@ -57,6 +59,7 @@ export default function FormulaireClient({
       // gratuite » et ne se verrait qu'à la facture.
       taux_horaire: valeurs.tauxHoraire.trim() === "" ? null : Number(valeurs.tauxHoraire),
       notes: valeurs.notes || null,
+      consentement_communications: valeurs.consentement,
     };
     const reussi = await soumettre(async () =>
       clientId
@@ -102,6 +105,20 @@ export default function FormulaireClient({
         onChange={(e) => definir("tauxHoraire", e.target.value)}
       />
       <Champ label="Notes" value={valeurs.notes} onChange={(e) => definir("notes", e.target.value)} />
+      {/* Loi 25 : consentement distinct, jamais présumé. À cocher seulement
+          si le client l'a dit ; la base date l'accord pour en garder la preuve. */}
+      <label className="flex items-start gap-3 text-sm text-mf-text min-h-[44px] py-1">
+        <input
+          type="checkbox"
+          checked={valeurs.consentement}
+          onChange={(e) => definir("consentement", e.target.checked)}
+          className="mt-0.5 w-5 h-5 shrink-0"
+        />
+        <span>
+          Le client accepte de recevoir rappels d&apos;entretien, demandes d&apos;avis et offres
+          <span className="block text-xs text-mf-text-3">À cocher seulement s&apos;il l&apos;a demandé ou accepté. Il peut le retirer à tout moment.</span>
+        </span>
+      </label>
       {erreur && <MessageErreur>{erreur}</MessageErreur>}
       <div /* Pied collant. Ces formulaires vivent tous dans une modale, dont c'est
              le conteneur de dialogue qui défile : sans ça, sur un formulaire de

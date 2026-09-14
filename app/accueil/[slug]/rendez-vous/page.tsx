@@ -11,6 +11,7 @@ import Bouton from "@/components/ui/Bouton";
 import MessageErreur from "@/components/ui/MessageErreur";
 import ChampsVehicule from "@/components/forms/ChampsVehicule";
 import { formatTelephone } from "@/lib/texte";
+import { AvisCollecte, ConsentementCommunications } from "@/components/ConfidentialitePublique";
 
 type Valeurs = {
   nom: string;
@@ -23,6 +24,7 @@ type Valeurs = {
   dateSouhaitee: string;
   plage: "matin" | "apres_midi" | "flexible";
   message: string;
+  consentement: boolean;
   // Piège à robots : champ invisible pour un humain, que les robots de
   // formulaires remplissent. Voir envoyer().
   siteWeb: string;
@@ -39,6 +41,7 @@ const VALEURS_VIDES: Valeurs = {
   dateSouhaitee: "",
   plage: "flexible",
   message: "",
+  consentement: false,
   siteWeb: "",
 };
 
@@ -128,6 +131,7 @@ export default function PageDemandeRendezVous({ params }: { params: { slug: stri
       date_souhaitee: valeurs.dateSouhaitee || null,
       plage: valeurs.plage,
       message: valeurs.message.trim() || null,
+      consentement_communications: valeurs.consentement,
     };
     const reussi = await soumettre(async () => {
       const { error } = await supabase.from("demandes_rendez_vous").insert(donnees);
@@ -317,9 +321,13 @@ export default function PageDemandeRendezVous({ params }: { params: { slug: stri
 
         {erreur && <MessageErreur>{erreur}</MessageErreur>}
 
-        <p className="text-xs text-mf-text-3">
-          Vos renseignements sont transmis uniquement à {garage.nom}, pour traiter votre demande.
-        </p>
+        <ConsentementCommunications
+          nomGarage={garage.nom}
+          coche={valeurs.consentement}
+          surChangement={(v) => definir("consentement", v)}
+        />
+
+        <AvisCollecte nomGarage={garage.nom} slug={params.slug} finalite="traiter votre demande de rendez-vous" />
 
         <Bouton type="submit" enEnvoi={enEnvoi} className="w-full mt-1">
           Envoyer la demande

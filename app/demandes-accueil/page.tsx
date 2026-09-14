@@ -28,6 +28,7 @@ type Demande = {
   annee: number | null;
   plaque: string | null;
   plainte: string | null;
+  consentement_communications: boolean;
 };
 
 type ValeursValidation = {
@@ -195,6 +196,16 @@ function ModaleValidation({
       let clientId: string;
       if (clientExistant && lierClientExistant) {
         clientId = clientExistant.id;
+        // Consentement donné dans le formulaire public : il s'ajoute à la
+        // fiche existante, mais un refus (case non cochée) n'efface jamais
+        // un consentement déjà enregistré.
+        if (demande.consentement_communications) {
+          const { error: erreurConsentement } = await supabase
+            .from("clients")
+            .update({ consentement_communications: true })
+            .eq("id", clientId);
+          if (erreurConsentement) return { error: { message: erreurConsentement.message } };
+        }
         if (noteVisite) {
           const { data: clientActuel } = await supabase.from("clients").select("notes").eq("id", clientId).single();
           const notesAJour = clientActuel?.notes ? `${clientActuel.notes}\n\n${noteVisite}` : noteVisite;
@@ -211,6 +222,7 @@ function ModaleValidation({
             adresse: valeurs.adresse || null,
             code_postal: valeurs.codePostal || null,
             notes: noteVisite,
+            consentement_communications: demande.consentement_communications,
           })
           .select("id")
           .single();

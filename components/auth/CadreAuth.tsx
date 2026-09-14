@@ -27,6 +27,11 @@ export default function CadreAuth({
           <div className="mt-6">{children}</div>
         </div>
         {pied && <div className="mt-5 text-center text-sm text-mf-text-2">{pied}</div>}
+        <div className="mt-6 text-center">
+          <a href="/confidentialite" className="text-xs text-mf-text-3 hover:text-mf-text underline underline-offset-2">
+            Politique de confidentialité
+          </a>
+        </div>
       </div>
     </div>
   );

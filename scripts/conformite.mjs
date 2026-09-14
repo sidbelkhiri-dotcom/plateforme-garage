@@ -101,7 +101,7 @@ async function nettoyer() {
   const g = aNettoyer.garage;
   for (const table of [
     "facture_lignes", "factures", "bon_travail_evaluations", "bon_travail_lignes",
-    "bons_travail", "vehicules", "clients", "parametres",
+    "bons_travail", "rendez_vous", "vehicules", "clients", "demandes_accueil", "parametres",
   ]) {
     await fetch(`${URL_SUPABASE}/rest/v1/${table}?garage_id=eq.${g}`, { method: "DELETE", headers: admin }).catch(() => {});
   }
@@ -340,6 +340,80 @@ try {
     const paiementAnnulee = await rpc("enregistrer_paiement", { p_facture_id: suivanteId, p_montant: 10 });
     verifier("on n'encaisse pas sur une facture annulée", !paiementAnnulee.ok, "paiement accepté sur une facture annulée");
   }
+
+  // ------------------------------------------------------------
+  console.log("\n7. Renseignements personnels (Loi 25)");
+  // ------------------------------------------------------------
+  const clientPrive = await creer("clients", {
+    garage_id: garage.id, nom: `${marque} Julie Roy`, telephone: "5145550123", email: "julie@example.com", adresse: "1 rue Test",
+  });
+  const vehiculePrive = await creer("vehicules", {
+    garage_id: garage.id, client_id: clientPrive.id, marque: "Testo", modele: "Privé", plaque: "LOI025", vin: "1HGBH41JXMN109186",
+  });
+  const bonPrive = await creer("bons_travail", {
+    garage_id: garage.id, client_id: clientPrive.id, vehicule_id: vehiculePrive.id,
+    kilometrage: 1, plainte_client: `${marque} privé`, taux_horaire: 100, ouvert_le: aujourdhui,
+  });
+  await creer("bon_travail_lignes", { bon_travail_id: bonPrive.id, type: "piece", description: `${marque} pièce`, quantite: 1, prix_unitaire: 50, etat_piece: "neuve" });
+  await amenerATermine(bonPrive.id);
+  const facturePrivee = await rpc("creer_facture", { bon_id: bonPrive.id, p_date: aujourdhui });
+  const idFacturePrivee = facturePrivee.corps;
+  const identiteEmise = await lire("factures", `select=client_nom,client_telephone,vehicule_plaque&id=eq.${idFacturePrivee}`);
+  verifier("la facture fige l'identité de l'acheteur à l'émission",
+    identiteEmise?.client_nom === `${marque} Julie Roy` && identiteEmise?.vehicule_plaque === "LOI025",
+    JSON.stringify(identiteEmise));
+
+  await api(`clients?id=eq.${clientPrive.id}`, { method: "PATCH", body: JSON.stringify({ nom: `${marque} Julie Roy-Tremblay` }) });
+  const apresRenommage = await lire("factures", `select=client_nom&id=eq.${idFacturePrivee}`);
+  verifier("renommer un client ne réécrit pas ses factures passées",
+    apresRenommage?.client_nom === `${marque} Julie Roy`, `facture : « ${apresRenommage?.client_nom} »`);
+
+  const retoucheIdentite = await api(`factures?id=eq.${idFacturePrivee}`, { method: "PATCH", body: JSON.stringify({ client_nom: "Autre" }) });
+  verifier("l'identité figée d'une facture ne se modifie pas", !aModifie(retoucheIdentite), "client_nom réécrit");
+
+  // Consentement : daté par la base, jamais antidaté à la main.
+  await api(`clients?id=eq.${clientPrive.id}`, { method: "PATCH", body: JSON.stringify({ consentement_communications: true }) });
+  const consenti = await lire("clients", `select=consentement_communications_le&id=eq.${clientPrive.id}`);
+  verifier("cocher le consentement le date", Boolean(consenti?.consentement_communications_le), "date absente");
+  await api(`clients?id=eq.${clientPrive.id}`, { method: "PATCH", body: JSON.stringify({ consentement_communications_le: "2020-01-01T00:00:00Z" }) });
+  const antidate = await lire("clients", `select=consentement_communications_le&id=eq.${clientPrive.id}`);
+  verifier("la date du consentement ne s'antidate pas",
+    antidate?.consentement_communications_le === consenti?.consentement_communications_le, `obtenue ${antidate?.consentement_communications_le}`);
+
+  // Portabilité : une copie structurée de tout le dossier.
+  const exportClient = await rpc("exporter_client", { p_client_id: clientPrive.id });
+  verifier("l'export d'un client contient sa fiche, ses véhicules et ses factures",
+    exportClient.ok && exportClient.corps?.client?.telephone === "5145550123"
+      && exportClient.corps?.vehicules?.length === 1 && exportClient.corps?.factures?.length === 1,
+    `statut ${exportClient.statut} ${JSON.stringify(exportClient.corps).slice(0, 140)}`);
+
+  // Effacement : la fiche perd l'identité, la facture la garde.
+  const effacement = await rpc("anonymiser_client", { p_client_id: clientPrive.id });
+  const ficheEffacee = await lire("clients", `select=nom,telephone,email,adresse,consentement_communications&id=eq.${clientPrive.id}`);
+  const vehiculeEfface = await lire("vehicules", `select=plaque,vin&id=eq.${vehiculePrive.id}`);
+  verifier("l'anonymisation efface nom, coordonnées, plaque et NIV",
+    effacement.ok && ficheEffacee?.nom === "Client anonymisé" && !ficheEffacee?.telephone && !ficheEffacee?.email
+      && !ficheEffacee?.consentement_communications && !vehiculeEfface?.plaque && !vehiculeEfface?.vin,
+    `statut ${effacement.statut} ${JSON.stringify({ ficheEffacee, vehiculeEfface })}`);
+  const factureConservee = await lire("factures", `select=client_nom,vehicule_plaque,total_ttc&id=eq.${idFacturePrivee}`);
+  verifier("la facture d'un client anonymisé reste une pièce comptable complète",
+    factureConservee?.client_nom === `${marque} Julie Roy` && factureConservee?.vehicule_plaque === "LOI025",
+    JSON.stringify(factureConservee));
+
+  const purgeParEmploye = await rpc("purger_demandes_publiques", {});
+  verifier("un compte du garage peut déclencher la purge de toutes les demandes", !purgeParEmploye.ok,
+    `statut ${purgeParEmploye.statut}`);
+
+  // La purge efface ce qui a fait son temps, et seulement ça.
+  const ancienne = await creer("demandes_accueil", { garage_id: garage.id, nom: `${marque} ancienne`, statut: "traitee" });
+  const recente = await creer("demandes_accueil", { garage_id: garage.id, nom: `${marque} récente`, statut: "traitee" });
+  await srv(`demandes_accueil?id=eq.${ancienne.id}`, {
+    method: "PATCH", body: JSON.stringify({ created_at: new Date(Date.now() - 100 * 86400000).toISOString() }),
+  });
+  await srv("rpc/purger_demandes_publiques", { method: "POST", body: "{}" });
+  const restantes = (await srv(`demandes_accueil?select=id&garage_id=eq.${garage.id}`)).map((d) => d.id);
+  verifier("la purge efface une demande traitée de plus de 90 jours et garde la récente",
+    !restantes.includes(ancienne.id) && restantes.includes(recente.id), `restantes : ${restantes.length}`);
 
   await nettoyer();
   console.log("\n" + "-".repeat(72));

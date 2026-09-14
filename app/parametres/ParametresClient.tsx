@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
-import { Building2, ShieldQuestion, Wrench as WrenchIcon, UserCog, Star, Globe, Copy, ExternalLink, Send, Mail } from "lucide-react";
+import { Building2, ShieldCheck, ShieldQuestion, Wrench as WrenchIcon, UserCog, Star, Globe, Copy, ExternalLink, Send, Mail } from "lucide-react";
 import { formatDateHeure } from "@/lib/dates";
 import { useToast } from "@/components/ui/ToastProvider";
 import Champ from "@/components/ui/Champ";
@@ -24,6 +24,9 @@ type Parametres = {
   garantie_mois: number;
   garantie_km: number;
   lien_avis_google: string | null;
+  rprp_nom: string | null;
+  rprp_titre: string | null;
+  rprp_courriel: string | null;
 };
 
 type Invitation = {
@@ -98,6 +101,9 @@ export default function ParametresClient({
       garantie_mois: 3,
       garantie_km: 5000,
       lien_avis_google: "",
+      rprp_nom: "",
+      rprp_titre: "",
+      rprp_courriel: "",
     }
   );
   const [enregistrement, setEnregistrement] = useState(false);
@@ -188,6 +194,9 @@ export default function ParametresClient({
         garantie_mois: Number(valeurs.garantie_mois) || 3,
         garantie_km: Number(valeurs.garantie_km) || 5000,
         lien_avis_google: valeurs.lien_avis_google || null,
+        rprp_nom: valeurs.rprp_nom?.trim() || null,
+        rprp_titre: valeurs.rprp_titre?.trim() || null,
+        rprp_courriel: valeurs.rprp_courriel?.trim() || null,
       })
       // Supabase/PostgREST exige un filtre explicite sur un update, même
       // quand la RLS restreint déjà à une seule ligne (garage_actuel()) —
@@ -321,6 +330,44 @@ export default function ParametresClient({
           Utilisé par le bouton « Demander un avis » sur une facture — cherchez votre garage sur Google, cliquez «
           Rédiger un avis », et copiez l'URL affichée.
         </p>
+
+        <h2 id="confidentialite" className="scroll-mt-6 font-display font-bold text-sm uppercase tracking-wide flex items-center gap-2 mt-3 mb-1 text-mf-text">
+          <ShieldCheck className="w-4 h-4 text-mf-signal-fg" /> Protection des renseignements personnels
+        </h2>
+        <p className="text-xs text-mf-text-3 -mt-1">
+          La Loi 25 exige un responsable, dont le titre et les coordonnées sont publiés. Par défaut, c&apos;est la
+          personne qui dirige le garage ; elle peut déléguer ce rôle par écrit. Ces informations apparaissent sur
+          l&apos;avis de confidentialité que voient vos clients dans vos formulaires en ligne.
+        </p>
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+          <Champ
+            label="Nom du responsable"
+            autoComplete="name"
+            value={valeurs.rprp_nom ?? ""}
+            onChange={(e) => definir("rprp_nom", e.target.value)}
+          />
+          <Champ
+            label="Titre"
+            placeholder="Propriétaire"
+            value={valeurs.rprp_titre ?? ""}
+            onChange={(e) => definir("rprp_titre", e.target.value)}
+          />
+        </div>
+        <Champ
+          label="Courriel pour les demandes (accès, correction, suppression)"
+          type="email"
+          value={valeurs.rprp_courriel ?? ""}
+          onChange={(e) => definir("rprp_courriel", e.target.value)}
+        />
+        {slug && (
+          <p className="text-xs text-mf-text-3 -mt-1">
+            Avis publié à{" "}
+            <a href={`/accueil/${slug}/confidentialite`} target="_blank" rel="noopener noreferrer" className="font-semibold text-mf-blue-hover hover:underline">
+              /accueil/{slug}/confidentialite
+            </a>
+            .
+          </p>
+        )}
 
         {erreur && <MessageErreur>{erreur}</MessageErreur>}
         <Bouton type="submit" enEnvoi={enregistrement} className="w-fit mt-1">

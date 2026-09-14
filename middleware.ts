@@ -49,7 +49,9 @@ export async function middleware(request: NextRequest) {
   // nouveau mot de passe : par définition, la personne n'est pas connectée.
   const isPageAuthPublique =
     request.nextUrl.pathname.startsWith("/auth/confirmation") ||
-    request.nextUrl.pathname.startsWith("/mot-de-passe-oublie");
+    request.nextUrl.pathname.startsWith("/mot-de-passe-oublie") ||
+    // Politique de confidentialité : doit se lire avant de créer un compte.
+    request.nextUrl.pathname === "/confidentialite";
 
   if (!user && !isLoginPage && !isPageAccueil && !isPageInscription && !isWebhookStripe && !isPageInspectionPublique && !isCron && !isPageAuthPublique) {
     const url = request.nextUrl.clone();

@@ -39,10 +39,17 @@ export async function POST(request: NextRequest) {
   }
 
   const [{ data: client }, { data: garage }] = await Promise.all([
-    facture.client_id ? supabase.from("clients").select("nom, email").eq("id", facture.client_id).single() : Promise.resolve({ data: null }),
+    facture.client_id ? supabase.from("clients").select("nom, email, consentement_communications").eq("id", facture.client_id).single() : Promise.resolve({ data: null }),
     supabase.from("parametres").select("nom, lien_avis_google").single(),
   ]);
 
+  // Loi 25 : une demande d'avis dépasse la réparation elle-même.
+  if (client && !client.consentement_communications) {
+    return NextResponse.json(
+      { error: "Ce client n'a pas accepté de recevoir des demandes d'avis. Cochez son consentement dans sa fiche s'il l'a donné." },
+      { status: 400 }
+    );
+  }
   if (!client?.email) {
     return NextResponse.json({ error: "Ce client n'a pas d'adresse courriel enregistrée." }, { status: 400 });
   }

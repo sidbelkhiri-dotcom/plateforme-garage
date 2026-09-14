@@ -18,11 +18,17 @@ export async function GET(request: Request) {
     return NextResponse.json({ error: "Non autorisé." }, { status: 401 });
   }
 
-  if (!smsConfigure()) {
-    return NextResponse.json({ ok: true, envoyes: 0, note: "SMS non configuré." });
-  }
-
   const supabase = createServiceRoleClient();
+
+  // Loi 25 : une demande publique traitée n'a plus de finalité. Purge
+  // quotidienne, avant et indépendamment des textos — un garage sans SMS
+  // configuré doit aussi voir ses vieilles demandes effacées. Voir
+  // purger_demandes_publiques() (migration 2026-10-13).
+  const { data: purge, error: erreurPurge } = await supabase.rpc("purger_demandes_publiques");
+
+  if (!smsConfigure()) {
+    return NextResponse.json({ ok: true, envoyes: 0, note: "SMS non configuré.", purge, erreurPurge: erreurPurge?.message });
+  }
 
   // "Demain" en heure de l'Est plutôt qu'UTC — un rappel envoyé la
   // veille doit correspondre au jour réel du client, pas au jour UTC qui

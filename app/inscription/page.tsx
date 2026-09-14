@@ -174,6 +174,13 @@ function FormulaireInscription() {
         <Bouton type="submit" enEnvoi={loading} className="w-full mt-1">
           {loading ? "Création…" : "Créer mon garage"}
         </Bouton>
+        <p className="text-xs text-mf-text-3 leading-relaxed">
+          En créant votre garage, vous confiez à Garagenda les renseignements du compte et ceux de vos clients, qu&apos;il
+          héberge pour vous.{" "}
+          <Link href="/confidentialite" target="_blank" className="font-semibold text-mf-blue underline underline-offset-2">
+            Politique de confidentialité
+          </Link>
+        </p>
       </form>
     </CadreAuth>
   );
