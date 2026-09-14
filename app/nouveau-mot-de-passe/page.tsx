@@ -61,7 +61,7 @@ export default function NouveauMotDePassePage() {
       {erreur && <MessageAuth ton="erreur">{erreur}</MessageAuth>}
       <form onSubmit={handleSubmit} className="flex flex-col gap-4">
         <ChampMotDePasse
-          label="Nouveau mot de passe"
+          label={bienvenue ? "Mot de passe" : "Nouveau mot de passe"}
           name="password"
           autoComplete="new-password"
           aide="8 caractères minimum."
