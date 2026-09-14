@@ -22,7 +22,7 @@ export default function AppleIcon() {
           display: "flex",
           alignItems: "center",
           justifyContent: "center",
-          background: "#10243A",
+          background: "#0f1e29",
         }}
       >
         {/* eslint-disable-next-line @next/next/no-img-element */}

@@ -109,13 +109,13 @@ export async function GET(request: Request) {
 
     if (client.email) {
       const liste = plusieurs
-        ? `<ul style="background:#f5f5f5;padding:12px 16px 12px 32px;border-radius:6px;font-weight:bold;margin:0;">${descriptions
+        ? `<ul style="background:#f5f5f5;padding:12px 16px 12px 32px;border-radius:0;font-weight:bold;margin:0;">${descriptions
             .map((d) => `<li style="margin:4px 0;">${echapperHtml(d)}</li>`)
             .join("")}</ul>`
-        : `<p style="background:#f5f5f5;padding:12px 16px;border-radius:6px;font-weight:bold;">${echapperHtml(descriptions[0])}</p>`;
+        : `<p style="background:#f5f5f5;padding:12px 16px;border-radius:0;font-weight:bold;">${echapperHtml(descriptions[0])}</p>`;
       const html = `
       <div style="font-family:Arial,Helvetica,sans-serif;max-width:600px;margin:0 auto;color:#111;">
-        <div style="border-bottom:2px solid #0B5BE8;padding-bottom:12px;margin-bottom:20px;">
+        <div style="border-bottom:2px solid #1a5c8a;padding-bottom:12px;margin-bottom:20px;">
           <div style="font-size:18px;font-weight:900;text-transform:uppercase;letter-spacing:0.02em;">${echapperHtml(nomGarage)}</div>
         </div>
         <p>Bonjour ${echapperHtml(client.nom)},</p>

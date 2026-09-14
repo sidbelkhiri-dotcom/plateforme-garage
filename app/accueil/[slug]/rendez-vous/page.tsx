@@ -270,7 +270,7 @@ export default function PageDemandeRendezVous({ params }: { params: { slug: stri
                   key={valeur}
                   className={`relative flex items-center justify-center min-h-[44px] px-2 text-sm cursor-pointer select-none transition-colors ${
                     i > 0 ? "border-l border-mf-border-strong" : ""
-                  } ${actif ? "bg-mf-blue text-white font-semibold" : "bg-mf-surface-3 text-mf-text hover:bg-mf-surface-2"}`}
+                  } ${actif ? "bg-mf-blue text-mf-on-blue font-semibold" : "bg-mf-surface-3 text-mf-text hover:bg-mf-surface-2"}`}
                 >
                   <input
                     type="radio"

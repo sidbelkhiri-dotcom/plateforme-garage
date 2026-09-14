@@ -10,8 +10,9 @@ export default function Logo({
   className = "",
 }: {
   height?: number;
-  /** Or par défaut, pour les fonds clairs ; la barre latérale, toujours
-   *  foncée, est la seule à demander l'argent. */
+  /** Or par défaut, y compris sur la barre latérale encre : depuis la
+   *  palette « Denim et laiton », le laiton est l'accent de la marque.
+   *  L'argent reste disponible pour un fond où l'or manquerait de contraste. */
   metal?: "or" | "argent";
   className?: string;
 }) {

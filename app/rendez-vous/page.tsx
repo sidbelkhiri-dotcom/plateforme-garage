@@ -101,13 +101,13 @@ export default function RendezVousPage() {
           <div className="flex rounded-mf-sm border border-mf-border overflow-hidden">
             <button
               onClick={() => setVue("jour")}
-              className={`px-3 min-h-[44px] text-sm font-semibold ${vue === "jour" ? "bg-mf-blue text-white" : "bg-mf-surface text-mf-text-2"}`}
+              className={`px-3 min-h-[44px] text-sm font-semibold ${vue === "jour" ? "bg-mf-blue text-mf-on-blue" : "bg-mf-surface text-mf-text-2"}`}
             >
               Jour
             </button>
             <button
               onClick={() => setVue("semaine")}
-              className={`px-3 min-h-[44px] text-sm font-semibold ${vue === "semaine" ? "bg-mf-blue text-white" : "bg-mf-surface text-mf-text-2"}`}
+              className={`px-3 min-h-[44px] text-sm font-semibold ${vue === "semaine" ? "bg-mf-blue text-mf-on-blue" : "bg-mf-surface text-mf-text-2"}`}
             >
               Semaine
             </button>

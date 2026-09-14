@@ -38,7 +38,7 @@ export const metadata: Metadata = {
 // barre d'adresse mobile suit la marque même quand la page n'a pas fini
 // de charger le CSS.
 export const viewport: Viewport = {
-  themeColor: "#f7f6f2",
+  themeColor: "#f6f5f1",
 };
 
 // Applique le thème AVANT le premier rendu (script bloquant, minuscule) —

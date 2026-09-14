@@ -5,8 +5,8 @@ module.exports = {
     extend: {
       // Tokens de marque Garagenda — voir app/globals.css (:root) et
       // BRAND.md. Chaque valeur lit une variable CSS, donc bascule
-      // automatiquement entre mode sombre (défaut) et mode clair
-      // ([data-theme="light"]) sans qu'aucun composant n'ait à savoir
+      // automatiquement entre mode clair (défaut) et mode sombre
+      // ([data-theme="dark"]) sans qu'aucun composant n'ait à savoir
       // dans quel mode il est.
       colors: {
         "mf-bg": "var(--mf-bg)",
@@ -21,6 +21,8 @@ module.exports = {
         "mf-blue": "var(--mf-blue)",
         "mf-blue-hover": "var(--mf-blue-hover)",
         "mf-blue-soft": "var(--mf-blue-soft)",
+        "mf-on-blue": "var(--mf-on-blue)",
+        "mf-on-red": "var(--mf-on-red)",
         "mf-navy": "var(--mf-navy)",
         "mf-signal": "var(--mf-signal)",
         "mf-signal-soft": "var(--mf-signal-soft)",
@@ -42,6 +44,7 @@ module.exports = {
         "mf-sidebar-text-3": "var(--mf-sidebar-text-3)",
         "mf-sidebar-border": "var(--mf-sidebar-border)",
         "mf-sidebar-icon-inactive": "var(--mf-sidebar-icon-inactive)",
+        "mf-sidebar-active": "var(--mf-sidebar-active)",
       },
       fontFamily: {
         sans: ["var(--font-plex)", "system-ui", "sans-serif"],

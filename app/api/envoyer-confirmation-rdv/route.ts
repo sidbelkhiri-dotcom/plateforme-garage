@@ -57,7 +57,7 @@ export async function POST(request: NextRequest) {
   const nomGarage = garage?.nom ?? "Votre garage";
   const html = `
   <div style="font-family:Arial,Helvetica,sans-serif;max-width:600px;margin:0 auto;color:#111;">
-    <div style="border-bottom:2px solid #0B5BE8;padding-bottom:12px;margin-bottom:20px;">
+    <div style="border-bottom:2px solid #1a5c8a;padding-bottom:12px;margin-bottom:20px;">
       <div style="font-size:18px;font-weight:900;text-transform:uppercase;letter-spacing:0.02em;margin-bottom:12px;">${echapperHtml(nomGarage)}</div>
       ${garage?.adresse ? `<div style="color:#555;font-size:13px;">${echapperHtml(garage.adresse)}</div>` : ""}
       ${garage?.telephone ? `<div style="color:#555;font-size:13px;">${echapperHtml(garage.telephone)}</div>` : ""}

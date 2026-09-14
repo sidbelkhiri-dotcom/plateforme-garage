@@ -265,7 +265,7 @@ export default function FormulaireVehiculeStock({
               <button
                 type="button"
                 onClick={() => supprimerPhoto(chemin)}
-                className="absolute -top-1.5 -right-1.5 w-5 h-5 flex items-center justify-center rounded-full bg-mf-red text-white"
+                className="absolute -top-1.5 -right-1.5 w-5 h-5 flex items-center justify-center rounded-full bg-mf-red text-mf-on-red"
                 aria-label="Retirer cette photo"
               >
                 <X className="w-3 h-3" />

@@ -3,71 +3,77 @@
 @tailwind utilities;
 
 /* ============================================================
-   Tokens de marque Garagenda — direction « Bleu de travail ».
-   Clair = mode principal, posé directement sur :root (l'univers du
-   vêtement de travail : denim, craie, jaune signal — voir handoff de
-   design du 8 sept. 2026). Le mode sombre (secondaire) s'active en
-   posant data-theme="dark" sur <html> — voir le script bloquant dans
-   app/layout.tsx et components/ThemeToggle.tsx. Aucune classe ne doit
-   lire une couleur en dur : tout passe par ces variables (branchées
-   dans tailwind.config.js sous le préfixe mf-*).
+   Tokens de marque Garagenda — palette « Denim et laiton » (sept. 2026).
+   Évolution de « Bleu de travail » : le papier, l'encre et le denim
+   restent, mais le denim des actions est plus franc, le rouge vif hérité
+   de l'ancienne identité devient un rouge oxyde accordé au papier, et le
+   laiton du logo est l'unique accent. Voir BRAND.md.
+
+   Chaque couple texte/fond ci-dessous est vérifié par calcul de luminance
+   (WCAG AA : 4,5:1 pour du texte, 3:1 pour un pictogramme) — valeurs en
+   commentaire. L'ancienne palette échouait sur deux points : le rouge des
+   pastilles « Impayée » (3,98:1) et le texte discret sur fond gris (4,30:1).
+
+   Clair = mode principal, posé directement sur :root. Le mode sombre
+   s'active avec data-theme="dark" sur <html> (script bloquant dans
+   app/layout.tsx, components/ThemeToggle.tsx). Aucune classe ne lit une
+   couleur en dur : tout passe par ces variables, branchées dans
+   tailwind.config.js sous le préfixe mf-*.
 
    Angles vifs partout (rayon 0) et aucune ombre portée — la hiérarchie
-   visuelle passe par les bordures et les fonds, pas par l'élévation.
+   passe par les bordures et les fonds, pas par l'élévation.
 
-   --mf-sidebar-* sont des jetons FIXES, jamais redéfinis dans le bloc
-   sombre ci-dessous : la barre latérale reste toujours foncée (Encre),
-   c'est un repère de marque constant, pas une surface qui suit le
-   thème choisi.
+   --mf-sidebar-* sont des jetons FIXES, jamais redéfinis en sombre : la
+   barre latérale reste toujours encre, repère de marque constant.
    ============================================================ */
 :root {
-  /* Surfaces — Papier en fond, Blanc pour les cartes/tableaux */
-  --mf-bg: #f7f6f2;
+  /* Surfaces — papier en fond, blanc pour les cartes */
+  --mf-bg: #f6f5f1;
   --mf-surface: #ffffff;
-  --mf-surface-2: #f2f0ea;
+  --mf-surface-2: #efede7;
   --mf-surface-3: #fcfbf8;
 
-  /* Bordures — Craie */
-  --mf-border: #e4e1d9;
-  --mf-border-strong: #d9d6ce;
+  --mf-border: #e2dfd6;
+  --mf-border-strong: #cfcbc0;
 
-  /* Texte — Encre en primaire, Acier en secondaire */
-  --mf-text: #0e1f2b;
-  --mf-text-2: #65707a;  /* 4,66:1 sur le fond papier, la surface la plus exigeante */
-  --mf-text-3: #72716b;  /* 4,51:1 sur le fond papier — 119 usages, echouait a 3,25 */
+  /* Texte — encre, puis ardoise */
+  --mf-text: #111f29;    /* 15,4:1 sur le papier */
+  --mf-text-2: #5b6770;  /* 5,3:1 sur le papier, 4,96:1 sur surface-2 */
+  --mf-text-3: #6a6962;  /* 5,05:1 sur le papier, 4,71:1 sur surface-2 */
 
-  /* Marque — Denim pour les remplissages, Signal comme unique point
-     d'attention (jamais deux éléments jaunes visibles à la fois) */
-  --mf-blue: #1d5478;
-  --mf-blue-hover: #174a69;
-  --mf-blue-soft: rgba(29, 84, 120, 0.14);
-  --mf-navy: #0e1f2b;
-  --mf-signal: #e9a81c;
-  --mf-signal-soft: rgba(233, 168, 28, 0.16);
-  /* Signal en avant-plan (pictogrammes, texte) : le jaune vif ne donne
-     que 2,1:1 sur blanc, sous le seuil de 3:1 exigé pour un élément
-     graphique. Cet ocre monte à 3,4:1. En sombre le jaune vif reprend
-     sa place, voir le bloc data-theme="dark". */
-  --mf-signal-fg: #b8820e;
-  --mf-red: #e01b24;
-  --mf-red-hover: #f03a42;
-  --mf-red-soft: rgba(224, 27, 36, 0.14);
+  /* Denim — actions, liens, sélection */
+  --mf-blue: #1a5c8a;       /* texte blanc 7,1:1 ; en texte sur papier 6,5:1 */
+  --mf-blue-hover: #154b71;
+  --mf-blue-soft: rgba(26, 92, 138, 0.12);
+  /* Texte posé sur un aplat denim ou oxyde : blanc en clair, encre en
+     sombre (où ces aplats s'éclaircissent). Le blanc était écrit en dur
+     et tombait à 3,0:1 sur le bouton bleu du mode sombre. */
+  --mf-on-blue: #ffffff;
+  --mf-on-red: #ffffff;
+  --mf-navy: #0f1e29;
 
-  /* Sémantique — teintes du tableau des états (voir handoff) */
-  --mf-success: #2c6a44;
-  --mf-success-soft: #dee9e0;
-  --mf-warning: #8a6206;
-  --mf-warning-soft: #f9edce;
+  /* Laiton — l'unique accent, repris du logo. Jamais deux éléments laiton
+     en concurrence sur un même écran. */
+  --mf-signal: #e3a21a;
+  --mf-signal-soft: rgba(227, 162, 26, 0.16);
+  --mf-signal-fg: #94650a;  /* pictogrammes et texte : 5,1:1 sur blanc */
+
+  /* Oxyde — problèmes réels seulement : impayé, dépassement, erreur */
+  --mf-red: #b3261e;        /* texte blanc 6,5:1 ; pastille 5,4:1 */
+  --mf-red-hover: #9a1f18;
+  --mf-red-soft: rgba(179, 38, 30, 0.12);
+
+  /* Sémantique */
+  --mf-success: #246b45;    /* pastille 5,4:1 */
+  --mf-success-soft: #e0ece3;
+  --mf-warning: #875a04;    /* pastille 5,1:1 */
+  --mf-warning-soft: #f8ecd0;
   --mf-danger: var(--mf-red);
   --mf-info: var(--mf-blue);
 
-  /* Superposition de modale — Encre à 55 % (fonctionne sur fond clair
-     comme sombre). Token dédié pour que le seul rgba() du projet reste
-     dans ce fichier, jamais recopié en dur dans un composant
-     (Modale.tsx référence var(--mf-overlay)). */
-  --mf-overlay: rgba(14, 31, 43, 0.55);
+  /* Superposition de modale — encre à 55 % */
+  --mf-overlay: rgba(15, 30, 41, 0.55);
 
-  /* Rayons et élévation — angles vifs, aucune ombre */
   --mf-radius-sm: 0px;
   --mf-radius-md: 0px;
   --mf-radius-lg: 0px;
@@ -76,47 +82,45 @@
   --mf-shadow-md: none;
   --mf-shadow-lg: none;
 
-  /* Barre latérale — toujours Encre, indépendant du thème choisi */
-  --mf-sidebar-bg: #0e1f2b;
-  --mf-sidebar-text: #f7f6f2;
-  --mf-sidebar-text-2: #9fb0bc;
-  --mf-sidebar-text-3: #7b8892;  /* 4,61:1 sur l'encre de la barre laterale */
-  --mf-sidebar-border: #22394a;
-  --mf-sidebar-icon-inactive: #55707f;
+  /* Barre latérale — toujours encre, indépendante du thème */
+  --mf-sidebar-bg: #0f1e29;
+  --mf-sidebar-text: #f6f5f1;
+  --mf-sidebar-text-2: #a3b3be;  /* 7,9:1 */
+  --mf-sidebar-text-3: #86939c;  /* 5,4:1 */
+  --mf-sidebar-border: #223747;
+  --mf-sidebar-icon-inactive: #5b7482;
+  --mf-sidebar-active: #1a5c8a;  /* fixe : le denim clair du mode sombre rendrait le libellé blanc illisible */
 }
 
-/* Mode sombre — secondaire, activé explicitement. Même famille de
-   couleurs (Denim/Signal), surfaces et texte inversés. */
+/* Mode sombre — même famille, surfaces et texte inversés. Les aplats
+   denim et oxyde s'éclaircissent pour rester lisibles comme texte ; le
+   texte posé dessus passe donc à l'encre (--mf-on-*). */
 :root[data-theme="dark"] {
-  /* Volontairement plus foncé que --mf-sidebar-bg (#0e1f2b) : sans cet
-     écart la barre latérale, dont la couleur est fixe, se confond avec
-     le contenu et n'est plus séparée que par sa bordure d'un pixel. */
-  --mf-bg: #08141d;
-  --mf-surface: #16303f;
-  --mf-surface-2: #1c3a4b;
-  --mf-surface-3: #22394a;
-  --mf-border: #2a4657;
-  --mf-border-strong: #3a5a6d;
-  --mf-text: #f7f6f2;
-  --mf-text-2: #9fb0bc;
-  --mf-text-3: #8c97a0;  /* 4,60:1 sur les cartes sombres */
-  --mf-blue: #4d9cca;  /* liens : 4,54:1, echouait a 2,46 */
-  --mf-blue-hover: #3d7ca0;
-  --mf-blue-soft: rgba(44, 110, 148, 0.22);
-  /* Sur fond foncé le jaune vif est très lisible : il redevient la
-     couleur d'avant-plan, l'ocre du mode clair serait terne ici. */
-  --mf-signal-fg: #e9a81c;
-  /* Le rouge manquait purement et simplement dans ce bloc : il gardait
-     donc sa valeur pensée pour du blanc et tombait à 2,85:1 sur les
-     cartes sombres, alors qu'il sert aux erreurs et aux montants
-     impayés — les deux choses qu'on ne peut pas se permettre de rater. */
-  --mf-red: #ed6a70;  /* 4,51:1 */
-  --mf-red-hover: #f39599;
-  --mf-red-soft: rgba(237, 106, 112, 0.18);
-  --mf-success: #49a772;  /* 4,63:1 */
-  --mf-success-soft: rgba(73, 167, 114, 0.18);
-  --mf-warning: #e9a81c;
-  --mf-warning-soft: rgba(233, 168, 28, 0.18);
+  /* Plus foncé que la barre latérale (#0f1e29), sinon elle se confond
+     avec le contenu et n'est plus séparée que par un filet. */
+  --mf-bg: #0a141c;
+  --mf-surface: #13242f;
+  --mf-surface-2: #182c39;
+  --mf-surface-3: #1d3342;
+  --mf-border: #26404f;
+  --mf-border-strong: #36566a;
+  --mf-text: #f3f1ea;    /* 14,1:1 sur les cartes */
+  --mf-text-2: #a9b6bf;  /* 7,7:1 */
+  --mf-text-3: #95a0a8;  /* 6,0:1 sur les cartes, 4,9:1 sur surface-3 */
+  --mf-blue: #6aaedb;    /* liens 6,6:1 ; texte encre dessus 7,7:1 */
+  --mf-blue-hover: #8cc2e6;
+  --mf-blue-soft: rgba(106, 174, 219, 0.2);
+  --mf-on-blue: #0a141c;
+  --mf-on-red: #0a141c;
+  --mf-signal-fg: #e3a21a;
+  --mf-signal-soft: rgba(227, 162, 26, 0.18);
+  --mf-red: #f0877f;     /* 6,4:1 sur les cartes ; pastille 4,6:1 */
+  --mf-red-hover: #f5a59f;
+  --mf-red-soft: rgba(240, 135, 127, 0.2);
+  --mf-success: #6cc494; /* pastille 5,0:1 */
+  --mf-success-soft: rgba(108, 196, 148, 0.2);
+  --mf-warning: #e8b64a; /* pastille 5,6:1 */
+  --mf-warning-soft: rgba(232, 182, 74, 0.2);
   --mf-overlay: rgba(0, 0, 0, 0.6);
 }
 

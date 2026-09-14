@@ -135,7 +135,7 @@ export default async function DashboardPage() {
             <ul className="divide-y divide-mf-border">
               {rdv.map((r) => (
                 <li key={r.id} className="py-2 text-sm flex items-center justify-between gap-2 text-mf-text">
-                  <span className="font-mono text-mf-text-2 flex items-center gap-1.5 shrink-0">
+                  <span className="tabular-nums whitespace-nowrap text-mf-text-2 flex items-center gap-1.5 shrink-0">
                     <Clock className="w-3.5 h-3.5 text-mf-text-3" /> {formatTimeShort(r.heure)}
                   </span>
                   <span className="flex-1 min-w-0 truncate text-right">

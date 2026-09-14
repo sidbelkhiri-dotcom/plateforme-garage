@@ -61,7 +61,7 @@ export default function Sidebar() {
             onClick={() => setOuvert(false)}
             className={`relative w-full flex items-center gap-3 pl-5 pr-4 py-3 text-sm transition-colors min-h-[44px] ${
               active
-                ? "bg-mf-blue text-white font-semibold"
+                ? "bg-mf-sidebar-active text-white font-semibold"
                 : "text-mf-sidebar-text-2 hover:bg-white/5 hover:text-mf-sidebar-text"
             }`}
           >
@@ -69,12 +69,12 @@ export default function Sidebar() {
             <Icon className={`w-4 h-4 ${active ? "" : "text-mf-sidebar-icon-inactive"}`} />
             {n.label}
             {n.href === "/demandes-accueil" && nouvellesArrivees > 0 && (
-              <span className="ml-auto flex items-center justify-center min-w-[20px] h-5 px-1 rounded-mf-pill bg-mf-red text-white text-[11px] font-bold">
+              <span className="ml-auto flex items-center justify-center min-w-[20px] h-5 px-1 rounded-mf-pill bg-mf-red text-mf-on-red text-[11px] font-bold">
                 {nouvellesArrivees}
               </span>
             )}
             {n.href === "/demandes-rendez-vous" && demandesRdv > 0 && (
-              <span className="ml-auto flex items-center justify-center min-w-[20px] h-5 px-1 rounded-mf-pill bg-mf-red text-white text-[11px] font-bold">
+              <span className="ml-auto flex items-center justify-center min-w-[20px] h-5 px-1 rounded-mf-pill bg-mf-red text-mf-on-red text-[11px] font-bold">
                 {demandesRdv}
               </span>
             )}
@@ -89,7 +89,7 @@ export default function Sidebar() {
       {/* < 768px : barre du haut + tiroir, la barre latérale fixe ne
           tiendrait pas sur un écran de téléphone (D17). */}
       <div className="sans-impression md:hidden flex items-center justify-between bg-mf-sidebar-bg border-b border-mf-sidebar-border text-mf-sidebar-text px-4 h-14 shrink-0">
-        <Logo height={18} metal="argent" />
+        <Logo height={18} metal="or" />
         <button
           onClick={() => setOuvert(true)}
           className="relative w-11 h-11 flex items-center justify-center -mr-2 focus:outline-none focus-visible:ring-2 focus-visible:ring-mf-blue"
@@ -106,7 +106,7 @@ export default function Sidebar() {
         <div className="md:hidden fixed inset-0 z-50 flex">
           <div className="w-64 bg-mf-sidebar-bg text-mf-sidebar-text-2 flex flex-col min-h-screen border-r border-mf-sidebar-border">
             <div className="px-5 py-5 border-b border-mf-sidebar-border flex items-center justify-between text-mf-sidebar-text">
-              <Logo height={18} metal="argent" />
+              <Logo height={18} metal="or" />
               <button
                 onClick={() => setOuvert(false)}
                 className="w-11 h-11 -mr-2 flex items-center justify-center text-mf-sidebar-text-2 focus:outline-none focus-visible:ring-2 focus-visible:ring-mf-blue"
@@ -133,7 +133,7 @@ export default function Sidebar() {
       {/* ≥ 768px : barre latérale fixe, comme avant. */}
       <aside className="sans-impression hidden md:flex w-56 bg-mf-sidebar-bg text-mf-sidebar-text-2 flex-col shrink-0 min-h-screen border-r border-mf-sidebar-border">
         <div className="px-5 py-5 border-b border-mf-sidebar-border text-mf-sidebar-text">
-          <Logo height={22} metal="argent" />
+          <Logo height={22} metal="or" />
           <div className="text-[10px] text-mf-sidebar-text-3 tracking-wide mt-1.5">GESTION D'ATELIER</div>
         </div>
         <SelecteurGarageAdmin />

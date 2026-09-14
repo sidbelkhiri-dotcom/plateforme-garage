@@ -132,7 +132,7 @@ function construireHtml({
 
   return `
   <div style="font-family:Arial,Helvetica,sans-serif;max-width:600px;margin:0 auto;color:#111;">
-    <div style="border-bottom:2px solid #0B5BE8;padding-bottom:12px;margin-bottom:20px;">
+    <div style="border-bottom:2px solid #1a5c8a;padding-bottom:12px;margin-bottom:20px;">
       <div style="font-size:18px;font-weight:900;text-transform:uppercase;letter-spacing:0.02em;margin-bottom:12px;">${echapperHtml(nomGarage)}</div>
       ${garage?.adresse ? `<div style="color:#555;font-size:13px;">${echapperHtml(garage.adresse)}</div>` : ""}
       ${garage?.telephone ? `<div style="color:#555;font-size:13px;">${echapperHtml(garage.telephone)}</div>` : ""}
@@ -204,7 +204,7 @@ function construireHtml({
     ${
       garage?.lien_avis_google
         ? `<p style="margin-top:20px;padding-top:16px;border-top:1px solid #e5e5e5;color:#555;font-size:12px;">
-             Si vous avez apprécié notre service, <a href="${echapperHtml(garage.lien_avis_google)}" style="color:#0B5BE8;">un avis Google</a> nous aide énormément.
+             Si vous avez apprécié notre service, <a href="${echapperHtml(garage.lien_avis_google)}" style="color:#1a5c8a;">un avis Google</a> nous aide énormément.
            </p>`
         : ""
     }

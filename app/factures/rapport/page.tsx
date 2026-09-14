@@ -130,7 +130,7 @@ export default async function RapportPage({
                 href={`/factures/rapport?annee=${a}&periode=${periode.cle}`}
                 className={`px-3 min-h-[36px] flex items-center rounded-mf-sm text-xs font-semibold border transition-colors ${
                   a === annee
-                    ? "bg-mf-blue text-white border-mf-blue"
+                    ? "bg-mf-blue text-mf-on-blue border-mf-blue"
                     : "bg-mf-surface text-mf-text-2 border-mf-border hover:bg-mf-surface-2"
                 }`}
               >
@@ -145,7 +145,7 @@ export default async function RapportPage({
                 href={`/factures/rapport?annee=${annee}&periode=${p.cle}`}
                 className={`px-3 min-h-[36px] flex items-center rounded-mf-sm text-xs font-semibold border transition-colors ${
                   p.cle === periode.cle
-                    ? "bg-mf-blue text-white border-mf-blue"
+                    ? "bg-mf-blue text-mf-on-blue border-mf-blue"
                     : "bg-mf-surface text-mf-text-2 border-mf-border hover:bg-mf-surface-2"
                 }`}
               >

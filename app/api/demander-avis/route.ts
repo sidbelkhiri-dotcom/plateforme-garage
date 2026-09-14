@@ -53,13 +53,13 @@ export async function POST(request: NextRequest) {
   const nomGarage = garage.nom ?? "Votre garage";
   const html = `
   <div style="font-family:Arial,Helvetica,sans-serif;max-width:600px;margin:0 auto;color:#111;">
-    <div style="border-bottom:2px solid #0B5BE8;padding-bottom:12px;margin-bottom:20px;">
+    <div style="border-bottom:2px solid #1a5c8a;padding-bottom:12px;margin-bottom:20px;">
       <div style="font-size:18px;font-weight:900;text-transform:uppercase;letter-spacing:0.02em;">${echapperHtml(nomGarage)}</div>
     </div>
     <p>Bonjour ${echapperHtml(client.nom)},</p>
     <p>Merci d'avoir fait confiance à ${echapperHtml(nomGarage)}. Si vous avez apprécié notre service, un avis Google prend une minute et nous aide énormément :</p>
     <p style="margin:24px 0;">
-      <a href="${echapperHtml(garage.lien_avis_google)}" style="display:inline-block;background:#0B5BE8;color:#fff;text-decoration:none;padding:12px 24px;border-radius:6px;font-weight:bold;">Laisser un avis</a>
+      <a href="${echapperHtml(garage.lien_avis_google)}" style="display:inline-block;background:#1a5c8a;color:#fff;text-decoration:none;padding:12px 24px;border-radius:0;font-weight:bold;">Laisser un avis</a>
     </p>
     <p style="margin-top:24px;">Merci de votre confiance,<br>${echapperHtml(nomGarage)}</p>
   </div>`;

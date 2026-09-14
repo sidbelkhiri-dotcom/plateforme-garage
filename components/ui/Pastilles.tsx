@@ -35,7 +35,7 @@ export default function Pastilles<V extends string>({
             aria-pressed={actif}
             className={`shrink-0 whitespace-nowrap px-3 min-h-[40px] rounded-mf-pill text-xs font-semibold border transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-mf-blue focus-visible:ring-offset-1 ${
               actif
-                ? "bg-mf-blue text-white border-mf-blue"
+                ? "bg-mf-blue text-mf-on-blue border-mf-blue"
                 : "bg-mf-surface text-mf-text-2 border-mf-border hover:bg-mf-surface-2 hover:text-mf-text"
             }`}
           >

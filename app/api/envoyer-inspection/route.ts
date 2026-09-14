@@ -61,14 +61,14 @@ export async function POST(request: NextRequest) {
 
   const html = `
   <div style="font-family:Arial,Helvetica,sans-serif;max-width:600px;margin:0 auto;color:#111;">
-    <div style="border-bottom:2px solid #0B5BE8;padding-bottom:12px;margin-bottom:20px;">
+    <div style="border-bottom:2px solid #1a5c8a;padding-bottom:12px;margin-bottom:20px;">
       <div style="font-size:18px;font-weight:900;text-transform:uppercase;letter-spacing:0.02em;">${echapperHtml(nomGarage)}</div>
     </div>
     <p>Bonjour ${echapperHtml(client.nom)},</p>
     <p>Voici les points relevés lors de l'inspection de votre véhicule (bon de travail <b>${echapperHtml(bon.numero)}</b>), avec photos à l'appui.</p>
     <p>Cliquez sur le lien ci-dessous pour consulter chaque point et approuver ou refuser les réparations proposées :</p>
     <p style="margin:24px 0;">
-      <a href="${lien}" style="display:inline-block;background:#0B5BE8;color:#fff;text-decoration:none;padding:12px 24px;border-radius:6px;font-weight:bold;">Voir l'inspection</a>
+      <a href="${lien}" style="display:inline-block;background:#1a5c8a;color:#fff;text-decoration:none;padding:12px 24px;border-radius:0;font-weight:bold;">Voir l'inspection</a>
     </p>
     <p style="color:#555;font-size:13px;">Ce lien est personnel, ne le transférez pas.</p>
     <p style="margin-top:24px;">Merci de votre confiance,<br>${echapperHtml(nomGarage)}</p>
