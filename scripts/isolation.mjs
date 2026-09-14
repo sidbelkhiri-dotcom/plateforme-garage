@@ -812,7 +812,8 @@ try {
   // marque au passage l'invitation acceptée.
   const motDePasseInvite = `Invite${Date.now()}!`;
   await fetch(`${URL_SUPABASE}/auth/v1/admin/users/${compteInvite.id}`, {
-    method: "PUT", headers: admin, body: JSON.stringify({ password: motDePasseInvite }),
+    // email_confirm : c'est ce que fait le clic sur le lien d'invitation.
+    method: "PUT", headers: admin, body: JSON.stringify({ password: motDePasseInvite, email_confirm: true }),
   });
   const sessionEmploye = await ouvrirSession(courrielInvite, motDePasseInvite);
   const [invitationRecue] = await srv(`invitations_employes?select=acceptee_le&utilisateur_id=eq.${compteInvite.id}`);
@@ -839,6 +840,9 @@ try {
     renvoiInvitation.statut < 400 && renvoiInvitation.corps?.renvoi === true,
     `statut ${renvoiInvitation.statut} ${JSON.stringify(renvoiInvitation.corps).slice(0, 100)}`);
   const idAnnule = renvoiInvitation.corps?.id;
+  // Sans renvoi réussi, pas d'identifiant à annuler : la suite s'arrête
+  // en le disant plutôt que d'interroger la base avec « undefined ».
+  if (!idAnnule) throw new Error(`renvoi d'invitation refusé : ${JSON.stringify(renvoiInvitation.corps)}`);
 
   const sessionB = await ouvrirSession(courrielB, motDePasse);
   const annulationParB = await commeUtilisateur(sessionB, "rpc/annuler_invitation", {
