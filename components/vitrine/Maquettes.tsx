@@ -70,8 +70,24 @@ export function MaquetteBon({ className = "" }: { className?: string }) {
   );
 }
 
-/** Page d'inspection, telle que le client la reçoit sur son téléphone. */
-export function MaquetteTelephone({ className = "" }: { className?: string }) {
+/**
+ * Page d'inspection, telle que le client la reçoit sur son téléphone.
+ *
+ * `approuve`, `pressee` et `montantApprouve` sont pilotés par
+ * TelephoneDemo pour rejouer le geste du client ; sans eux, la maquette
+ * reste dans son état d'attente.
+ */
+export function MaquetteTelephone({
+  className = "",
+  approuve = false,
+  pressee = false,
+  montantApprouve,
+}: {
+  className?: string;
+  approuve?: boolean;
+  pressee?: boolean;
+  montantApprouve?: React.ReactNode;
+}) {
   return (
     <div
       className={`w-[248px] bg-mf-sidebar-bg p-2 border border-mf-sidebar-border ${className}`}
@@ -100,14 +116,27 @@ export function MaquetteTelephone({ className = "" }: { className?: string }) {
             <Camera className="absolute right-2 bottom-2 w-3.5 h-3.5 text-white/70" />
           </div>
           <p className="text-[10.5px] text-mf-text-2 mt-2 leading-snug">Usure au témoin. Recommandé avant l&apos;hiver.</p>
-          <div className="grid grid-cols-2 gap-1.5 mt-2">
-            <span className="h-8 flex items-center justify-center bg-mf-blue text-mf-on-blue text-[11px] font-semibold">
-              <Check className="w-3 h-3 mr-1" /> Approuver
-            </span>
-            <span className="h-8 flex items-center justify-center border border-mf-border-strong text-[11px] font-semibold">
-              Refuser
-            </span>
-          </div>
+          {approuve ? (
+            <div className="flex items-center justify-between gap-2 mt-2">
+              <span className="inline-flex items-center h-6 px-2 bg-mf-success-soft text-mf-success text-[10px] font-bold uppercase tracking-wide">
+                Vous avez approuvé
+              </span>
+              <span className="text-[11px] font-semibold text-mf-blue">Modifier ma réponse</span>
+            </div>
+          ) : (
+            <div className="grid grid-cols-2 gap-1.5 mt-2">
+              <span
+                className={`h-8 flex items-center justify-center bg-mf-blue text-mf-on-blue text-[11px] font-semibold transition-transform duration-150 ${
+                  pressee ? "scale-[0.96]" : ""
+                }`}
+              >
+                <Check className="w-3 h-3 mr-1" /> Approuver
+              </span>
+              <span className="h-8 flex items-center justify-center border border-mf-border-strong text-[11px] font-semibold">
+                Refuser
+              </span>
+            </div>
+          )}
         </div>
         <div className="px-3 mt-3 flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-wide text-mf-warning">
           <AlertTriangle className="w-3 h-3" /> À surveiller · 1
@@ -117,10 +146,12 @@ export function MaquetteTelephone({ className = "" }: { className?: string }) {
           <span className="font-mono text-[12px] tabular-nums">64,50 $</span>
         </div>
         <div className="mt-3 bg-mf-surface border-t border-mf-border px-3 py-2 flex items-center justify-between">
-          <span className="text-[10.5px] text-mf-text-2">2 réparations à décider</span>
+          <span className="text-[10.5px] text-mf-text-2">
+            {approuve ? "1 réparation à décider" : "2 réparations à décider"}
+          </span>
           <span className="text-right">
             <span className="block text-[9px] font-semibold uppercase tracking-[0.09em] text-mf-text-3">Approuvé</span>
-            <span className="block font-mono text-[12px] font-bold tabular-nums">0,00 $</span>
+            <span className="block font-mono text-[12px] font-bold tabular-nums">{montantApprouve ?? "0,00 $"}</span>
           </span>
         </div>
       </div>

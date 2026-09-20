@@ -15,7 +15,9 @@ import {
   UsersRound,
 } from "lucide-react";
 import Logo from "@/components/Logo";
-import { MaquetteBon, MaquetteDepassement, MaquetteFacture, MaquetteTelephone } from "@/components/vitrine/Maquettes";
+import { MaquetteBon, MaquetteDepassement, MaquetteFacture } from "@/components/vitrine/Maquettes";
+import TelephoneDemo from "@/components/vitrine/TelephoneDemo";
+import { Apparition, Etape, Sequence } from "@/components/vitrine/Animations";
 
 export const metadata: Metadata = {
   title: "Garagenda — Logiciel de gestion de garage au Québec",
@@ -144,8 +146,9 @@ export default function Vitrine() {
       <main>
         {/* ------------------------------------------------ Héros */}
         <section className="mx-auto max-w-6xl px-5 pt-12 pb-16 sm:pt-20 sm:pb-24 grid lg:grid-cols-[1.05fr_1fr] gap-14 lg:gap-10 items-center">
-          <div>
-            <Surtitre>Logiciel de gestion de garage · Québec</Surtitre>
+          <Sequence>
+            <Etape><Surtitre>Logiciel de gestion de garage · Québec</Surtitre></Etape>
+            <Etape>
             <h1 className="font-display font-bold text-[2.5rem] leading-[1.02] sm:text-6xl lg:text-[4.1rem] tracking-[-0.02em] mt-5 text-balance">
               Tout l&apos;atelier, du premier appel{" "}
               <span className="relative whitespace-nowrap">
@@ -154,10 +157,14 @@ export default function Vitrine() {
               </span>
               .
             </h1>
+            </Etape>
+            <Etape>
             <p className="mt-7 text-lg text-mf-text-2 leading-relaxed max-w-xl">
               Bons de travail, évaluations écrites, inspections avec photos que le client approuve de son téléphone,
               factures TPS et TVQ exactes. En français, pensé pour les règles d&apos;ici.
             </p>
+            </Etape>
+            <Etape>
             <div className="mt-9 flex flex-col sm:flex-row sm:items-center gap-3">
               <BoutonEssai taille="grand" />
               <a
@@ -168,15 +175,20 @@ export default function Vitrine() {
               </a>
             </div>
             <p className="mt-4 text-sm text-mf-text-3">14 jours gratuits · 99 $ par mois ensuite · sans engagement</p>
-          </div>
+            </Etape>
+          </Sequence>
 
           {/* Deux points de vue sur le même moment : le bon au comptoir, et le
               téléphone du client qui approuve. Le téléphone chevauche à peine
               le bon, sans masquer ses montants ; sous 1024 px il reste seul. */}
-          <div className="relative mx-auto w-full flex justify-center lg:block lg:h-[480px]">
-            <MaquetteBon className="hidden lg:block absolute left-0 top-0 w-[290px]" />
-            <MaquetteTelephone className="lg:absolute lg:-right-6 xl:right-0 lg:top-[92px]" />
-          </div>
+          <Sequence className="relative mx-auto w-full flex justify-center lg:block lg:h-[480px]" pas={0.14}>
+            <Etape className="hidden lg:block absolute left-0 top-0 w-[290px]">
+              <MaquetteBon />
+            </Etape>
+            <Etape className="lg:absolute lg:-right-6 xl:right-0 lg:top-[92px]">
+              <TelephoneDemo />
+            </Etape>
+          </Sequence>
         </section>
 
         {/* ------------------------------------------------ Faits */}
@@ -219,10 +231,10 @@ export default function Vitrine() {
             <div className="order-2 lg:order-1 flex justify-center">
               <div className="relative">
                 <div className="absolute -inset-6 sm:-inset-10 bg-mf-surface-2 border border-mf-border" aria-hidden />
-                <MaquetteTelephone className="relative" />
+                <TelephoneDemo className="relative" />
               </div>
             </div>
-            <div className="order-1 lg:order-2">
+            <Apparition className="order-1 lg:order-2">
               <Surtitre>Inspection numérique</Surtitre>
               <h2 className="font-display font-bold text-3xl sm:text-4xl tracking-[-0.015em] mt-4 text-balance">
                 Le client voit ce que vous voyez. Il approuve de son téléphone.
@@ -237,14 +249,14 @@ export default function Vitrine() {
                 <Point>Sa réponse apparaît dans l&apos;atelier ; les réparations approuvées passent sur le bon d&apos;un clic</Point>
                 <Point>Aucun compte à créer pour le client : un lien suffit</Point>
               </ul>
-            </div>
+            </Apparition>
           </div>
         </section>
 
         {/* ------------------------------------------------ Évaluation */}
         <section className="border-t border-mf-border bg-mf-surface">
           <div className="mx-auto max-w-6xl px-5 py-20 sm:py-28 grid lg:grid-cols-2 gap-14 items-center">
-            <div>
+            <Apparition>
               <Surtitre>Évaluation écrite</Surtitre>
               <h2 className="font-display font-bold text-3xl sm:text-4xl tracking-[-0.015em] mt-4 text-balance">
                 Le prix accepté par le client est le prix facturé.
@@ -259,18 +271,20 @@ export default function Vitrine() {
                 <Point>Aucun travail démarré sans autorisation : le logiciel le refuse</Point>
                 <Point>Une facture émise ne se modifie plus. On l&apos;annule, avec un motif, et la trace reste</Point>
               </ul>
-            </div>
-            <MaquetteDepassement />
+            </Apparition>
+            <Apparition delai={0.1}>
+              <MaquetteDepassement />
+            </Apparition>
           </div>
         </section>
 
         {/* ------------------------------------------------ Factures */}
         <section className="border-t border-mf-border">
           <div className="mx-auto max-w-6xl px-5 py-20 sm:py-28 grid lg:grid-cols-2 gap-14 items-center">
-            <div className="order-2 lg:order-1 pb-8 sm:pl-8">
+            <Apparition delai={0.1} className="order-2 lg:order-1 pb-8 sm:pl-8">
               <MaquetteFacture />
-            </div>
-            <div className="order-1 lg:order-2">
+            </Apparition>
+            <Apparition className="order-1 lg:order-2">
               <Surtitre>Facturation</Surtitre>
               <h2 className="font-display font-bold text-3xl sm:text-4xl tracking-[-0.015em] mt-4 text-balance">
                 Des factures justes, et un comptable qui ne vous rappelle plus.
@@ -285,7 +299,7 @@ export default function Vitrine() {
                 <Point>Paiements partiels et soldes impayés suivis au tableau de bord</Point>
                 <Point>Rapport par année ou par trimestre, à imprimer ou à exporter pour Excel</Point>
               </ul>
-            </div>
+            </Apparition>
           </div>
         </section>
 
