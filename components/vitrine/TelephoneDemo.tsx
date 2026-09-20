@@ -17,8 +17,11 @@ const argent = (n: number) => new Intl.NumberFormat("fr-CA", { style: "currency"
 export default function TelephoneDemo({
   className = "",
   demarrage = "vue",
+  delaiMs = 0,
 }: {
   className?: string;
+  /** Attente avant que le client n'appuie, pour s'accorder au reste du héros. */
+  delaiMs?: number;
   /**
    * « chargement » pour la maquette du héros : elle n'est jamais assez au
    * centre de l'écran pour qu'un déclenchement au défilement se produise, et
@@ -42,11 +45,11 @@ export default function TelephoneDemo({
     }
     if (!visible) return;
     const minuteries = [
-      window.setTimeout(() => setPressee(true), 1500),
+      window.setTimeout(() => setPressee(true), delaiMs + 1500),
       window.setTimeout(() => {
         setPressee(false);
         setApprouve(true);
-      }, 1820),
+      }, delaiMs + 1820),
     ];
     let arreter: (() => void) | undefined;
     const depart = window.setTimeout(() => {
@@ -56,13 +59,13 @@ export default function TelephoneDemo({
         onUpdate: (v) => setMontant(v),
       });
       arreter = () => commande.stop();
-    }, 1820);
+    }, delaiMs + 1820);
     return () => {
       minuteries.forEach(clearTimeout);
       clearTimeout(depart);
       arreter?.();
     };
-  }, [visible, reduit]);
+  }, [visible, reduit, delaiMs]);
 
   return (
     <div ref={conteneur} className={className}>

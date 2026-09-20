@@ -1,9 +1,16 @@
+"use client";
+
+import { motion } from "framer-motion";
 import { Camera, Check, AlertTriangle, CircleCheck, Receipt, FileSpreadsheet } from "lucide-react";
 
 // Maquettes du site vitrine, dessinées avec les mêmes jetons que l'application
 // plutôt que des captures d'écran : nettes à toute taille, justes dans les deux
 // thèmes, et impossibles à laisser vieillir en décalage avec le vrai produit
 // sans qu'on le voie en relisant ce fichier.
+//
+// « use client » : le héros remplit le bon ligne par ligne (prop `anime`),
+// donc ces blocs doivent pouvoir s'animer. Le rendu reste fait sur le serveur ;
+// seule l'animation s'ajoute ensuite.
 //
 // Les montants sont cohérents et vérifiés : 89,95 $ + 1,5 h × 125 $ = 277,45 $,
 // TPS 13,87 $, TVQ 27,68 $, total 319,00 $ (arrondi au cent comme la base).
@@ -29,8 +36,17 @@ function Pastille({ ton, children }: { ton: "bleu" | "ambre" | "vert" | "rouge";
   );
 }
 
-/** Bon de travail, vu par la réception. */
-export function MaquetteBon({ className = "" }: { className?: string }) {
+/**
+ * Bon de travail, vu par la réception.
+ *
+ * `anime` fait tomber la plainte, puis chaque ligne, puis le total — le
+ * geste réel de la réception qui remplit le bon. Sans lui, tout est déjà là.
+ */
+export function MaquetteBon({ className = "", anime = false, delai = 0 }: { className?: string; anime?: boolean; delai?: number }) {
+  const ligne = (rang: number) =>
+    anime
+      ? { initial: { opacity: 0, y: 10 }, animate: { opacity: 1, y: 0 }, transition: { delay: delai + rang * 0.22, duration: 0.4, ease: [0.16, 0.8, 0.3, 1] as const } }
+      : {};
   return (
     <div className={`bg-mf-surface border border-mf-border text-mf-text ${className}`} aria-hidden>
       <div className="px-5 pt-4 pb-3 border-b border-mf-border">
@@ -40,31 +56,61 @@ export function MaquetteBon({ className = "" }: { className?: string }) {
         </div>
         <div className="mt-1 text-xs text-mf-text-2">Marc-André Thibault · Honda Civic (2018) · 78 600 km</div>
       </div>
-      <div className="px-5 py-3 border-b border-mf-border">
+      <motion.div className="px-5 py-3 border-b border-mf-border" {...ligne(0)}>
         <Etiquette>Plainte du client</Etiquette>
         <p className="text-sm mt-0.5">Témoin moteur allumé depuis 3 jours</p>
-      </div>
+      </motion.div>
       <div className="px-5 py-2 divide-y divide-mf-border text-sm">
-        <div className="py-2 flex items-baseline justify-between gap-3">
+        <motion.div className="py-2 flex items-baseline justify-between gap-3" {...ligne(1)}>
           <div>
             <div className="font-medium">Batterie 600 ACC</div>
             <div className="text-xs text-mf-text-3">Neuve · 1 × 189,00 $</div>
           </div>
           <span className="font-mono tabular-nums">189,00 $</span>
-        </div>
-        <div className="py-2 flex items-baseline justify-between gap-3">
+        </motion.div>
+        <motion.div className="py-2 flex items-baseline justify-between gap-3" {...ligne(2)}>
           <div>
             <div className="font-medium">Diagnostic électrique</div>
             <div className="text-xs text-mf-text-3">1 h · 125,00 $/h</div>
           </div>
           <span className="font-mono tabular-nums">125,00 $</span>
-        </div>
+        </motion.div>
       </div>
-      <div className="px-5 py-3 bg-mf-surface-2 border-t border-mf-border flex items-center justify-between gap-3">
+      <motion.div className="px-5 py-3 bg-mf-surface-2 border-t border-mf-border flex items-center justify-between gap-3" {...ligne(3)}>
         <span className="flex items-center gap-1.5 text-xs text-mf-success font-semibold">
           <CircleCheck className="w-3.5 h-3.5 shrink-0" /> Évaluation acceptée
         </span>
         <span className="font-mono tabular-nums font-bold whitespace-nowrap">314,00 $</span>
+      </motion.div>
+    </div>
+  );
+}
+
+/** Facture réduite à ce qui compte dans le héros : le numéro et les taxes. */
+export function MaquetteFactureCompacte({ className = "" }: { className?: string }) {
+  return (
+    <div className={`bg-white text-[#16212a] border border-mf-border px-4 py-3 ${className}`} aria-hidden>
+      <div className="flex items-center justify-between gap-3 pb-2 border-b border-[#e3e0d8]">
+        <span className="flex items-center gap-1.5 text-[11px] font-bold uppercase tracking-wide">
+          <Receipt className="w-3.5 h-3.5" /> Facture
+        </span>
+        <span className="font-mono text-[11px] text-[#5c666e]">FA-0002</span>
+      </div>
+      <div className="pt-2 flex flex-col gap-1 text-[11.5px]">
+        {[
+          ["Avant taxes", "277,45 $"],
+          ["TPS (5 %)", "13,87 $"],
+          ["TVQ (9,975 %)", "27,68 $"],
+        ].map(([l, v]) => (
+          <div key={l} className="flex justify-between">
+            <span className="text-[#5c666e]">{l}</span>
+            <span className="font-mono tabular-nums">{v}</span>
+          </div>
+        ))}
+        <div className="flex justify-between font-bold text-[13px] border-t border-[#e3e0d8] pt-1.5 mt-1">
+          <span>Total</span>
+          <span className="font-mono tabular-nums">319,00 $</span>
+        </div>
       </div>
     </div>
   );

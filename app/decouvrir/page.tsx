@@ -15,8 +15,9 @@ import {
   UsersRound,
 } from "lucide-react";
 import Logo from "@/components/Logo";
-import { MaquetteBon, MaquetteDepassement, MaquetteFacture } from "@/components/vitrine/Maquettes";
+import { MaquetteDepassement, MaquetteFacture } from "@/components/vitrine/Maquettes";
 import TelephoneDemo from "@/components/vitrine/TelephoneDemo";
+import HeroDemo from "@/components/vitrine/HeroDemo";
 import { Apparition, Etape, Sequence } from "@/components/vitrine/Animations";
 
 export const metadata: Metadata = {
@@ -181,14 +182,7 @@ export default function Vitrine() {
           {/* Deux points de vue sur le même moment : le bon au comptoir, et le
               téléphone du client qui approuve. Le téléphone chevauche à peine
               le bon, sans masquer ses montants ; sous 1024 px il reste seul. */}
-          <Sequence className="relative mx-auto w-full flex justify-center lg:block lg:h-[480px]" pas={0.14}>
-            <Etape className="hidden lg:block absolute left-0 top-0 w-[290px]">
-              <MaquetteBon />
-            </Etape>
-            <Etape className="lg:absolute lg:-right-6 xl:right-0 lg:top-[92px]">
-              <TelephoneDemo demarrage="chargement" />
-            </Etape>
-          </Sequence>
+          <HeroDemo />
         </section>
 
         {/* ------------------------------------------------ Faits */}
