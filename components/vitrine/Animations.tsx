@@ -12,9 +12,11 @@ import { motion, useReducedMotion, type Variants } from "framer-motion";
 //   - « Réduire les animations » du système coupe tout (useReducedMotion),
 //     et le contenu s'affiche alors immédiatement, à sa place définitive.
 
+// Assez franc pour se voir, assez court pour ne jamais retarder la lecture :
+// une première version à 14 px et 0,5 s passait inaperçue.
 const MONTEE: Variants = {
-  repos: { opacity: 0, y: 14 },
-  visible: { opacity: 1, y: 0, transition: { duration: 0.5, ease: [0.2, 0.8, 0.2, 1] } },
+  repos: { opacity: 0, y: 30 },
+  visible: { opacity: 1, y: 0, transition: { duration: 0.65, ease: [0.16, 0.8, 0.3, 1] } },
 };
 
 /** Révèle son contenu quand il entre à l'écran, une seule fois. */
@@ -44,7 +46,7 @@ export function Apparition({
 }
 
 /** Enchaîne l'apparition de ses enfants directs, au chargement de la page. */
-export function Sequence({ children, className = "", pas = 0.09 }: { children: React.ReactNode; className?: string; pas?: number }) {
+export function Sequence({ children, className = "", pas = 0.12 }: { children: React.ReactNode; className?: string; pas?: number }) {
   const reduit = useReducedMotion();
   if (reduit) return <div className={className}>{children}</div>;
   return (

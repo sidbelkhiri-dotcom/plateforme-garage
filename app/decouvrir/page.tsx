@@ -186,7 +186,7 @@ export default function Vitrine() {
               <MaquetteBon />
             </Etape>
             <Etape className="lg:absolute lg:-right-6 xl:right-0 lg:top-[92px]">
-              <TelephoneDemo />
+              <TelephoneDemo demarrage="chargement" />
             </Etape>
           </Sequence>
         </section>
