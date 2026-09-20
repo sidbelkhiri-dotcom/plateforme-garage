@@ -97,7 +97,15 @@ function Surtitre({ children }: { children: React.ReactNode }) {
   );
 }
 
-function BoutonEssai({ className = "", taille = "normal" }: { className?: string; taille?: "normal" | "grand" }) {
+function BoutonEssai({
+  className = "",
+  taille = "normal",
+  libelle = "Essayer gratuitement",
+}: {
+  className?: string;
+  taille?: "normal" | "grand";
+  libelle?: string;
+}) {
   return (
     <Link
       href="/inscription"
@@ -105,7 +113,7 @@ function BoutonEssai({ className = "", taille = "normal" }: { className?: string
         taille === "grand" ? "min-h-[52px] px-6 text-base" : "min-h-[44px] px-4 text-sm"
       } ${className}`}
     >
-      Essayer gratuitement
+      {libelle}
       <ArrowRight className="w-4 h-4 transition-transform group-hover:translate-x-0.5" aria-hidden />
     </Link>
   );
@@ -135,10 +143,15 @@ export default function Vitrine() {
             <a href="#prix" className="hover:text-mf-text">Prix</a>
             <a href="#questions" className="hover:text-mf-text">Questions</a>
           </nav>
+          {/* Sur téléphone, l'en-tête n'offrait que « Se connecter » : passé le
+              héros, plus aucun appel à l'action avant la section Prix, soit
+              près de six écrans de défilement. Le bouton y est désormais
+              toujours, avec un libellé court sous 640 px. */}
           <div className="flex items-center gap-1 sm:gap-3">
             <Link href="/login" className="text-sm font-semibold text-mf-text-2 hover:text-mf-text px-2 min-h-[44px] inline-flex items-center">
               Se connecter
             </Link>
+            <BoutonEssai className="sm:hidden" libelle="Essayer" />
             <BoutonEssai className="hidden sm:inline-flex" />
           </div>
         </div>
